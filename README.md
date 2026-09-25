@@ -41,3 +41,11 @@
 - Prompt 压缩为几个短段落与汇总花材清单，保留用花/数量、设计身份和整体光感，允许自然的局部物理修正；不再逐枝锁坐标、角度、阴影或花瓣。
 
 详见 [阅读与素材整理记录](docs/flower-book-study.md) 和 [花材图像处理提示词](docs/book-image-prompts.json)。
+
+### Original book library (v9)
+- All 60 botanical profiles from the supplied Flower Book, with 34 grouped poses; original flower faces retained in transparent WebP.
+- Chinese/English search, book and grouped-material filters. Earlier assets retain stable IDs for saved drafts.
+- Layers dock in the desktop design sidebar and below the mobile canvas; adding at the back, reordering and undo remain available.
+- Extraction provenance and printed/PDF page mapping: `docs/book-photo-extraction.md`, `docs/book-photo-catalog.json`.
+
+- Eight book-derived vessels with calibrated opening coordinates and concealed support: `docs/book-vessel-sources.json`. Total vessel library:31.

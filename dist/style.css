@@ -69,3 +69,12 @@ html[lang=en] .stage[data-scene=night] .scene-label{color:#d5d7ce;opacity:.68}
 /* Keep the small library filters on readable lines in both languages. */
 #material-filters{flex-wrap:wrap;gap:4px}#material-filters button{white-space:nowrap;padding:5px 7px;font-size:12px;flex-shrink:0}
 .material-card small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+
+/* Layer controls live outside the artwork, in the inspector or below the canvas. */
+.layer-menu{position:static;z-index:auto;width:100%;max-height:none;margin:0 0 24px;background:#f6f5ef;border:1px solid var(--line);box-shadow:none;backdrop-filter:none;border-radius:5px}
+.layer-menu[hidden]{display:none}.layer-menu-heading{padding:12px 10px}.layer-menu-heading strong{font-size:15px;letter-spacing:0}.layer-list{max-height:255px}.layer-menu-tip{margin:0;padding:8px 10px;display:block}.layer-select img{width:28px;height:36px}.layer-grip{font-size:15px}.layer-select{gap:5px}.layer-row{gap:3px;grid-template-columns:12px minmax(0,1fr) auto}.layer-step button{width:22px}
+@media(max-width:900px){.workspace>.layer-menu{margin:18px 0 0}.workspace>.layer-menu .layer-list{max-height:210px}.layer-select img{width:34px;height:39px}.layer-step button{width:32px;height:34px}}
+
+.material-search{width:100%;border:0;border-bottom:1px solid var(--line,#ddd);background:transparent;padding:12px 2px;margin:0 0 16px;font:inherit;font-size:12px;outline-offset:4px}.material-filters{flex-wrap:wrap}
+
+html[lang="en"] .mood-options{flex-wrap:wrap}html[lang="en"] .mood-options button{flex:1 0 calc(50% - 7px)}

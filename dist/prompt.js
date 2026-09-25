@@ -9,7 +9,7 @@ const en=value=>termEN[value]||value;
 
 export function buildPrompt(s,assetById,scenes){
  const vessel=assetById[s.vessel],counts=new Map();
- for(const i of s.items){const a=assetById[i.type],key=`${a.en||a.name} (${a.colorEn||en(a.color)})`;counts.set(key,(counts.get(key)||0)+1)}
+ for(const i of s.items){const a=assetById[i.type],key=`${a.en||a.name}${a.bundle?" group (all visible blooms)":""} (${a.colorEn||en(a.color)})`;counts.set(key,(counts.get(key)||0)+1)}
  const inventory=[...counts].map(([name,n])=>`${n} × ${name}`).join('; ');
  const refinement={natural:'Make a gentle florist refinement.',creative:'Gently refine the stem rhythm and depth within the same design.',faithful:'Make only the small corrections needed for physical realism.'}[s.generation]||'Make a gentle florist refinement.';
  const support={neck:'Let the neck support the stems.',kenzan:'Seat the stems in a discreet kenzan inside the basin.','integrated-holes':'Insert stems through the actual openings.','chicken-wire':'Support the stems with fitted floral wire inside the vessel.','hidden-grid':'Use a concealed grid below the rim.',crossbar:'Use a concealed crossbar below the rim.',foam:'Conceal the support inside the vessel.'}[vessel.fixture?.kind]||'Use discreet support suited to the vessel.';

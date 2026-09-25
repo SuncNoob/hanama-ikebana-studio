@@ -1,0 +1,354 @@
+[
+  {
+    "id": "book-vessel-turquoise-jug",
+    "name": "松石绿浮纹陶壶",
+    "shortName": "松石绿浮纹陶壶",
+    "shortNameEn": "Turquoise relief jug",
+    "en": "Turquoise relief jug",
+    "color": "松石绿",
+    "colorEn": "turquoise",
+    "style": "english",
+    "group": "tall",
+    "source": "flower-book-vessel",
+    "format": "webp",
+    "width": 1013,
+    "heightPx": 1035,
+    "height": 31,
+    "mouth": [
+      0.386,
+      0.028
+    ],
+    "openings": [
+      {
+        "shape": "ellipse",
+        "center": [
+          0.386,
+          0.028
+        ],
+        "radius": [
+          0.2468,
+          0.0121
+        ],
+        "frontRimY": 0.0401
+      }
+    ],
+    "fixture": {
+      "kind": "neck",
+      "visibility": "hidden",
+      "name": "器口隐形支撑",
+      "en": "Concealed neck support",
+      "prompt": "The neck supports the stems below the rim."
+    },
+    "sourcePdfPage": 65,
+    "method": "GPT Image extraction of the photographed vessel; hidden mouth reconstruction; transparent boundary crop; original source page retained in metadata.",
+    "assetPrompt": "Use case: background-extraction. Asset type: transparent flower-arrangement vessel cutout. Input image is the edit target from The Flower Book. Extract ONLY the SINGLE EMPTY vessel described below. REMOVE ALL flowers, stems, foliage, water, floral foam/wire, background, tabletop, shadows outside object, printed text and page margins. Reconstruct occluded portions of vessel and the empty open mouth naturally using visible geometry. Preserve actual photographed vessel identity, proportions, texture, colors, camera angle and gentle photographic light; this is faithful extraction/restoration, NOT redesign. Center full vessel uncropped on a square canvas with 8% transparent margin, largest dimension about 84% of canvas. Background must be genuinely transparent alpha, not a checkerboard or solid color. No decoration invented. Vessel: Tall turquoise glazed ceramic jug, slightly tapering straight sides widening toward heavy flat base, ring relief bands and speckled glaze, single scrolling handle on RIGHT. Preserve handle swirl, deep turquoise and turquoise-to-pale lower glaze."
+  },
+  {
+    "id": "book-vessel-pink-green-pitcher",
+    "name": "粉绿叶纹长颈壶",
+    "shortName": "粉绿叶纹长颈壶",
+    "shortNameEn": "Pink leaf pitcher",
+    "en": "Pink leaf pitcher",
+    "color": "粉绿釉",
+    "colorEn": "pink and green glaze",
+    "style": "french",
+    "group": "tall",
+    "source": "flower-book-vessel",
+    "format": "webp",
+    "width": 808,
+    "heightPx": 1103,
+    "height": 33,
+    "mouth": [
+      0.4022,
+      0.0698
+    ],
+    "openings": [
+      {
+        "shape": "ellipse",
+        "center": [
+          0.4022,
+          0.0698
+        ],
+        "radius": [
+          0.23885,
+          0.0281
+        ],
+        "frontRimY": 0.0979
+      }
+    ],
+    "fixture": {
+      "kind": "neck",
+      "visibility": "hidden",
+      "name": "器口隐形支撑",
+      "en": "Concealed neck support",
+      "prompt": "The neck supports the stems below the rim."
+    },
+    "sourcePdfPage": 71,
+    "method": "GPT Image extraction of the photographed vessel; hidden mouth reconstruction; transparent boundary crop; original source page retained in metadata.",
+    "assetPrompt": "Use case: background-extraction. Asset type: transparent flower-arrangement vessel cutout. Input image is the edit target from The Flower Book. Extract ONLY the SINGLE EMPTY vessel described below. REMOVE ALL flowers, stems, foliage, water, floral foam/wire, background, tabletop, shadows outside object, printed text and page margins. Reconstruct occluded portions of vessel and the empty open mouth naturally using visible geometry. Preserve actual photographed vessel identity, proportions, texture, colors, camera angle and gentle photographic light; this is faithful extraction/restoration, NOT redesign. Center full vessel uncropped on a square canvas with 8% transparent margin, largest dimension about 84% of canvas. Background must be genuinely transparent alpha, not a checkerboard or solid color. No decoration invented. Vessel: Pear-shaped tall blush pink glossy ceramic pitcher, green raised leaf/fan ornaments around base and scalloped mouth, curved handle on RIGHT partly hidden by flowers, spout on LEFT. Preserve slim neck and plump lower body."
+  },
+  {
+    "id": "book-vessel-low-patina-compote",
+    "name": "灰青金线低足碗",
+    "shortName": "灰青金线低足碗",
+    "shortNameEn": "Patinated compote",
+    "en": "Patinated compote",
+    "color": "灰青",
+    "colorEn": "blue-gray patina",
+    "style": "english",
+    "group": "shallow",
+    "source": "flower-book-vessel",
+    "format": "webp",
+    "width": 1134,
+    "heightPx": 788,
+    "height": 21,
+    "mouth": [
+      0.5,
+      0.0698
+    ],
+    "openings": [
+      {
+        "shape": "ellipse",
+        "center": [
+          0.5,
+          0.0698
+        ],
+        "radius": [
+          0.46825,
+          0.0457
+        ],
+        "frontRimY": 0.11549999999999999
+      }
+    ],
+    "fixture": {
+      "kind": "chicken-wire",
+      "visibility": "hidden",
+      "name": "器内花艺网架",
+      "en": "Concealed floral wire",
+      "prompt": "Fit a discreet floral wire support below the rim."
+    },
+    "sourcePdfPage": 75,
+    "method": "GPT Image extraction of the photographed vessel; hidden mouth reconstruction; transparent boundary crop; original source page retained in metadata.",
+    "assetPrompt": "Use case: background-extraction. Asset type: transparent flower-arrangement vessel cutout. Input image is the edit target from The Flower Book. Extract ONLY the SINGLE EMPTY vessel described below. REMOVE ALL flowers, stems, foliage, water, floral foam/wire, background, tabletop, shadows outside object, printed text and page margins. Reconstruct occluded portions of vessel and the empty open mouth naturally using visible geometry. Preserve actual photographed vessel identity, proportions, texture, colors, camera angle and gentle photographic light; this is faithful extraction/restoration, NOT redesign. Center full vessel uncropped on a square canvas with 8% transparent margin, largest dimension about 84% of canvas. Background must be genuinely transparent alpha, not a checkerboard or solid color. No decoration invented. Vessel: Low broad grey blue-green patinated compote bowl with smooth round bowl, short rounded pedestal and wide round foot, narrow gold ring at foot neck. Preserve photographed muted finish. No tall urn, no handles."
+  },
+  {
+    "id": "book-vessel-copper-footed-bowl",
+    "name": "锤纹铜高足浅碗",
+    "shortName": "锤纹铜高足浅碗",
+    "shortNameEn": "Hammered copper bowl",
+    "en": "Hammered copper bowl",
+    "color": "暖铜",
+    "colorEn": "warm copper",
+    "style": "modern",
+    "group": "shallow",
+    "source": "flower-book-vessel",
+    "format": "webp",
+    "width": 1092,
+    "heightPx": 770,
+    "height": 21,
+    "mouth": [
+      0.4991,
+      0.126
+    ],
+    "openings": [
+      {
+        "shape": "ellipse",
+        "center": [
+          0.4991,
+          0.126
+        ],
+        "radius": [
+          0.4011,
+          0.087
+        ],
+        "frontRimY": 0.213
+      }
+    ],
+    "fixture": {
+      "kind": "chicken-wire",
+      "visibility": "hidden",
+      "name": "器内花艺网架",
+      "en": "Concealed floral wire",
+      "prompt": "Fit a discreet floral wire support below the rim."
+    },
+    "sourcePdfPage": 115,
+    "method": "GPT Image extraction of the photographed vessel; hidden mouth reconstruction; transparent boundary crop; original source page retained in metadata.",
+    "assetPrompt": "Use case: background-extraction. Asset type: transparent flower-arrangement vessel cutout. Input image is the edit target from The Flower Book. Extract ONLY the SINGLE EMPTY vessel described below. REMOVE ALL flowers, stems, foliage, water, floral foam/wire, background, tabletop, shadows outside object, printed text and page margins. Reconstruct occluded portions of vessel and the empty open mouth naturally using visible geometry. Preserve actual photographed vessel identity, proportions, texture, colors, camera angle and gentle photographic light; this is faithful extraction/restoration, NOT redesign. Center full vessel uncropped on a square canvas with 8% transparent margin, largest dimension about 84% of canvas. Background must be genuinely transparent alpha, not a checkerboard or solid color. No decoration invented. Vessel: Low wide hammered copper shallow bowl with rolled shoulder/rim and ridge around middle, short flaring pedestal foot. Preserve honey copper patina, dark hammered pits and dark empty interior."
+  },
+  {
+    "id": "book-vessel-fluted-silver-bowl",
+    "name": "花纹银色低足盆",
+    "shortName": "花纹银色低足盆",
+    "shortNameEn": "Fluted silver bowl",
+    "en": "Fluted silver bowl",
+    "color": "旧银",
+    "colorEn": "aged silver",
+    "style": "french",
+    "group": "shallow",
+    "source": "flower-book-vessel",
+    "format": "webp",
+    "width": 1179,
+    "heightPx": 729,
+    "height": 20.5,
+    "mouth": [
+      0.5004,
+      0.0549
+    ],
+    "openings": [
+      {
+        "shape": "ellipse",
+        "center": [
+          0.5004,
+          0.0549
+        ],
+        "radius": [
+          0.45715,
+          0.03225
+        ],
+        "frontRimY": 0.08715
+      }
+    ],
+    "fixture": {
+      "kind": "chicken-wire",
+      "visibility": "hidden",
+      "name": "器内花艺网架",
+      "en": "Concealed floral wire",
+      "prompt": "Fit a discreet floral wire support below the rim."
+    },
+    "sourcePdfPage": 142,
+    "method": "GPT Image extraction of the photographed vessel; hidden mouth reconstruction; transparent boundary crop; original source page retained in metadata.",
+    "assetPrompt": "Use case: background-extraction. Asset type: transparent flower-arrangement vessel cutout. Input image is the edit target from The Flower Book. Extract ONLY the SINGLE EMPTY vessel described below. REMOVE ALL flowers, stems, foliage, water, floral foam/wire, background, tabletop, shadows outside object, printed text and page margins. Reconstruct occluded portions of vessel and the empty open mouth naturally using visible geometry. Preserve actual photographed vessel identity, proportions, texture, colors, camera angle and gentle photographic light; this is faithful extraction/restoration, NOT redesign. Center full vessel uncropped on a square canvas with 8% transparent margin, largest dimension about 84% of canvas. Background must be genuinely transparent alpha, not a checkerboard or solid color. No decoration invented. Vessel: Broad shallow antique silver punch bowl with vertical fluting on round lower bowl, embossed decorative floral band around top, low fluted pedestal and broad round foot. Preserve aged pale silver and dark brown tarnish. Photograph crops a little of right edge; reconstruct only this missing symmetry, not a tall urn."
+  },
+  {
+    "id": "book-vessel-dark-pedestal-urn",
+    "name": "深褐棱纹高足花器",
+    "shortName": "深褐棱纹高足花器",
+    "shortNameEn": "Dark pedestal urn",
+    "en": "Dark pedestal urn",
+    "color": "深褐",
+    "colorEn": "dark brown patina",
+    "style": "french",
+    "group": "tall",
+    "source": "flower-book-vessel",
+    "format": "webp",
+    "width": 795,
+    "heightPx": 1068,
+    "height": 33,
+    "mouth": [
+      0.4994,
+      0.0375
+    ],
+    "openings": [
+      {
+        "shape": "ellipse",
+        "center": [
+          0.4994,
+          0.0375
+        ],
+        "radius": [
+          0.42515,
+          0.022
+        ],
+        "frontRimY": 0.0595
+      }
+    ],
+    "fixture": {
+      "kind": "chicken-wire",
+      "visibility": "hidden",
+      "name": "器内花艺网架",
+      "en": "Concealed floral wire",
+      "prompt": "Fit a discreet floral wire support below the rim."
+    },
+    "sourcePdfPage": 46,
+    "method": "GPT Image extraction of the photographed vessel; hidden mouth reconstruction; transparent boundary crop; original source page retained in metadata.",
+    "assetPrompt": "Use case: background-extraction. Asset type: transparent flower-arrangement vessel cutout. Input image is the edit target from The Flower Book. Extract ONLY the SINGLE EMPTY vessel described below. REMOVE ALL flowers, stems, foliage, water, floral foam/wire, background, tabletop, shadows outside object, printed text and page margins. Reconstruct occluded portions of vessel and the empty open mouth naturally using visible geometry. Preserve actual photographed vessel identity, proportions, texture, colors, camera angle and gentle photographic light; this is faithful extraction/restoration, NOT redesign. Center full vessel uncropped on a square canvas with 8% transparent margin, largest dimension about 84% of canvas. Background must be genuinely transparent alpha, not a checkerboard or solid color. No decoration invented. Vessel: Tall dark patinated metal pedestal urn. Cup with near-straight upper sides, bulbous fluted lower bowl, short turned stem above stepped round base on square plinth. Preserve dark brown metal/rust patina. Bottom is cropped; complete small missing bottom of square plinth."
+  },
+  {
+    "id": "book-vessel-teal-round-pitcher",
+    "name": "青釉圆腹带柄壶",
+    "shortName": "青釉圆腹带柄壶",
+    "shortNameEn": "Teal round pitcher",
+    "en": "Teal round pitcher",
+    "color": "青釉",
+    "colorEn": "teal glaze",
+    "style": "english",
+    "group": "low",
+    "source": "flower-book-vessel",
+    "format": "webp",
+    "width": 953,
+    "heightPx": 1077,
+    "height": 29,
+    "mouth": [
+      0.4365,
+      0.0353
+    ],
+    "openings": [
+      {
+        "shape": "ellipse",
+        "center": [
+          0.4365,
+          0.0353
+        ],
+        "radius": [
+          0.21985,
+          0.0172
+        ],
+        "frontRimY": 0.0525
+      }
+    ],
+    "fixture": {
+      "kind": "neck",
+      "visibility": "hidden",
+      "name": "器口隐形支撑",
+      "en": "Concealed neck support",
+      "prompt": "The neck supports the stems below the rim."
+    },
+    "sourcePdfPage": 166,
+    "method": "GPT Image extraction of the photographed vessel; hidden mouth reconstruction; transparent boundary crop; original source page retained in metadata.",
+    "assetPrompt": "Use case: background-extraction. Asset type: transparent flower-arrangement vessel cutout. Input image is the edit target from The Flower Book. Extract ONLY the SINGLE EMPTY vessel described below. REMOVE ALL flowers, stems, foliage, water, floral foam/wire, background, tabletop, shadows outside object, printed text and page margins. Reconstruct occluded portions of vessel and the empty open mouth naturally using visible geometry. Preserve actual photographed vessel identity, proportions, texture, colors, camera angle and gentle photographic light; this is faithful extraction/restoration, NOT redesign. Center full vessel uncropped on a square canvas with 8% transparent margin, largest dimension about 84% of canvas. Background must be genuinely transparent alpha, not a checkerboard or solid color. No decoration invented. Vessel: Round-bellied teal green glossy ceramic pitcher, narrow short neck, horizontal throwing/ribbed rings, single slender handle on RIGHT from neck to shoulder, body tapering to small flat base. Preserve smoky desaturated teal and photographed uneven glaze."
+  },
+  {
+    "id": "book-vessel-green-ribbed-vase",
+    "name": "斑驳绿釉圆腹瓶",
+    "shortName": "斑驳绿釉圆腹瓶",
+    "shortNameEn": "Green ribbed vase",
+    "en": "Green ribbed vase",
+    "color": "绿釉",
+    "colorEn": "green glaze",
+    "style": "modern",
+    "group": "low",
+    "source": "flower-book-vessel",
+    "format": "webp",
+    "width": 825,
+    "heightPx": 1125,
+    "height": 30,
+    "mouth": [
+      0.4994,
+      0.0329
+    ],
+    "openings": [
+      {
+        "shape": "ellipse",
+        "center": [
+          0.4994,
+          0.0329
+        ],
+        "radius": [
+          0.2376,
+          0.01735
+        ],
+        "frontRimY": 0.05025
+      }
+    ],
+    "fixture": {
+      "kind": "neck",
+      "visibility": "hidden",
+      "name": "器口隐形支撑",
+      "en": "Concealed neck support",
+      "prompt": "The neck supports the stems below the rim."
+    },
+    "sourcePdfPage": 221,
+    "method": "GPT Image extraction of the photographed vessel; hidden mouth reconstruction; transparent boundary crop; original source page retained in metadata.",
+    "assetPrompt": "Use case: background-extraction. Asset type: transparent flower-arrangement vessel cutout. Input image is the edit target from The Flower Book. Extract ONLY the SINGLE EMPTY vessel described below. REMOVE ALL flowers, stems, foliage, water, floral foam/wire, background, tabletop, shadows outside object, printed text and page margins. Reconstruct occluded portions of vessel and the empty open mouth naturally using visible geometry. Preserve actual photographed vessel identity, proportions, texture, colors, camera angle and gentle photographic light; this is faithful extraction/restoration, NOT redesign. Center full vessel uncropped on a square canvas with 8% transparent margin, largest dimension about 84% of canvas. Background must be genuinely transparent alpha, not a checkerboard or solid color. No decoration invented. Vessel: Rounded green bottle-shaped vessel with small neck and broad ovoid belly, small attached loop/lug near upper left shoulder, horizontal ribs and subtle vertical divisions, aged olive-to-turquoise glossy glaze, darkened brown-green foot. Preserve photographed mottled texture and reflections, do not reinterpret as clear glass."
+  }
+]
