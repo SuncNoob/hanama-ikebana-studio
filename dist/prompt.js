@@ -2,73 +2,84 @@ const hashText=text=>{let h=2166136261;for(const c of String(text)){h^=c.charCod
 const pick=(list,n,shift=0)=>list[(n+shift)%list.length];
 const zone=x=>x<38?'left side':x>62?'right side':'near the visual center';
 const lean=angle=>angle<-8?`leaning ${Math.abs(Math.round(angle))}° to the left`:angle>8?`leaning ${Math.round(angle)}° to the right`:'rising almost upright';
+const floweringFamilies=new Set(['calla','sakura','chrysanthemum','lisianthus','iris','camellia','quince']);
+const termEN={
+ '淡粉':'soft pink','象牙白':'ivory','赭橙':'ochre orange','松绿':'pine green','秋红':'autumn red','麦白':'wheat white','柔粉':'blush pink','暖白':'warm white','浅杏':'pale apricot','酒红':'burgundy','浅粉':'pale pink','白色':'white','淡紫':'pale lavender','紫色':'purple','浅蓝':'pale blue','自然红':'natural red','红色':'red','嫩绿':'fresh green','银绿':'silver green','自然绿':'natural green','深绿':'deep green','夏绿':'summer green','哑黑':'matte black','墨黑':'ink black','炭黑':'charcoal','浅青釉':'pale celadon','深蓝釉':'deep indigo glaze','暖沙色':'warm sand','铁锈深釉':'dark rust glaze','浅灰釉':'light gray glaze','深绿釉':'deep green glaze','窑变釉':'variegated glaze','褐釉':'brown glaze',
+ '原版花枝':'original flowering branch','原版正面':'original front view','原版虬枝':'original gnarled branch','原版舒展':'original spreading branch','自然穗形':'natural plume','正面':'front view','侧面':'side view','斜侧面':'three-quarter view','直立枝':'upright branch','横逸枝':'lateral branch','自然弧枝':'natural arched branch','垂弧枝':'drooping arch','斜生枝':'oblique branch','弧形叶':'arched frond','疏枝':'sparse branch','自然斜枝':'natural oblique branch','舒展枝':'spreading branch',
+ '静寂':'Stillness','侘寂':'Wabi-sabi','春意':'Spring','野趣':'Wild spirit'
+};
+const en=value=>termEN[value]||value;
+
+function flowerFactor(item,asset,index,variation){
+ const n=hashText(`${item.id||`${item.type}-${index}`}-${variation}`);
+ const bias=['slightly fuller on the upper-left quadrant','slightly fuller on the upper-right quadrant','slightly fuller on the lower-left quadrant','slightly fuller on the lower-right quadrant','quietly off-axis around the corolla center'];
+ const rhythm=['one narrower petal beside a broader petal','unequal petal overlap with one edge receding','a mildly irregular inner whorl','one petal curling inward while its neighbor relaxes outward','a small interruption in the otherwise natural petal rhythm'];
+ const pigment=['a faintly deeper pigment near one petal base','a subtle warm-to-cool drift across adjacent petals','one softly faded outer petal','tiny natural speckling confined to one or two petals','a restrained translucent edge variation'];
+ const flaw=['one minute edge nick','one lightly creased outer petal','one slightly weathered tip','one tiny insect nibble','one gently bruised color spot'];
+ const stage=['freshly open','slightly younger than peak','mature but still fresh','just past peak at one outer edge','partly open with a tighter center'];
+ const code=(n%46656).toString(36).toUpperCase().padStart(3,'0');
+ return `Petal variation factor PV-${code}: keep every visible blossom center, facing direction and outer footprint fixed, and keep the total visible blossom count unchanged. Within each locked footprint, make the corolla ${pick(bias,n)} with ${pick(rhythm,n,2)}; add ${pick(pigment,n,4)} and ${pick(flaw,n,1)}; maturity is ${pick(stage,n,3)}. Keep these differences botanical and subtle, never decorative or diseased.`;
+}
 
 function instancePlan(s,assetById){
  const variation=Number(s.generationVariation||0);
- const curves=['a long relaxed arc','a gentle S-curve','a subtle counter-curve near the tip','an irregular natural bend through the lower third','a straighter lower stem with a softly wandering tip','an off-axis kink followed by a quiet recovery'];
- const faces=['turn the main flower face three-quarter left','turn the main flower face three-quarter right','let the main flower face meet the light','let the main flower face turn slightly away from camera','keep the flower mostly in profile','let the flower nod slightly downward'];
- const stages=['slightly more open and mature, with unequal petals','a little younger with restrained opening and a tight inner whorl','naturally imperfect with one asymmetrical edge','fresh but not florist-perfect, with one softly curled petal','show one minor insect nibble or weathered edge, never decorative','let two petals overlap irregularly while one recedes'];
- const foliage=['keep the foliage airy and sparse','cluster a few leaves near one node and leave the next node open','use uneven leaf spacing with small size variation','let one leaf turn away and another catch the light'];
  return s.items.map((item,index)=>{
-  const a=assetById[item.type],n=hashText(`${item.id||`${item.type}-${index}`}-${variation}`),depth=index===0?'rear plane':index===s.items.length-1?'front plane':'middle plane';
-  const scale=Math.round(item.h/(a.height||48)*100),length=Math.round((item.length||1)*100);
-  const detail=a.group==='bloom'?`${pick(faces,n,1)}; ${pick(stages,n,3)}`:`${pick(foliage,n,2)}; preserve believable branch joints`;
-  const edits=[item.flip?'mirrored gesture':'original lateral gesture',item.trim?`${Math.round(item.trim)}% shortened at the base`:null,item.cuts?.length?'retain the deliberately pruned open areas':null].filter(Boolean).join(', ');
-  return `${index+1}. ${a.name} / ${a.en}, natural ${a.color}, ${a.pose}; ${depth}, ${zone(item.x)}, ${lean(item.angle)}, about ${scale}% relative presence and ${length}% stem extension. Re-grow it with ${pick(curves,n)}; ${detail}. ${edits}.`;
+  const a=assetById[item.type],depth=index===0?'rear plane':index===s.items.length-1?'front plane':'middle plane',scale=Math.round(item.h/(a.height||48)*100),length=Math.round((item.length||1)*100);
+  const flowering=floweringFamilies.has(a.family)||a.group==='bloom';
+  const surface=flowering?flowerFactor(item,a,index,variation):'Outside flower heads, preserve the branch and every visible leaf exactly: count, spacing, outline, pruning, color, markings and surface appearance. Do not invent variation on stems or leaves.';
+  const edits=[item.flip?'keep the mirrored orientation shown':'keep the shown lateral orientation',item.trim?`keep the ${Math.round(item.trim)}% base shortening`:null,item.cuts?.length?'keep every deliberately pruned opening exactly where shown':null].filter(Boolean).join('; ');
+  return `${index+1}. ${a.en||a.name}, natural ${en(a.color)}, ${en(a.pose)}; ${depth}, ${zone(item.x)}, ${lean(item.angle)}, ${scale}% relative presence, ${length}% stem extension. STRUCTURE LOCK: keep its base point, endpoint, angle, length, scale, curvature, overlaps and layer order exactly as shown. ${edits}. ${surface}`;
  }).join('\n');
 }
 
 export function buildPrompt(s,assetById,scenes){
  const mode=s.generation||'natural';
- const variation=hashText(`${s.id||s.title||'hanama'}-${s.generationVariation||0}`),dominantSide=variation%2?'left':'right',quietSide=dominantSide==='left'?'right':'left';
- const counts=new Map();for(const i of s.items){const a=assetById[i.type],key=`${a.name} (${a.en}), natural ${a.color}`;counts.set(key,(counts.get(key)||0)+1)}
- const palette=[...counts].map(([name,count])=>`- ${name}; ${count} selected stem${count>1?'s':''}`).join('\n');
- const freedom={
-  natural:'Reconstruct the arrangement as a senior ikebana artist would build it with fresh living material. Preserve the chosen species, broad gesture, scale hierarchy, asymmetry and important negative space. You may adjust every local curve, internode, flower face, overlap and depth relationship until the result feels physically arranged rather than assembled from cutouts.',
-  creative:'Treat the references as art direction rather than a layout to follow. Preserve the botanical families, dominant palette, vessel character and emotional intention, then confidently redesign curves, spacing, heights, flower faces and depth. Keep the restrained ikebana character and negative space; avoid the density and symmetry of a commercial bouquet.',
-  faithful:'Keep the principal directions, scale hierarchy, insertion area and large zones of negative space recognizably close to the composition guide. Rebuild all living details from scratch: correct rigid joints, collisions, cloned flower faces, pasted edges and implausible proportions. Faithful means faithful to the design logic, never to the pixels.'
+ const counts=new Map();for(const i of s.items){const a=assetById[i.type],key=`${a.en||a.name}, natural ${en(a.color)}`;counts.set(key,(counts.get(key)||0)+1)}
+ const palette=[...counts].map(([name,count])=>`- ${name}; exactly ${count} selected stem${count>1?'s':''}`).join('\n');
+ const treatment={
+  natural:'Render a natural professional photograph while changing only petal-level individuality. Preserve every other material exactly and do not redesign the arrangement.',
+  creative:'Use a slightly more noticeable range of petal overlap, maturity, edge wear and pigment drift, but keep every compositional and lighting coordinate locked.',
+  faithful:'Use the most restrained petal-level variation. Preserve the reference almost exactly while removing only clone-like perfection inside each flower head.'
  };
- const repeated=[...counts.values()].some(n=>n>1);
- return `Create one original, professional photographic ikebana still life from the two attached references.
+ return `Produce a photorealistic rendering of this exact ikebana arrangement from the two attached references.
 
 HOW TO READ THE REFERENCES
-- draft.png communicates the chosen plant species, natural color families, pruning decisions, vessel material and the artist's rough spatial intention.
-- composition-guide.png is an abstract gesture map. Use it for the main directions, front-to-back order and negative space only.
-- Neither image is a photograph to imitate. Do not trace, inpaint, collage, preserve cutout edges or copy any specimen silhouette pixel for pixel.
+- draft.png is the authoritative reference for every selected material, every visible flower and leaf, the vessel, exact composition, crop, background and lighting.
+- composition-guide.png is a secondary silhouette and layer-order aid. It does not authorize any new endpoint, curve, angle or proportion. If composition-guide.png differs from draft.png in any way, draft.png wins.
+- Render the locked arrangement photographically without tracing cutout seams. Outside existing flower heads, preserve all visible color, markings, contours and surface character; do not invent variation.
 
 INTENTION
 Title: ${s.title||'Untitled'}
-Mood: ${s.mood}
-Artist's note: ${s.intention||'Quiet, asymmetrical and alive.'}
+Mood: ${en(s.mood)}
+Artist's note: ${s.intention||'Quiet, natural and alive.'}
 
-CREATIVE FREEDOM
-${freedom[mode]}
+RENDERING TREATMENT
+${treatment[mode]}
 
-BOTANICAL PALETTE
-${palette||'- Use the botanical selection visible in draft.png.'}
-The quantities describe selected stems, not a rigid count of visible blossoms or leaves. Preserve each species and color family. Buds, leaves and secondary growth may vary when botanically plausible. Keep intentionally pruned openings open.
+BOTANICAL INVENTORY — COUNT IS LOCKED
+${palette||'- Use every botanical element visible in draft.png.'}
+Keep every selected stem, every visible blossom and every visible leaf shown in draft.png. Do not remove, hide, merge, substitute, crop away or add stems, flower heads, buds or leaves. A flower that turns partly away must still remain clearly present in the same place.
 
-INDIVIDUAL STEM PLAN — EVERY STEM MUST BECOME A DIFFERENT LIVING SPECIMEN
-${instancePlan(s,assetById)||'Build a small, asymmetrical selection of individually grown stems.'}
+COMPOSITION LOCK — NON-NEGOTIABLE
+Preserve the arrangement exactly: same number of stems and flowers; same base/insertion points; same flower-head centers; same endpoints; same positions, angles, lengths, scale hierarchy, curvature, pruning, front-to-back layer order, overlaps, vessel relationship, crop and negative spaces. Do not make the silhouette more asymmetric, more symmetric, fuller, sparser or more balanced. Do not shift visual weight or reinterpret the ikebana structure.
 
-${repeated?'CRITICAL REPEATED-MATERIAL RULE\nWhen the same species appears more than once, do not duplicate, mirror or rotate one reconstructed stem. Give every instance a different main-stem curvature, internode spacing, flower-head orientation, bloom openness, leaf size, leaf rotation, small imperfections and depth plane. They must look cut from different parts of the same plant on the same morning.\n\n':''}VESSEL & PHYSICAL CONSTRUCTION
-Use ${assetById[s.vessel].name} (${assetById[s.vessel].en}) with its recognizable material, tone and broad silhouette. Setting: ${scenes[s.scene][2]}. All stems must enter through one believable kenzan or vessel-mouth area, overlap convincingly at the insertion point and obey gravity. Build real front, middle and rear planes. No floating stems, impossible intersections or branches emerging through ceramic walls.
+INDIVIDUAL MATERIAL PLAN — STRUCTURE FIXED, FLOWER SURFACES MAY VARY
+${instancePlan(s,assetById)||'Keep the reference structure exactly and vary only subtle petal-level details.'}
 
-ASYMMETRY & WABI-SABI — NON-NEGOTIABLE
-Build an intentionally off-center silhouette with the ${dominantSide} side carrying the main visual sweep and the ${quietSide} side holding a larger, quieter field of open space. Do not balance one flower with a matching flower across the centerline. Avoid a centered apex, bouquet dome, fan, triangle, radial burst, paired stems, equal gaps or evenly stepped heights. Let one branch travel farther than expected, let one flower sit lower or partly turn away, and allow two elements to overlap while another area remains noticeably empty. The visual weight, contour, intervals and flower-facing directions must be unequal on the two sides.
+PETAL-LEVEL NATURALISM
+Repeated flowers must remain in their exact original locations and orientations. Their difference comes only from internal corolla construction: slightly unequal petal widths and overlaps, a mildly eccentric inner whorl, restrained edge curl, different but plausible opening stages, and tiny localized pigment or weather marks. Treat each PV code as a variation palette and permute its traits independently across every existing visible blossom; never stamp the same defect or pigment shift onto all blossoms. Preserve each flower head's center, facing, overall footprint and species identity. Never delete a flower to create negative space. Never deform stems, leaves or the overall silhouette in order to make the flowers feel less perfect.
 
-Use restrained natural imperfection rather than damage: vary blossom diameter by roughly 8–18%, petal overlap and edge curl; allow an occasional tiny nick, bent tip, weather mark or slightly tired outer petal. Keep some buds less open and one bloom a little past peak. Leaves should differ in age, size, tilt and surface sheen. Never repeat an identical perfect corolla, five-petal star, circular outline or pristine leaf fan.
+VESSEL & PHYSICAL CONSTRUCTION
+Use ${assetById[s.vessel].en||assetById[s.vessel].name} with the exact material, tone, size, surface appearance and placement shown. Setting: ${scenes[s.scene][3]||scenes[s.scene][2]}. Keep every insertion point, occlusion, contact edge and overlap unchanged.
 
-ONE COHERENT LIGHTING SETUP
-Photograph beside one large diffused window placed upper-left and slightly in front of the arrangement. Use a weak neutral bounce from camera-right at roughly one-quarter of the key-light intensity; no second key light. The vessel casts one soft-edged shadow toward the lower-right, darkest exactly where its base touches the table and softer with distance. Petals transmit a little light at thin edges; leaves show restrained subsurface glow and varied matte or waxy response. Shadows from stems are delicate and appear only where a nearby wall or leaf could physically receive them. Keep every highlight and cast shadow consistent with this single light direction.
+LIGHTING LOCK — NON-NEGOTIABLE
+Match draft.png exactly. Preserve the same key-light direction, intensity, softness, color temperature, exposure, background brightness and gradient, highlight placement, contact shadow, cast-shadow direction and shadow density. Do not relight, dramatize, brighten, darken, add rim light, move the window, change the time of day or alter the atmosphere. Petal pigment variation must read as local botanical color, never as different illumination.
 
 CAMERA & MATERIAL REALISM
-Calm square editorial still life, eye-level to slightly low camera, natural 65–85 mm perspective, about f/8. Keep the vessel mouth and principal flower faces crisp; let rear twigs fall only slightly softer. Neutral daylight white balance, accurate botanical pigmentation, restrained saturation, subtle hue and value variation within each petal, fine veins, occasional curled or imperfect edges, real ceramic texture and a gentle background falloff. Preserve detail in both highlights and shadows without HDR gloss.
+Keep the exact camera position, square crop, perspective, focal relationship and depth ordering of draft.png. Remove pasted or haloed edges while preserving every contour, overlap and non-flower surface appearance. Add fine petal veins and restrained translucency only inside the locked flower-head footprints; do not alter leaf or vessel color, markings or texture, and do not change the lighting design.
 
 AVOID
-Mirror symmetry; bilateral balance; centered floral pyramid; bouquet dome; radial fan; paired flowers at equal height; evenly stepped stems; equal negative spaces; perfect circular flower heads; identical repeated flowers; cloned leaf clusters; pristine petals on every bloom; traced silhouettes; rigid straight stems; evenly spaced nodes; all blooms facing camera; flat front-facing layers; pasted or haloed edges; drop shadows around every cutout; multiple shadow directions; plastic shine; oversaturation; floating stems; illustration; 3D-render appearance; ornamental clutter; text; borders; watermarks.
+Any compositional change; missing flowers; fewer flowers; added flowers; shifted flower centers; changed stem angles or lengths; changed branch curves; changed layer order; changed negative space; relighting; a new shadow direction; exposure change; bouquet redesign; clone-like identical corollas; mathematically even petals; perfect circular flower heads; identical pigment on every petal; excessive decay; torn flowers; disease; plastic shine; oversaturation; illustration; 3D-render appearance; text; borders; watermarks.
 
-Variation direction for this export: off-center ${dominantSide} sweep, unequal intervals, mixed bloom stages. Reinterpret this direction organically; do not render it as a formula.
-
-Priority: asymmetrical living botanical individuality and physically coherent light > the artist's composition and mood > literal similarity to either reference.`;
+Priority: exact structure, complete flower count and unchanged lighting > subtle petal-level individuality > photographic surface realism.`;
 }
