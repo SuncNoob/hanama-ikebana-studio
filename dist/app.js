@@ -39,7 +39,7 @@ const vessels=[...newVessels,
 const allAssets=[...specimens,...vessels];
 const assetById=Object.fromEntries(allAssets.map(a=>[a.id,a]));
 const specimenFor=family=>bookSpecimens.find(a=>a.family===family)||newSpecimens.find(a=>a.family===family)||legacyFlowers.find(a=>a.family===family);
-const assetPath=id=>`/assets/${id}.png`;
+const assetPath=id=>`/assets/${id}.${assetById[id]?.source==='flower-book'?'webp':'png'}`;
 
 const scenes={paper:['#f5f4ef','#dedfd7','温暖的米灰色石灰墙与浅色石台','warm greige limewash wall and pale stone surface'],stone:['#e2e6e2','#aeb9b2','青灰色墙面与自然石台','blue-gray wall and natural stone surface'],night:['#566259','#27312b','深墨绿色背景与沉静的暗调光影','deep ink-green backdrop with subdued dark tones']};
 const labelEN={

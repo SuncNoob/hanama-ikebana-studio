@@ -20,14 +20,14 @@ The user explicitly requested the book images in the material library. Six singl
 
 | Asset | Printed pages | Appearance |
 |---|---|---|
-| `dist/assets/book-anemone.png` | 30–31 | Violet-blue anemone, dark center, uneven petal overlap |
-| `dist/assets/book-hellebore.png` | 44–45 | Ivory double hellebore with burgundy speckles |
-| `dist/assets/book-ranunculus.png` | 68–69 | Deep crimson ranunculus with irregular layered petals |
-| `dist/assets/book-tulip.png` | 76–77 | Ivory and green-striped tulip |
-| `dist/assets/book-iris.png` | 108–109 | Mauve iris with yellow-white veining |
-| `dist/assets/book-peony.png` | 128–129 | Deep pink double peony with soft ruffled petals |
+| `dist/assets/book-anemone.webp` | 30–31 | Violet-blue anemone, dark center, uneven petal overlap |
+| `dist/assets/book-hellebore.webp` | 44–45 | Ivory double hellebore with burgundy speckles |
+| `dist/assets/book-ranunculus.webp` | 68–69 | Deep crimson ranunculus with irregular layered petals |
+| `dist/assets/book-tulip.webp` | 76–77 | Ivory and green-striped tulip |
+| `dist/assets/book-iris.webp` | 108–109 | Mauve iris with yellow-white veining |
+| `dist/assets/book-peony.webp` | 128–129 | Deep pink double peony with soft ruffled petals |
 
-Each PNG retains the generated 1024 × 1536 RGBA data and alpha channel. No digital recoloring was applied. Runtime dimensions, stem extension split and insertion anchor are in `dist/book-catalog.js`; exact processing prompts are in `docs/book-image-prompts.json`. The source images show flower heads, so added stem/leaf details should not be used for scientific identification. Old variants remain selectable and old compositions continue to reference their original assets.
+The generated 1024 × 1536 PNGs are delivered as lossless WebP with the same visible pixels and alpha channel; original PNGs remain in the local working archive. No digital recoloring was applied. Runtime dimensions, stem extension split and insertion anchor are in `dist/book-catalog.js`; exact processing prompts are in `docs/book-image-prompts.json`. The source images show flower heads, so added stem/leaf details should not be used for scientific identification. Old variants remain selectable and old compositions continue to reference their original assets.
 
 ## Generation prompt
 

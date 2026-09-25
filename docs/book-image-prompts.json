@@ -2,31 +2,31 @@
   {
     "id": "anemone",
     "prompt": "Use case: background-extraction. The two supplied book pages show parts of ONE purple Anemone coronaria photograph across a spread. Extract that same flower as a single photographic cutout for an arrangement editor. Preserve its real petal shape, uneven folds, colors and fine texture; do not idealize or symmetrize it. Join the split flower and complete only the missing lower stem into a naturally slender, mostly upright stem with a few appropriate leaves, about three flower-head heights long. Entire flower and cut stem visible with padding, flower near the upper third, stem ending near bottom center. Remove the white paper and all typography. Genuine transparent background with alpha; no backdrop, cast shadow, pot or labels. Portrait asset.",
-    "output": "dist/assets/book-anemone.png"
+    "output": "dist/assets/book-anemone.webp"
   },
   {
     "id": "hellebore",
     "prompt": "Use case: background-extraction. The two supplied book pages show parts of ONE cream-white burgundy-speckled double Helleborus flower photograph across a spread. Extract that same flower as a single photographic cutout for an arrangement editor. Preserve its real petal shape, uneven folds, colors and fine texture; do not idealize or symmetrize it. Join the split flower and complete only the missing lower stem into a naturally slender, mostly upright stem with a few appropriate leaves, about three flower-head heights long. Entire flower and cut stem visible with padding, flower near the upper third, stem ending near bottom center. Remove the white paper and all typography. Genuine transparent background with alpha; no backdrop, cast shadow, pot or labels. Portrait asset.",
-    "output": "dist/assets/book-hellebore.png"
+    "output": "dist/assets/book-hellebore.webp"
   },
   {
     "id": "ranunculus",
     "prompt": "Use case: background-extraction. The two supplied book pages show parts of ONE deep crimson Ranunculus flower photograph across a spread. Extract that same flower as a single photographic cutout for an arrangement editor. Preserve its real petal shape, uneven folds, colors and fine texture; do not idealize or symmetrize it. Join the split flower and complete only the missing lower stem into a naturally slender, mostly upright stem with a few appropriate leaves, about three flower-head heights long. Entire flower and cut stem visible with padding, flower near the upper third, stem ending near bottom center. Remove the white paper and all typography. Genuine transparent background with alpha; no backdrop, cast shadow, pot or labels. Portrait asset.",
-    "output": "dist/assets/book-ranunculus.png"
+    "output": "dist/assets/book-ranunculus.webp"
   },
   {
     "id": "tulip",
     "prompt": "Use case: background-extraction. The two supplied book pages show parts of ONE ivory and green-striped Tulipa Spring Green flower photograph across a spread. Extract that same flower as a single photographic cutout for an arrangement editor. Preserve its real petal shape, uneven folds, colors and fine texture; do not idealize or symmetrize it. Join the split flower and complete only the missing lower stem into a naturally slender, mostly upright stem with a few appropriate leaves, about three flower-head heights long. Entire flower and cut stem visible with padding, flower near the upper third, stem ending near bottom center. Remove the white paper and all typography. Genuine transparent background with alpha; no backdrop, cast shadow, pot or labels. Portrait asset.",
-    "output": "dist/assets/book-tulip.png"
+    "output": "dist/assets/book-tulip.webp"
   },
   {
     "id": "iris",
     "prompt": "Use case: background-extraction. The two supplied book pages show parts of ONE mauve-purple Iris sibirica Sparkling Rose with yellow-white veining photograph across a spread. Extract that same flower as a single photographic cutout for an arrangement editor. Preserve its real petal shape, uneven folds, colors and fine texture; do not idealize or symmetrize it. Join the split flower and complete only the missing lower stem into a naturally slender, mostly upright stem with a few appropriate leaves, about three flower-head heights long. Entire flower and cut stem visible with padding, flower near the upper third, stem ending near bottom center. Remove the white paper and all typography. Genuine transparent background with alpha; no backdrop, cast shadow, pot or labels. Portrait asset.",
-    "output": "dist/assets/book-iris.png"
+    "output": "dist/assets/book-iris.webp"
   },
   {
     "id": "peony",
     "prompt": "Use case: background-extraction. The two supplied book pages show parts of ONE deep pink double Paeonia lactiflora Kansas photograph across a spread. Extract that same flower as a single photographic cutout for an arrangement editor. Preserve its real petal shape, uneven folds, colors and fine texture; do not idealize or symmetrize it. Join the split flower and complete only the missing lower stem into a naturally slender, mostly upright stem with a few appropriate leaves, about three flower-head heights long. Entire flower and cut stem visible with padding, flower near the upper third, stem ending near bottom center. Remove the white paper and all typography. Genuine transparent background with alpha; no backdrop, cast shadow, pot or labels. Portrait asset.",
-    "output": "dist/assets/book-peony.png"
+    "output": "dist/assets/book-peony.webp"
   }
 ]
