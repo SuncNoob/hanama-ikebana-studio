@@ -1,0 +1,40 @@
+{
+  "vessels": {
+    "files": ["bottle.png", "round.png"],
+    "originalLocal": "web-vase.png",
+    "title": "Vase",
+    "uploader": "PNGStock",
+    "sourcePage": "https://purepng.com/photo/18638/objects-vase",
+    "imageUrl": "https://purepng.com/public/uploads/large/purepng.com-vasevaseopen-containerceramics-vaseflower-vase-1701527704569hqfbv.png",
+    "license": "CC0 as stated by PurePNG; source page says free for commercial use, no attribution required.",
+    "licensePage": "https://purepng.com/photo/18638/objects-vase",
+    "changes": "Mechanically separated two vessels and cropped transparent margins. Original colors and RGBA preserved.",
+    "inspection": "Photoreal glazed pottery; tall brown narrow-neck bottle and rounded bronze vase with blue glaze. RGBA alpha range 0–255. Bottle starts at top edge of supplied original. Both are usable cutouts."
+  },
+  "ikebanaReference": {
+    "file": "reference-paris.jpg",
+    "title": "Ikebana International Paris 2019 (01)",
+    "author": "Rémi Jouan",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Ikebana_International_Paris_2019_(01).JPG",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Ikebana_International_Paris_2019_%2801%29.JPG",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "width": 1068,
+    "height": 1600,
+    "attribution": "Ikebana International Paris 2019 (01) — Rémi Jouan / Wikimedia Commons, CC BY 4.0.",
+    "changes": "None. If resized or cropped by site, indicate that in attribution.",
+    "inspection": "Exhibition documentary photo of airy pine, white blossoms and red camellias in a woven basket, neutral gallery background. Sharp enough for inspiration display; not studio editorial hero quality."
+  },
+  "alternateReference": {
+    "file": "reference-nordwood.jpg",
+    "title": "NordWood Themes 2017-01-25 (Unsplash)",
+    "author": "NordWood Themes",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:NordWood_Themes_2017-01-25_(Unsplash).jpg",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/99/NordWood_Themes_2017-01-25_%28Unsplash%29.jpg",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "width": 3456,
+    "height": 5184,
+    "inspection": "Clean bright still-life of a loose informal fern and orange marigold arrangement in a clear glass on weathered stool, white plaster wall. Do not call it a formal ikebana-school example."
+  }
+}
