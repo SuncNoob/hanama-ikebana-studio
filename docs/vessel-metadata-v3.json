@@ -1,0 +1,956 @@
+{
+  "version": 3,
+  "generatedAt": "2026-09-25",
+  "count": 23,
+  "items": [
+    {
+      "id": "matte-black-long-neck",
+      "name": "哑黑高颈细瓶",
+      "en": "Matte black long-neck vase",
+      "style": "japanese",
+      "group": "tall",
+      "color": "哑黑",
+      "asset": {
+        "width": 192,
+        "height": 516
+      },
+      "mouth": [
+        0.484375,
+        0.027131782945736434
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.484375,
+            0.0271
+          ],
+          "radius": [
+            0.15,
+            0.016
+          ],
+          "frontRimY": 0.048
+        }
+      ],
+      "fixture": {
+        "kind": "neck",
+        "visibility": "hidden",
+        "name": "瓶口支撑",
+        "en": "Concealed neck support",
+        "prompt": "The narrow ceramic neck itself supports the stems below the rim; no separate support is visible."
+      }
+    },
+    {
+      "id": "ivory-tall-cylinder",
+      "name": "象牙白高细筒",
+      "en": "Ivory tall cylinder vase",
+      "style": "japanese",
+      "group": "tall",
+      "color": "象牙白",
+      "asset": {
+        "width": 147,
+        "height": 486
+      },
+      "mouth": [
+        0.5034013605442177,
+        0.043209876543209874
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5034,
+            0.0432
+          ],
+          "radius": [
+            0.42,
+            0.038
+          ],
+          "frontRimY": 0.09
+        }
+      ],
+      "fixture": {
+        "kind": "hidden-grid",
+        "visibility": "hidden",
+        "name": "隐形瓶口网格",
+        "en": "Concealed opening grid",
+        "prompt": "A fitted support grid sits completely below the cylindrical rim and secures every stem; the grid must remain invisible."
+      }
+    },
+    {
+      "id": "white-squat-round",
+      "name": "白色矮胖圆瓶",
+      "en": "White squat round vase",
+      "style": "japanese",
+      "group": "low",
+      "color": "白色",
+      "asset": {
+        "width": 331,
+        "height": 314
+      },
+      "mouth": [
+        0.4954682779456193,
+        0.05732484076433121
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.4955,
+            0.0573
+          ],
+          "radius": [
+            0.12,
+            0.03
+          ],
+          "frontRimY": 0.098
+        }
+      ],
+      "fixture": {
+        "kind": "neck",
+        "visibility": "hidden",
+        "name": "瓶口支撑",
+        "en": "Concealed neck support",
+        "prompt": "The short narrow neck holds the stems below the rim; no tape, wire, foam or pin holder is visible."
+      }
+    },
+    {
+      "id": "ink-black-low-bowl",
+      "name": "墨黑矮圆钵",
+      "en": "Ink black low round bowl",
+      "style": "japanese",
+      "group": "low",
+      "color": "墨黑",
+      "asset": {
+        "width": 437,
+        "height": 258
+      },
+      "mouth": [
+        0.4988558352402746,
+        0.21705426356589147
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.4989,
+            0.2171
+          ],
+          "radius": [
+            0.405,
+            0.16
+          ],
+          "frontRimY": 0.39
+        }
+      ],
+      "fixture": {
+        "kind": "kenzan",
+        "visibility": "visible",
+        "name": "黑化黄铜剑山",
+        "en": "Blackened-brass kenzan",
+        "prompt": "A low blackened-brass kenzan is centered inside the bowl and remains discreetly visible between the exact stem insertions.",
+        "center": [
+          0.499,
+          0.235
+        ],
+        "radius": [
+          0.135,
+          0.042
+        ],
+        "material": "blackened-brass"
+      }
+    },
+    {
+      "id": "white-square-column",
+      "name": "白色方形直筒",
+      "en": "White square column vase",
+      "style": "japanese",
+      "group": "tall",
+      "color": "暖白",
+      "asset": {
+        "width": 180,
+        "height": 436
+      },
+      "mouth": [
+        0.4888888888888889,
+        0.06422018348623854
+      ],
+      "openings": [
+        {
+          "shape": "rect",
+          "center": [
+            0.4889,
+            0.0642
+          ],
+          "radius": [
+            0.32,
+            0.045
+          ],
+          "frontRimY": 0.125
+        }
+      ],
+      "fixture": {
+        "kind": "hidden-grid",
+        "visibility": "hidden",
+        "name": "隐形方形网格",
+        "en": "Concealed square grid",
+        "prompt": "A fitted square support grid sits completely below the porcelain rim and holds the stems at their shown points; it is not visible."
+      }
+    },
+    {
+      "id": "charcoal-square-basin",
+      "name": "炭黑方形矮器",
+      "en": "Charcoal square basin",
+      "style": "japanese",
+      "group": "low",
+      "color": "炭黑",
+      "asset": {
+        "width": 380,
+        "height": 276
+      },
+      "mouth": [
+        0.5026315789473684,
+        0.2246376811594203
+      ],
+      "openings": [
+        {
+          "shape": "rect",
+          "center": [
+            0.5026,
+            0.2246
+          ],
+          "radius": [
+            0.33,
+            0.13
+          ],
+          "frontRimY": 0.39
+        }
+      ],
+      "fixture": {
+        "kind": "kenzan",
+        "visibility": "visible",
+        "name": "黑化黄铜剑山",
+        "en": "Blackened-brass kenzan",
+        "prompt": "A low blackened-brass kenzan is centered inside the square basin and remains subtly visible at the exact stem bases.",
+        "center": [
+          0.503,
+          0.245
+        ],
+        "radius": [
+          0.135,
+          0.042
+        ],
+        "material": "blackened-brass"
+      }
+    },
+    {
+      "id": "celadon-shallow-suiban",
+      "name": "浅青釉宽浅水盘",
+      "en": "Pale celadon shallow suiban",
+      "style": "japanese",
+      "group": "shallow",
+      "color": "浅青釉",
+      "asset": {
+        "width": 456,
+        "height": 238
+      },
+      "mouth": [
+        0.5021929824561403,
+        0.35294117647058826
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5022,
+            0.3529
+          ],
+          "radius": [
+            0.445,
+            0.29
+          ],
+          "frontRimY": 0.69
+        }
+      ],
+      "fixture": {
+        "kind": "kenzan",
+        "visibility": "visible",
+        "name": "黄铜剑山",
+        "en": "Brass kenzan",
+        "prompt": "A low brass kenzan is centered in the shallow water and remains naturally visible through the water between the exact stem insertions.",
+        "center": [
+          0.502,
+          0.39
+        ],
+        "radius": [
+          0.125,
+          0.038
+        ],
+        "material": "brass",
+        "water": true
+      }
+    },
+    {
+      "id": "indigo-oval-suiban",
+      "name": "深蓝釉浅椭圆盘",
+      "en": "Deep indigo oval suiban",
+      "style": "japanese",
+      "group": "shallow",
+      "color": "深蓝釉",
+      "asset": {
+        "width": 481,
+        "height": 210
+      },
+      "mouth": [
+        0.501039501039501,
+        0.3333333333333333
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.501,
+            0.3333
+          ],
+          "radius": [
+            0.45,
+            0.27
+          ],
+          "frontRimY": 0.68
+        }
+      ],
+      "fixture": {
+        "kind": "kenzan",
+        "visibility": "visible",
+        "name": "黑化黄铜剑山",
+        "en": "Blackened-brass kenzan",
+        "prompt": "A low blackened-brass kenzan is centered in the shallow basin and remains naturally visible through the water at the exact stem bases.",
+        "center": [
+          0.501,
+          0.37
+        ],
+        "radius": [
+          0.125,
+          0.038
+        ],
+        "material": "blackened-brass",
+        "water": true
+      }
+    },
+    {
+      "id": "sand-wide-pottery-bowl",
+      "name": "暖沙色宽口陶盆",
+      "en": "Warm sand wide pottery bowl",
+      "style": "japanese",
+      "group": "low",
+      "color": "暖沙色",
+      "asset": {
+        "width": 460,
+        "height": 297
+      },
+      "mouth": [
+        0.49782608695652175,
+        0.21548821548821548
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.4978,
+            0.2155
+          ],
+          "radius": [
+            0.445,
+            0.18
+          ],
+          "frontRimY": 0.43
+        }
+      ],
+      "fixture": {
+        "kind": "kenzan",
+        "visibility": "partial",
+        "name": "黑化黄铜剑山",
+        "en": "Blackened-brass kenzan",
+        "prompt": "A low blackened-brass kenzan is centered below the broad rim and is only partially visible between the exact stem insertions.",
+        "center": [
+          0.498,
+          0.245
+        ],
+        "radius": [
+          0.12,
+          0.036
+        ],
+        "material": "blackened-brass"
+      }
+    },
+    {
+      "id": "rust-dark-cylinder",
+      "name": "铁锈深釉粗陶筒",
+      "en": "Rust dark-glazed stoneware cylinder",
+      "style": "japanese",
+      "group": "tall",
+      "color": "铁锈深釉",
+      "asset": {
+        "width": 266,
+        "height": 405
+      },
+      "mouth": [
+        0.49624060150375937,
+        0.08148148148148149
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.4962,
+            0.0815
+          ],
+          "radius": [
+            0.39,
+            0.055
+          ],
+          "frontRimY": 0.15
+        }
+      ],
+      "fixture": {
+        "kind": "crossbar",
+        "visibility": "hidden",
+        "name": "内藏十字撑",
+        "en": "Concealed crossbar support",
+        "prompt": "A dark fitted crossbar support sits fully below the rough stoneware rim; it secures the stems but remains invisible."
+      }
+    },
+    {
+      "id": "gray-flat-round",
+      "name": "浅灰釉小口扁圆瓶",
+      "en": "Light gray flattened round vase",
+      "style": "japanese",
+      "group": "low",
+      "color": "浅灰釉",
+      "asset": {
+        "width": 456,
+        "height": 315
+      },
+      "mouth": [
+        0.5,
+        0.06031746031746032
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5,
+            0.0603
+          ],
+          "radius": [
+            0.11,
+            0.03
+          ],
+          "frontRimY": 0.105
+        }
+      ],
+      "fixture": {
+        "kind": "neck",
+        "visibility": "hidden",
+        "name": "瓶口支撑",
+        "en": "Concealed neck support",
+        "prompt": "The small ceramic neck holds the stems below the rim; no separate support is visible."
+      }
+    },
+    {
+      "id": "forest-green-shoulder",
+      "name": "深绿釉高肩瓶",
+      "en": "Deep green high-shouldered vase",
+      "style": "japanese",
+      "group": "tall",
+      "color": "深绿釉",
+      "asset": {
+        "width": 300,
+        "height": 492
+      },
+      "mouth": [
+        0.5033333333333333,
+        0.034552845528455285
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5033,
+            0.0346
+          ],
+          "radius": [
+            0.13,
+            0.023
+          ],
+          "frontRimY": 0.07
+        }
+      ],
+      "fixture": {
+        "kind": "neck",
+        "visibility": "hidden",
+        "name": "瓶口支撑",
+        "en": "Concealed neck support",
+        "prompt": "The narrow glazed neck supports the stems below the rim; no separate support is visible."
+      }
+    },
+    {
+      "id": "english-cream-pitcher",
+      "name": "英式奶油白陶壶",
+      "en": "English creamware pitcher",
+      "style": "english",
+      "group": "tall",
+      "color": "奶油白",
+      "asset": {
+        "width": 541,
+        "height": 620
+      },
+      "mouth": [
+        0.356,
+        0.067
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.356,
+            0.067
+          ],
+          "radius": [
+            0.285,
+            0.04
+          ],
+          "frontRimY": 0.12,
+          "rotation": -0.025
+        }
+      ],
+      "fixture": {
+        "kind": "crossbar",
+        "visibility": "hidden",
+        "name": "内藏枝条十字撑",
+        "en": "Concealed branch crossbar",
+        "prompt": "A discreet natural crossbar is wedged below the pitcher rim and physically supports every stem at its exact shown insertion point; it remains hidden."
+      }
+    },
+    {
+      "id": "english-pewter-compote",
+      "name": "英式旧银高脚盆",
+      "en": "English aged pewter footed compote",
+      "style": "english",
+      "group": "low",
+      "color": "旧银色",
+      "asset": {
+        "width": 620,
+        "height": 382
+      },
+      "mouth": [
+        0.5,
+        0.125
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5,
+            0.125
+          ],
+          "radius": [
+            0.455,
+            0.075
+          ],
+          "frontRimY": 0.215
+        }
+      ],
+      "fixture": {
+        "kind": "chicken-wire",
+        "visibility": "partial",
+        "name": "深色花艺网",
+        "en": "Dark floral wire mesh",
+        "prompt": "A low hand-shaped dark floral wire mesh spans the compote below the rim. Only restrained fragments of the mesh remain visible between the exact stem bases.",
+        "center": [
+          0.5,
+          0.135
+        ],
+        "radius": [
+          0.37,
+          0.058
+        ],
+        "material": "dark-wire"
+      }
+    },
+    {
+      "id": "english-stone-garden-urn",
+      "name": "英式砂岩庭院瓮",
+      "en": "English weathered stone garden urn",
+      "style": "english",
+      "group": "low",
+      "color": "暖砂岩",
+      "asset": {
+        "width": 620,
+        "height": 454
+      },
+      "mouth": [
+        0.5,
+        0.115
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5,
+            0.115
+          ],
+          "radius": [
+            0.43,
+            0.075
+          ],
+          "frontRimY": 0.225
+        }
+      ],
+      "fixture": {
+        "kind": "foam",
+        "visibility": "hidden",
+        "name": "内藏环保花泥",
+        "en": "Concealed reusable floral medium",
+        "prompt": "A fitted reusable floral medium sits completely below the heavy stone rim and holds every stem at its exact insertion point; none of the support is visible."
+      }
+    },
+    {
+      "id": "french-medicis-urn",
+      "name": "法式象牙美第奇杯",
+      "en": "French ivory Medici urn",
+      "style": "french",
+      "group": "tall",
+      "color": "石灰象牙白",
+      "asset": {
+        "width": 620,
+        "height": 597
+      },
+      "mouth": [
+        0.5,
+        0.075
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5,
+            0.075
+          ],
+          "radius": [
+            0.42,
+            0.045
+          ],
+          "frontRimY": 0.14
+        }
+      ],
+      "fixture": {
+        "kind": "foam",
+        "visibility": "hidden",
+        "name": "内藏环保花泥",
+        "en": "Concealed reusable floral medium",
+        "prompt": "A fitted reusable floral medium is concealed fully below the Medici rim and secures every stem at its exact shown insertion point; it must not become visible."
+      }
+    },
+    {
+      "id": "french-charcoal-compote",
+      "name": "法式炭黑高脚浅盆",
+      "en": "French charcoal footed compote",
+      "style": "french",
+      "group": "low",
+      "color": "炭黑",
+      "asset": {
+        "width": 620,
+        "height": 326
+      },
+      "mouth": [
+        0.5,
+        0.14
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5,
+            0.14
+          ],
+          "radius": [
+            0.45,
+            0.09
+          ],
+          "frontRimY": 0.26
+        }
+      ],
+      "fixture": {
+        "kind": "kenzan",
+        "visibility": "visible",
+        "name": "黄铜剑山",
+        "en": "Brass kenzan",
+        "prompt": "A low brass kenzan is centered in the charcoal compote and remains deliberately but discreetly visible between the exact stem bases.",
+        "center": [
+          0.5,
+          0.15
+        ],
+        "radius": [
+          0.13,
+          0.036
+        ],
+        "material": "brass"
+      }
+    },
+    {
+      "id": "french-blue-cachepot",
+      "name": "法式雾蓝竖纹瓷盆",
+      "en": "French mist-blue fluted cachepot",
+      "style": "french",
+      "group": "low",
+      "color": "雾蓝釉",
+      "asset": {
+        "width": 620,
+        "height": 462
+      },
+      "mouth": [
+        0.5,
+        0.12
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5,
+            0.12
+          ],
+          "radius": [
+            0.445,
+            0.07
+          ],
+          "frontRimY": 0.215
+        }
+      ],
+      "fixture": {
+        "kind": "foam",
+        "visibility": "hidden",
+        "name": "内藏环保花泥",
+        "en": "Concealed reusable floral medium",
+        "prompt": "A fitted reusable floral medium sits fully below the fluted porcelain rim and secures every stem at its exact shown insertion point; it remains invisible."
+      }
+    },
+    {
+      "id": "modern-smoked-glass-column",
+      "name": "现代烟灰玻璃柱瓶",
+      "en": "Modern smoked-glass column vase",
+      "style": "modern",
+      "group": "tall",
+      "color": "烟灰透明",
+      "asset": {
+        "width": 238,
+        "height": 620
+      },
+      "mouth": [
+        0.5,
+        0.045
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5,
+            0.045
+          ],
+          "radius": [
+            0.275,
+            0.018
+          ],
+          "frontRimY": 0.075
+        }
+      ],
+      "fixture": {
+        "kind": "neck",
+        "visibility": "hidden",
+        "name": "瓶口支撑",
+        "en": "Concealed neck support",
+        "prompt": "The narrow smoked-glass neck itself supports the stems below the lip; do not add a visible grid, tape, foam or pin holder."
+      }
+    },
+    {
+      "id": "modern-steel-loop-vessel",
+      "name": "现代拉丝钢环形器",
+      "en": "Modern brushed-steel loop vessel",
+      "style": "modern",
+      "group": "low",
+      "color": "拉丝银钢",
+      "asset": {
+        "width": 620,
+        "height": 595
+      },
+      "mouth": [
+        0.219,
+        0.077
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.219,
+            0.077
+          ],
+          "radius": [
+            0.075,
+            0.026
+          ],
+          "frontRimY": 0.12,
+          "rotation": 0.38,
+          "primary": true
+        },
+        {
+          "shape": "ellipse",
+          "center": [
+            0.835,
+            0.214
+          ],
+          "radius": [
+            0.07,
+            0.024
+          ],
+          "frontRimY": 0.255,
+          "rotation": -0.28
+        }
+      ],
+      "fixture": {
+        "kind": "integrated-holes",
+        "visibility": "hidden",
+        "name": "一体式双插口",
+        "en": "Integrated twin openings",
+        "prompt": "The two sculpted steel neck openings are the complete integrated support. Stems may enter only through the two shown openings, with no visible auxiliary mechanics."
+      }
+    },
+    {
+      "id": "modern-travertine-trough",
+      "name": "现代洞石长槽器",
+      "en": "Modern travertine trough vessel",
+      "style": "modern",
+      "group": "shallow",
+      "color": "浅洞石色",
+      "asset": {
+        "width": 620,
+        "height": 223
+      },
+      "mouth": [
+        0.5,
+        0.198
+      ],
+      "openings": [
+        {
+          "shape": "rect",
+          "center": [
+            0.5,
+            0.198
+          ],
+          "radius": [
+            0.415,
+            0.078
+          ],
+          "frontRimY": 0.315
+        }
+      ],
+      "fixture": {
+        "kind": "kenzan",
+        "visibility": "partial",
+        "name": "三枚黑化黄铜剑山",
+        "en": "Three blackened-brass kenzan",
+        "prompt": "Three low blackened-brass kenzan are aligned inside the long trough. They remain only partially visible and hold the exact existing stem insertion points without changing the composition.",
+        "centers": [
+          [
+            0.29,
+            0.205
+          ],
+          [
+            0.5,
+            0.205
+          ],
+          [
+            0.71,
+            0.205
+          ]
+        ],
+        "radius": [
+          0.07,
+          0.024
+        ],
+        "material": "blackened-brass"
+      }
+    },
+    {
+      "id": "round",
+      "name": "窑变圆瓶",
+      "en": "Bronze and blue glazed round ceramic vase",
+      "style": "japanese",
+      "group": "low",
+      "asset": {
+        "width": 748,
+        "height": 734
+      },
+      "fixture": {
+        "kind": "neck",
+        "visibility": "hidden",
+        "name": "瓶口支撑",
+        "en": "Concealed neck support",
+        "prompt": "The small glazed neck itself supports the stems below the rim; no separate support is visible."
+      },
+      "mouth": [
+        0.5,
+        0.05
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5,
+            0.05
+          ],
+          "radius": [
+            0.12,
+            0.025
+          ],
+          "frontRimY": 0.09
+        }
+      ]
+    },
+    {
+      "id": "bottle",
+      "name": "褐釉长颈瓶",
+      "en": "Dark brown glazed bottle vase",
+      "style": "japanese",
+      "group": "tall",
+      "asset": {
+        "width": 818,
+        "height": 978
+      },
+      "fixture": {
+        "kind": "neck",
+        "visibility": "hidden",
+        "name": "瓶口支撑",
+        "en": "Concealed neck support",
+        "prompt": "The narrow glazed neck itself supports the stems below the rim; no separate support is visible."
+      },
+      "mouth": [
+        0.5,
+        0.04
+      ],
+      "openings": [
+        {
+          "shape": "ellipse",
+          "center": [
+            0.5,
+            0.04
+          ],
+          "radius": [
+            0.13,
+            0.024
+          ],
+          "frontRimY": 0.075
+        }
+      ]
+    }
+  ]
+}

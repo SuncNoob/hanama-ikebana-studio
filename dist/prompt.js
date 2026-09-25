@@ -32,8 +32,20 @@ function instancePlan(s,assetById){
  }).join('\n');
 }
 
+function physicalSupportPlan(asset){
+ const support=asset?.fixture;
+ if(!support)return 'Use the vessel opening itself as the concealed physical support. Do not invent or expose tape, wire, foam, pin holders or other hardware.';
+ const visibility=support.visibility==='hidden'
+  ? 'This support is completely concealed below the rim and must not become visible in the final image.'
+  : support.visibility==='visible'
+   ? 'Preserve the support at the exact visible location, scale, material and opacity shown in draft.png.'
+   : 'Preserve only the restrained partial visibility shown in draft.png; do not enlarge, brighten or feature the support.';
+ return `${support.prompt} ${visibility}`;
+}
+
 export function buildPrompt(s,assetById,scenes){
  const mode=s.generation||'natural';
+ const vessel=assetById[s.vessel];
  const counts=new Map();for(const i of s.items){const a=assetById[i.type],key=`${a.en||a.name}, natural ${en(a.color)}`;counts.set(key,(counts.get(key)||0)+1)}
  const palette=[...counts].map(([name,count])=>`- ${name}; exactly ${count} selected stem${count>1?'s':''}`).join('\n');
  const treatment={
@@ -70,7 +82,10 @@ PETAL-LEVEL NATURALISM
 Repeated flowers must remain in their exact original locations and orientations. Their difference comes only from internal corolla construction: slightly unequal petal widths and overlaps, a mildly eccentric inner whorl, restrained edge curl, different but plausible opening stages, and tiny localized pigment or weather marks. Treat each PV code as a variation palette and permute its traits independently across every existing visible blossom; never stamp the same defect or pigment shift onto all blossoms. Preserve each flower head's center, facing, overall footprint and species identity. Never delete a flower to create negative space. Never deform stems, leaves or the overall silhouette in order to make the flowers feel less perfect.
 
 VESSEL & PHYSICAL CONSTRUCTION
-Use ${assetById[s.vessel].en||assetById[s.vessel].name} with the exact material, tone, size, surface appearance and placement shown. Setting: ${scenes[s.scene][3]||scenes[s.scene][2]}. Keep every insertion point, occlusion, contact edge and overlap unchanged.
+Use ${vessel.en||vessel.name} with the exact material, tone, size, surface appearance and placement shown. Setting: ${scenes[s.scene][3]||scenes[s.scene][2]}. Keep every insertion point, occlusion, contact edge and overlap unchanged.
+
+PHYSICAL SUPPORT LOCK — NON-NEGOTIABLE
+${physicalSupportPlan(vessel)} The fixing method exists only to make the shown arrangement physically credible. It must hold every existing stem at its exact shown base point and angle; it does not authorize moving, tilting, shortening, spreading, gathering, adding or removing any botanical material. Do not substitute a different support method and do not add exposed mechanics that are absent from draft.png.
 
 LIGHTING LOCK — NON-NEGOTIABLE
 Match draft.png exactly. Preserve the same key-light direction, intensity, softness, color temperature, exposure, background brightness and gradient, highlight placement, contact shadow, cast-shadow direction and shadow density. Do not relight, dramatize, brighten, darken, add rim light, move the window, change the time of day or alter the atmosphere. Petal pigment variation must read as local botanical color, never as different illumination.
@@ -79,7 +94,7 @@ CAMERA & MATERIAL REALISM
 Keep the exact camera position, square crop, perspective, focal relationship and depth ordering of draft.png. Remove pasted or haloed edges while preserving every contour, overlap and non-flower surface appearance. Add fine petal veins and restrained translucency only inside the locked flower-head footprints; do not alter leaf or vessel color, markings or texture, and do not change the lighting design.
 
 AVOID
-Any compositional change; missing flowers; fewer flowers; added flowers; shifted flower centers; changed stem angles or lengths; changed branch curves; changed layer order; changed negative space; relighting; a new shadow direction; exposure change; bouquet redesign; clone-like identical corollas; mathematically even petals; perfect circular flower heads; identical pigment on every petal; excessive decay; torn flowers; disease; plastic shine; oversaturation; illustration; 3D-render appearance; text; borders; watermarks.
+Any compositional change; missing flowers; fewer flowers; added flowers; shifted flower centers; changed stem angles or lengths; changed branch curves; changed layer order; changed negative space; a substituted or newly exposed fixing method; visible floral foam when it should be concealed; relighting; a new shadow direction; exposure change; bouquet redesign; clone-like identical corollas; mathematically even petals; perfect circular flower heads; identical pigment on every petal; excessive decay; torn flowers; disease; plastic shine; oversaturation; illustration; 3D-render appearance; text; borders; watermarks.
 
 Priority: exact structure, complete flower count and unchanged lighting > subtle petal-level individuality > photographic surface realism.`;
 }

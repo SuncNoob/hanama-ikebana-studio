@@ -1,10 +1,35 @@
 /** A specimen's original pixels are its editing coordinates. Only its lower stem stretches. */
 export const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
-/** Percent-based vase bounds, shared by the stage and export. */
-export function vesselGeometry(asset) {
+const vesselBounds=asset=>{
   const height=asset.height, width=height*asset.width/asset.heightPx;
-  const left=(100-width)/2, top=86-height, mouth=asset.mouth||[.5,.05];
-  return {height,width,left,top,insertion:asset.insertion||[left+mouth[0]*width,top+mouth[1]*height+Math.min(1.8,height*.1)]};
+  return {height,width,left:(100-width)/2,top:86-height};
+};
+/** Vessel-local normalized coordinates -> square-stage percent coordinates. */
+export function vesselLocalToStage(asset,point) {
+  const {height,width,left,top}=vesselBounds(asset);
+  return [left+point[0]*width,top+point[1]*height];
+}
+/** Percent-based vase bounds, openings and support geometry, shared by stage and export. */
+export function vesselGeometry(asset) {
+  const {height,width,left,top}=vesselBounds(asset),mouth=asset.mouth||[.5,.05];
+  const sourceOpenings=asset.openings?.length?asset.openings:[{shape:'ellipse',center:mouth,radius:[.12,.025],frontRimY:mouth[1]+.035}];
+  const openings=sourceOpenings.map((opening,index)=>({
+    ...opening,index,localCenter:opening.center,
+    center:[left+opening.center[0]*width,top+opening.center[1]*height],
+    radius:[opening.radius[0]*width,opening.radius[1]*height],
+    frontRimY:top+(opening.frontRimY??opening.center[1]+opening.radius[1])*height,
+    rotation:opening.rotation||0
+  }));
+  let fixtureGeometry=null;
+  if(asset.fixture){
+    const primary=sourceOpenings.find(o=>o.primary)||sourceOpenings[0];
+    const localCenters=asset.fixture.centers||[asset.fixture.center||primary.center];
+    const localRadius=asset.fixture.radius||[primary.radius[0]*.34,primary.radius[1]*.45];
+    fixtureGeometry={...asset.fixture,localCenters,centers:localCenters.map(p=>[left+p[0]*width,top+p[1]*height]),radius:[localRadius[0]*width,localRadius[1]*height],targets:asset.fixture.targets||[sourceOpenings.indexOf(primary)]};
+  }
+  // Keep the legacy insertion formula byte-for-byte equivalent for old drafts.
+  const insertion=asset.insertion||[left+mouth[0]*width,top+mouth[1]*height+Math.min(1.8,height*.1)];
+  return {height,width,left,top,insertion,openings,fixture:fixtureGeometry};
 }
 export function warpY(y, split = .5, length = 1) {
   return y <= split ? y : split + (y - split) * length;
