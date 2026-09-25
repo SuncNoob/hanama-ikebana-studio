@@ -108,7 +108,7 @@ export const newVessels=[
     id:'english-stone-garden-urn',name:'英式砂岩庭院瓮',shortName:'砂岩庭院瓮',en:'English weathered stone garden urn',
     color:'暖砂岩',colorEn:'weathered warm stone',group:'low',style:'english',height:21,width:620,heightPx:454,
     mouth:[0.5,0.115],openings:[ellipse([0.5,0.115],[0.43,0.075],0.225)],
-    fixture:fixture('foam','hidden','内藏环保花泥','Concealed reusable floral medium','A fitted reusable floral medium sits completely below the heavy stone rim and holds every stem at its exact insertion point; none of the support is visible.')
+    fixture:fixture('chicken-wire','hidden','内藏花艺网','Concealed floral wire','A reusable floral wire cage fits beneath the rim and supports stems inside the vessel.')
   },
 
   // French classical vessels.
@@ -116,7 +116,7 @@ export const newVessels=[
     id:'french-medicis-urn',name:'法式象牙美第奇杯',shortName:'美第奇杯',en:'French ivory Medici urn',
     color:'石灰象牙白',colorEn:'limewashed ivory',group:'tall',style:'french',height:27,width:620,heightPx:597,
     mouth:[0.5,0.075],openings:[ellipse([0.5,0.075],[0.42,0.045],0.14)],
-    fixture:fixture('foam','hidden','内藏环保花泥','Concealed reusable floral medium','A fitted reusable floral medium is concealed fully below the Medici rim and secures every stem at its exact shown insertion point; it must not become visible.')
+    fixture:fixture('chicken-wire','hidden','内藏花艺网','Concealed floral wire','A reusable floral wire cage fits beneath the rim and supports stems inside the vessel.')
   },
   {
     id:'french-charcoal-compote',name:'法式炭黑高脚浅盆',shortName:'炭黑高脚盆',en:'French charcoal footed compote',
@@ -128,7 +128,7 @@ export const newVessels=[
     id:'french-blue-cachepot',name:'法式雾蓝竖纹瓷盆',shortName:'雾蓝瓷盆',en:'French mist-blue fluted cachepot',
     color:'雾蓝釉',colorEn:'mist-blue glaze',group:'low',style:'french',height:20,width:620,heightPx:462,
     mouth:[0.5,0.12],openings:[ellipse([0.5,0.12],[0.445,0.07],0.215)],
-    fixture:fixture('foam','hidden','内藏环保花泥','Concealed reusable floral medium','A fitted reusable floral medium sits fully below the fluted porcelain rim and secures every stem at its exact shown insertion point; it remains invisible.')
+    fixture:fixture('chicken-wire','hidden','内藏花艺网','Concealed floral wire','A reusable floral wire cage fits beneath the rim and supports stems inside the vessel.')
   },
 
   // Contemporary popular forms.
