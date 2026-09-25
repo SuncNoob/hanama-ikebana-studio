@@ -1,0 +1,458 @@
+[
+  {
+    "id": "matte-black-long-neck",
+    "name": "哑黑高颈细瓶",
+    "en": "Matte black long-neck vase",
+    "color": "哑黑",
+    "shape": "高颈细瓶",
+    "atlas": 1,
+    "widthpx": 192,
+    "heightpx": 516,
+    "width": 192,
+    "height": 516,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/matte-black-long-neck.png",
+    "mouth": {
+      "x": 0.484375,
+      "y": 0.027131782945736434
+    },
+    "base": {
+      "x": 0.4961192810457516,
+      "y": 0.9903100775193798
+    },
+    "mouthPixels": {
+      "x": 93,
+      "y": 14
+    },
+    "basePixels": {
+      "x": 95.25490196078431,
+      "y": 511
+    },
+    "sourceCrop": {
+      "left": 191,
+      "top": 31,
+      "width": 192,
+      "height": 516
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "ivory-tall-cylinder",
+    "name": "象牙白高细筒",
+    "en": "Ivory tall cylinder vase",
+    "color": "象牙白",
+    "shape": "高细圆筒",
+    "atlas": 1,
+    "widthpx": 147,
+    "heightpx": 486,
+    "width": 147,
+    "height": 486,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/ivory-tall-cylinder.png",
+    "mouth": {
+      "x": 0.5034013605442177,
+      "y": 0.043209876543209874
+    },
+    "base": {
+      "x": 0.5041610552850585,
+      "y": 0.9876543209876543
+    },
+    "mouthPixels": {
+      "x": 74,
+      "y": 21
+    },
+    "basePixels": {
+      "x": 74.1116751269036,
+      "y": 480
+    },
+    "sourceCrop": {
+      "left": 739,
+      "top": 59,
+      "width": 147,
+      "height": 486
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "white-squat-round",
+    "name": "白色矮胖圆瓶",
+    "en": "White squat round vase",
+    "color": "白色",
+    "shape": "矮胖圆瓶",
+    "atlas": 1,
+    "widthpx": 331,
+    "heightpx": 314,
+    "width": 331,
+    "height": 314,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/white-squat-round.png",
+    "mouth": {
+      "x": 0.4954682779456193,
+      "y": 0.05732484076433121
+    },
+    "base": {
+      "x": 0.4971109553949892,
+      "y": 0.9777070063694268
+    },
+    "mouthPixels": {
+      "x": 164,
+      "y": 18
+    },
+    "basePixels": {
+      "x": 164.54372623574142,
+      "y": 307
+    },
+    "sourceCrop": {
+      "left": 122,
+      "top": 615,
+      "width": 331,
+      "height": 314
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "ink-black-low-bowl",
+    "name": "墨黑矮圆钵",
+    "en": "Ink black low round bowl",
+    "color": "墨黑",
+    "shape": "矮圆钵",
+    "atlas": 1,
+    "widthpx": 437,
+    "heightpx": 258,
+    "width": 437,
+    "height": 258,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/ink-black-low-bowl.png",
+    "mouth": {
+      "x": 0.4988558352402746,
+      "y": 0.21705426356589147
+    },
+    "base": {
+      "x": 0.49799472169288533,
+      "y": 0.9767441860465116
+    },
+    "mouthPixels": {
+      "x": 218,
+      "y": 56
+    },
+    "basePixels": {
+      "x": 217.6236933797909,
+      "y": 252
+    },
+    "sourceCrop": {
+      "left": 596,
+      "top": 662,
+      "width": 437,
+      "height": 258
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "white-square-column",
+    "name": "白色方形直筒",
+    "en": "White square column vase",
+    "color": "暖白",
+    "shape": "方形直筒",
+    "atlas": 1,
+    "widthpx": 180,
+    "heightpx": 436,
+    "width": 180,
+    "height": 436,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/white-square-column.png",
+    "mouth": {
+      "x": 0.4888888888888889,
+      "y": 0.06422018348623854
+    },
+    "base": {
+      "x": 0.5009055759055759,
+      "y": 0.9862385321100917
+    },
+    "mouthPixels": {
+      "x": 88,
+      "y": 28
+    },
+    "basePixels": {
+      "x": 90.16300366300368,
+      "y": 430
+    },
+    "sourceCrop": {
+      "left": 196,
+      "top": 972,
+      "width": 180,
+      "height": 436
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "charcoal-square-basin",
+    "name": "炭黑方形矮器",
+    "en": "Charcoal square basin",
+    "color": "炭黑",
+    "shape": "方形矮器",
+    "atlas": 1,
+    "widthpx": 380,
+    "heightpx": 276,
+    "width": 380,
+    "height": 276,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/charcoal-square-basin.png",
+    "mouth": {
+      "x": 0.5026315789473684,
+      "y": 0.2246376811594203
+    },
+    "base": {
+      "x": 0.5105066035876208,
+      "y": 0.9782608695652174
+    },
+    "mouthPixels": {
+      "x": 191,
+      "y": 62
+    },
+    "basePixels": {
+      "x": 193.99250936329588,
+      "y": 270
+    },
+    "sourceCrop": {
+      "left": 624,
+      "top": 1082,
+      "width": 380,
+      "height": 276
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "celadon-shallow-suiban",
+    "name": "浅青釉宽浅水盘",
+    "en": "Pale celadon shallow suiban",
+    "color": "浅青釉",
+    "shape": "宽浅圆盘",
+    "atlas": 2,
+    "widthpx": 456,
+    "heightpx": 238,
+    "width": 456,
+    "height": 238,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/celadon-shallow-suiban.png",
+    "mouth": {
+      "x": 0.5021929824561403,
+      "y": 0.35294117647058826
+    },
+    "base": {
+      "x": 0.4979752108885783,
+      "y": 0.9747899159663865
+    },
+    "mouthPixels": {
+      "x": 229,
+      "y": 84
+    },
+    "basePixels": {
+      "x": 227.07669616519172,
+      "y": 232
+    },
+    "sourceCrop": {
+      "left": 55,
+      "top": 115,
+      "width": 456,
+      "height": 238
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "indigo-oval-suiban",
+    "name": "深蓝釉浅椭圆盘",
+    "en": "Deep indigo oval suiban",
+    "color": "深蓝釉",
+    "shape": "浅椭圆盘",
+    "atlas": 2,
+    "widthpx": 481,
+    "heightpx": 210,
+    "width": 481,
+    "height": 210,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/indigo-oval-suiban.png",
+    "mouth": {
+      "x": 0.501039501039501,
+      "y": 0.3333333333333333
+    },
+    "base": {
+      "x": 0.5008662508662508,
+      "y": 0.9714285714285714
+    },
+    "mouthPixels": {
+      "x": 241,
+      "y": 70
+    },
+    "basePixels": {
+      "x": 240.91666666666663,
+      "y": 204
+    },
+    "sourceCrop": {
+      "left": 568,
+      "top": 133,
+      "width": 481,
+      "height": 210
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "sand-wide-pottery-bowl",
+    "name": "暖沙色宽口陶盆",
+    "en": "Warm sand wide pottery bowl",
+    "color": "暖沙色",
+    "shape": "宽口陶盆",
+    "atlas": 2,
+    "widthpx": 460,
+    "heightpx": 297,
+    "width": 460,
+    "height": 297,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/sand-wide-pottery-bowl.png",
+    "mouth": {
+      "x": 0.49782608695652175,
+      "y": 0.21548821548821548
+    },
+    "base": {
+      "x": 0.4918153102935711,
+      "y": 0.9764309764309764
+    },
+    "mouthPixels": {
+      "x": 229,
+      "y": 64
+    },
+    "basePixels": {
+      "x": 226.23504273504273,
+      "y": 290
+    },
+    "sourceCrop": {
+      "left": 59,
+      "top": 534,
+      "width": 460,
+      "height": 297
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "rust-dark-cylinder",
+    "name": "铁锈深釉粗陶筒",
+    "en": "Rust dark-glazed stoneware cylinder",
+    "color": "铁锈深釉",
+    "shape": "粗陶圆筒",
+    "atlas": 2,
+    "widthpx": 266,
+    "heightpx": 405,
+    "width": 266,
+    "height": 405,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/rust-dark-cylinder.png",
+    "mouth": {
+      "x": 0.49624060150375937,
+      "y": 0.08148148148148149
+    },
+    "base": {
+      "x": 0.5044341623288991,
+      "y": 0.9851851851851852
+    },
+    "mouthPixels": {
+      "x": 132,
+      "y": 33
+    },
+    "basePixels": {
+      "x": 134.17948717948718,
+      "y": 399
+    },
+    "sourceCrop": {
+      "left": 679,
+      "top": 435,
+      "width": 266,
+      "height": 405
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "gray-flat-round",
+    "name": "浅灰釉小口扁圆瓶",
+    "en": "Light gray flattened round vase",
+    "color": "浅灰釉",
+    "shape": "小口扁圆瓶",
+    "atlas": 2,
+    "widthpx": 456,
+    "heightpx": 315,
+    "width": 456,
+    "height": 315,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/gray-flat-round.png",
+    "mouth": {
+      "x": 0.5,
+      "y": 0.06031746031746032
+    },
+    "base": {
+      "x": 0.5008339510748703,
+      "y": 0.9809523809523809
+    },
+    "mouthPixels": {
+      "x": 228,
+      "y": 19
+    },
+    "basePixels": {
+      "x": 228.38028169014086,
+      "y": 309
+    },
+    "sourceCrop": {
+      "left": 62,
+      "top": 1020,
+      "width": 456,
+      "height": 315
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  },
+  {
+    "id": "forest-green-shoulder",
+    "name": "深绿釉高肩瓶",
+    "en": "Deep green high-shouldered vase",
+    "color": "深绿釉",
+    "shape": "高肩瓶",
+    "atlas": 2,
+    "widthpx": 300,
+    "heightpx": 492,
+    "width": 300,
+    "height": 492,
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/vessels/forest-green-shoulder.png",
+    "mouth": {
+      "x": 0.5033333333333333,
+      "y": 0.034552845528455285
+    },
+    "base": {
+      "x": 0.4978947368421052,
+      "y": 0.983739837398374
+    },
+    "mouthPixels": {
+      "x": 151,
+      "y": 17
+    },
+    "basePixels": {
+      "x": 149.36842105263156,
+      "y": 484
+    },
+    "sourceCrop": {
+      "left": 662,
+      "top": 877,
+      "width": 300,
+      "height": 492
+    },
+    "alpha": true,
+    "processing": "Mechanical crop only, original RGBA preserved, no recoloring or retouching. Tight bounds alpha > 7 plus 4 px padding. Mouth center measured from visible opening.",
+    "rgbaMatchesSource": true
+  }
+]

@@ -1,0 +1,758 @@
+[
+  {
+    "id": "calla-ivory-front",
+    "family": "calla",
+    "name": "马蹄莲",
+    "color": "象牙白",
+    "pose": "正面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/calla-ivory-front.png",
+    "width": 134,
+    "height": 472,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.3405454666097133,
+      "y": 0.972457627118644
+    },
+    "baseAnchorPixels": {
+      "x": 45.633092525701585,
+      "y": 459
+    },
+    "atlas": 1,
+    "atlasCell": 0,
+    "sourceCrop": {
+      "left": 144,
+      "top": 11,
+      "width": 134,
+      "height": 472
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "calla-ivory-side",
+    "family": "calla",
+    "name": "马蹄莲",
+    "color": "象牙白",
+    "pose": "侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/calla-ivory-side.png",
+    "width": 204,
+    "height": 456,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.24260209530018778,
+      "y": 0.9824561403508771
+    },
+    "baseAnchorPixels": {
+      "x": 49.49082744123831,
+      "y": 448
+    },
+    "atlas": 1,
+    "atlasCell": 1,
+    "sourceCrop": {
+      "left": 489,
+      "top": 12,
+      "width": 204,
+      "height": 456
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "calla-blush-oblique",
+    "family": "calla",
+    "name": "马蹄莲",
+    "color": "柔粉",
+    "pose": "斜侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/calla-blush-oblique.png",
+    "width": 119,
+    "height": 472,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.28881495516508426,
+      "y": 0.9703389830508474
+    },
+    "baseAnchorPixels": {
+      "x": 34.368979664645025,
+      "y": 458
+    },
+    "atlas": 1,
+    "atlasCell": 2,
+    "sourceCrop": {
+      "left": 849,
+      "top": 11,
+      "width": 119,
+      "height": 472
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "chrysanthemum-white-front",
+    "family": "chrysanthemum",
+    "name": "菊花",
+    "color": "暖白",
+    "pose": "正面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/chrysanthemum-white-front.png",
+    "width": 169,
+    "height": 477,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.4718092607422731,
+      "y": 0.9811320754716981
+    },
+    "baseAnchorPixels": {
+      "x": 79.73576506544416,
+      "y": 468
+    },
+    "atlas": 1,
+    "atlasCell": 3,
+    "sourceCrop": {
+      "left": 107,
+      "top": 486,
+      "width": 169,
+      "height": 477
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "chrysanthemum-apricot-side",
+    "family": "chrysanthemum",
+    "name": "菊花",
+    "color": "浅杏",
+    "pose": "侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/chrysanthemum-apricot-side.png",
+    "width": 186,
+    "height": 477,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.3974620902569691,
+      "y": 0.9769392033542977
+    },
+    "baseAnchorPixels": {
+      "x": 73.92794878779625,
+      "y": 466
+    },
+    "atlas": 1,
+    "atlasCell": 4,
+    "sourceCrop": {
+      "left": 466,
+      "top": 488,
+      "width": 186,
+      "height": 477
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "chrysanthemum-burgundy-oblique",
+    "family": "chrysanthemum",
+    "name": "菊花",
+    "color": "酒红",
+    "pose": "斜侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/chrysanthemum-burgundy-oblique.png",
+    "width": 214,
+    "height": 478,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.3580684946950012,
+      "y": 0.9832635983263598
+    },
+    "baseAnchorPixels": {
+      "x": 76.62665786473025,
+      "y": 470
+    },
+    "atlas": 1,
+    "atlasCell": 5,
+    "sourceCrop": {
+      "left": 821,
+      "top": 483,
+      "width": 214,
+      "height": 478
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "sakura-pink-upright",
+    "family": "sakura",
+    "name": "樱花",
+    "color": "浅粉",
+    "pose": "直立枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/sakura-pink-upright.png",
+    "width": 122,
+    "height": 476,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.4963444815903832,
+      "y": 0.9852941176470589
+    },
+    "baseAnchorPixels": {
+      "x": 60.55402675402675,
+      "y": 469
+    },
+    "atlas": 1,
+    "atlasCell": 6,
+    "sourceCrop": {
+      "left": 138,
+      "top": 966,
+      "width": 122,
+      "height": 476
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "sakura-white-sweeping",
+    "family": "sakura",
+    "name": "樱花",
+    "color": "白色",
+    "pose": "横逸枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/sakura-white-sweeping.png",
+    "width": 240,
+    "height": 464,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.4098720898754737,
+      "y": 0.9849137931034483
+    },
+    "baseAnchorPixels": {
+      "x": 98.36930157011369,
+      "y": 457
+    },
+    "atlas": 1,
+    "atlasCell": 7,
+    "sourceCrop": {
+      "left": 428,
+      "top": 974,
+      "width": 240,
+      "height": 464
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "sakura-pink-arch",
+    "family": "sakura",
+    "name": "樱花",
+    "color": "浅粉",
+    "pose": "自然弧枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/sakura-pink-arch.png",
+    "width": 234,
+    "height": 468,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.5425894053923886,
+      "y": 0.9850427350427351
+    },
+    "baseAnchorPixels": {
+      "x": 126.96592086181894,
+      "y": 461
+    },
+    "atlas": 1,
+    "atlasCell": 8,
+    "sourceCrop": {
+      "left": 791,
+      "top": 971,
+      "width": 234,
+      "height": 468
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "lisianthus-ivory-front",
+    "family": "lisianthus",
+    "name": "洋桔梗",
+    "color": "象牙白",
+    "pose": "正面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/lisianthus-ivory-front.png",
+    "width": 180,
+    "height": 469,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.44216449603624014,
+      "y": 0.9872068230277186
+    },
+    "baseAnchorPixels": {
+      "x": 79.58960928652323,
+      "y": 463
+    },
+    "atlas": 2,
+    "atlasCell": 0,
+    "sourceCrop": {
+      "left": 116,
+      "top": 14,
+      "width": 180,
+      "height": 469
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "lisianthus-lavender-side",
+    "family": "lisianthus",
+    "name": "洋桔梗",
+    "color": "淡紫",
+    "pose": "侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/lisianthus-lavender-side.png",
+    "width": 189,
+    "height": 483,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.501927002937808,
+      "y": 0.9875776397515528
+    },
+    "baseAnchorPixels": {
+      "x": 94.86420355524572,
+      "y": 477
+    },
+    "atlas": 2,
+    "atlasCell": 1,
+    "sourceCrop": {
+      "left": 449,
+      "top": 0,
+      "width": 189,
+      "height": 483
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "lisianthus-blush-oblique",
+    "family": "lisianthus",
+    "name": "洋桔梗",
+    "color": "柔粉",
+    "pose": "斜侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/lisianthus-blush-oblique.png",
+    "width": 157,
+    "height": 482,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.35369836475651345,
+      "y": 0.9875518672199171
+    },
+    "baseAnchorPixels": {
+      "x": 55.530643266772614,
+      "y": 476
+    },
+    "atlas": 2,
+    "atlasCell": 2,
+    "sourceCrop": {
+      "left": 836,
+      "top": 1,
+      "width": 157,
+      "height": 482
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "iris-purple-front",
+    "family": "iris",
+    "name": "鸢尾",
+    "color": "紫色",
+    "pose": "正面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/iris-purple-front.png",
+    "width": 219,
+    "height": 482,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.4591591950904122,
+      "y": 0.995850622406639
+    },
+    "baseAnchorPixels": {
+      "x": 100.55586372480028,
+      "y": 480
+    },
+    "atlas": 2,
+    "atlasCell": 3,
+    "sourceCrop": {
+      "left": 89,
+      "top": 483,
+      "width": 219,
+      "height": 482
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "iris-white-side",
+    "family": "iris",
+    "name": "鸢尾",
+    "color": "白色",
+    "pose": "侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/iris-white-side.png",
+    "width": 193,
+    "height": 475,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.37189592817804984,
+      "y": 0.9957894736842106
+    },
+    "baseAnchorPixels": {
+      "x": 71.77591413836362,
+      "y": 473
+    },
+    "atlas": 2,
+    "atlasCell": 4,
+    "sourceCrop": {
+      "left": 464,
+      "top": 490,
+      "width": 193,
+      "height": 475
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "iris-blue-oblique",
+    "family": "iris",
+    "name": "鸢尾",
+    "color": "浅蓝",
+    "pose": "斜侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/iris-blue-oblique.png",
+    "width": 185,
+    "height": 474,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.1811765484299874,
+      "y": 0.9957805907172996
+    },
+    "baseAnchorPixels": {
+      "x": 33.51766145954767,
+      "y": 472
+    },
+    "atlas": 2,
+    "atlasCell": 5,
+    "sourceCrop": {
+      "left": 840,
+      "top": 491,
+      "width": 185,
+      "height": 474
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "camellia-red-front",
+    "family": "camellia",
+    "name": "山茶",
+    "color": "自然红",
+    "pose": "正面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/camellia-red-front.png",
+    "width": 248,
+    "height": 479,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.41772532145626146,
+      "y": 0.9853862212943633
+    },
+    "baseAnchorPixels": {
+      "x": 103.59587972115284,
+      "y": 472
+    },
+    "atlas": 2,
+    "atlasCell": 6,
+    "sourceCrop": {
+      "left": 94,
+      "top": 965,
+      "width": 248,
+      "height": 479
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "camellia-ivory-side",
+    "family": "camellia",
+    "name": "山茶",
+    "color": "象牙白",
+    "pose": "侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/camellia-ivory-side.png",
+    "width": 198,
+    "height": 479,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.4230041724104205,
+      "y": 0.9853862212943633
+    },
+    "baseAnchorPixels": {
+      "x": 83.75482613726325,
+      "y": 472
+    },
+    "atlas": 2,
+    "atlasCell": 7,
+    "sourceCrop": {
+      "left": 469,
+      "top": 965,
+      "width": 198,
+      "height": 479
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "camellia-blush-oblique",
+    "family": "camellia",
+    "name": "山茶",
+    "color": "柔粉",
+    "pose": "斜侧面",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/camellia-blush-oblique.png",
+    "width": 171,
+    "height": 483,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.41789872934902533,
+      "y": 0.9772256728778468
+    },
+    "baseAnchorPixels": {
+      "x": 71.46068271868333,
+      "y": 472
+    },
+    "atlas": 2,
+    "atlasCell": 8,
+    "sourceCrop": {
+      "left": 814,
+      "top": 965,
+      "width": 171,
+      "height": 483
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows actual transparent gap at y=946 to prevent adjacent foliage contamination."
+  },
+  {
+    "id": "quince-red-upright",
+    "family": "quince",
+    "name": "贴梗海棠",
+    "color": "红色",
+    "pose": "直立枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/quince-red-upright.png",
+    "width": 199,
+    "height": 468,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.36717973455184144,
+      "y": 0.9829059829059829
+    },
+    "baseAnchorPixels": {
+      "x": 73.06876717581645,
+      "y": 460
+    },
+    "atlas": 3,
+    "atlasCell": 0,
+    "sourceCrop": {
+      "left": 98,
+      "top": 9,
+      "width": 199,
+      "height": 468
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows real gap at y=946; row 2 willow/eucalyptus column seam follows gap x=374 to preserve willow leaf tip and prevent contamination."
+  },
+  {
+    "id": "quince-blush-sweeping",
+    "family": "quince",
+    "name": "贴梗海棠",
+    "color": "柔粉",
+    "pose": "横逸枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/quince-blush-sweeping.png",
+    "width": 313,
+    "height": 448,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.5060001366235077,
+      "y": 0.9821428571428571
+    },
+    "baseAnchorPixels": {
+      "x": 158.3780427631579,
+      "y": 440
+    },
+    "atlas": 3,
+    "atlasCell": 1,
+    "sourceCrop": {
+      "left": 386,
+      "top": 29,
+      "width": 313,
+      "height": 448
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows real gap at y=946; row 2 willow/eucalyptus column seam follows gap x=374 to preserve willow leaf tip and prevent contamination."
+  },
+  {
+    "id": "quince-white-arch",
+    "family": "quince",
+    "name": "贴梗海棠",
+    "color": "白色",
+    "pose": "自然弧枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/quince-white-arch.png",
+    "width": 283,
+    "height": 465,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.26025760730822545,
+      "y": 0.9827956989247312
+    },
+    "baseAnchorPixels": {
+      "x": 73.6529028682278,
+      "y": 457
+    },
+    "atlas": 3,
+    "atlasCell": 2,
+    "sourceCrop": {
+      "left": 773,
+      "top": 12,
+      "width": 283,
+      "height": 465
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows real gap at y=946; row 2 willow/eucalyptus column seam follows gap x=374 to preserve willow leaf tip and prevent contamination."
+  },
+  {
+    "id": "willow-green-arch",
+    "family": "willow",
+    "name": "柳枝",
+    "color": "嫩绿",
+    "pose": "垂弧枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/willow-green-arch.png",
+    "width": 323,
+    "height": 463,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.1844063689120443,
+      "y": 0.9935205183585313
+    },
+    "baseAnchorPixels": {
+      "x": 59.563257158590304,
+      "y": 460
+    },
+    "atlas": 3,
+    "atlasCell": 3,
+    "sourceCrop": {
+      "left": 50,
+      "top": 483,
+      "width": 323,
+      "height": 463
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows real gap at y=946; row 2 willow/eucalyptus column seam follows gap x=374 to preserve willow leaf tip and prevent contamination."
+  },
+  {
+    "id": "eucalyptus-silver-oblique",
+    "family": "eucalyptus",
+    "name": "尤加利",
+    "color": "银绿",
+    "pose": "斜生枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/eucalyptus-silver-oblique.png",
+    "width": 332,
+    "height": 458,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.5281856789258347,
+      "y": 0.9934497816593887
+    },
+    "baseAnchorPixels": {
+      "x": 175.35764540337712,
+      "y": 455
+    },
+    "atlas": 3,
+    "atlasCell": 4,
+    "sourceCrop": {
+      "left": 378,
+      "top": 488,
+      "width": 332,
+      "height": 458
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows real gap at y=946; row 2 willow/eucalyptus column seam follows gap x=374 to preserve willow leaf tip and prevent contamination."
+  },
+  {
+    "id": "fern-green-arch",
+    "family": "fern",
+    "name": "蕨叶",
+    "color": "自然绿",
+    "pose": "弧形叶",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/fern-green-arch.png",
+    "width": 301,
+    "height": 463,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.31037464775463497,
+      "y": 0.9935205183585313
+    },
+    "baseAnchorPixels": {
+      "x": 93.42276897414513,
+      "y": 460
+    },
+    "atlas": 3,
+    "atlasCell": 5,
+    "sourceCrop": {
+      "left": 759,
+      "top": 483,
+      "width": 301,
+      "height": 463
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows real gap at y=946; row 2 willow/eucalyptus column seam follows gap x=374 to preserve willow leaf tip and prevent contamination."
+  },
+  {
+    "id": "pine-green-sparse",
+    "family": "pine",
+    "name": "松枝",
+    "color": "深绿",
+    "pose": "疏枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/pine-green-sparse.png",
+    "width": 329,
+    "height": 494,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.4302359943351491,
+      "y": 0.9838056680161943
+    },
+    "baseAnchorPixels": {
+      "x": 141.54764213626405,
+      "y": 486
+    },
+    "atlas": 3,
+    "atlasCell": 6,
+    "sourceCrop": {
+      "left": 33,
+      "top": 946,
+      "width": 329,
+      "height": 494
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows real gap at y=946; row 2 willow/eucalyptus column seam follows gap x=374 to preserve willow leaf tip and prevent contamination."
+  },
+  {
+    "id": "maple-red-autumn",
+    "family": "maple",
+    "name": "枫枝",
+    "color": "秋红",
+    "pose": "自然斜枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/maple-red-autumn.png",
+    "width": 332,
+    "height": 494,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.5843598604386356,
+      "y": 0.9838056680161943
+    },
+    "baseAnchorPixels": {
+      "x": 194.00747366562703,
+      "y": 486
+    },
+    "atlas": 3,
+    "atlasCell": 7,
+    "sourceCrop": {
+      "left": 362,
+      "top": 946,
+      "width": 332,
+      "height": 494
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows real gap at y=946; row 2 willow/eucalyptus column seam follows gap x=374 to preserve willow leaf tip and prevent contamination."
+  },
+  {
+    "id": "maple-green-summer",
+    "family": "maple",
+    "name": "枫枝",
+    "color": "夏绿",
+    "pose": "舒展枝",
+    "path": "/Users/marko/agentscope-game/ikebana-assets-v2/maple-green-summer.png",
+    "width": 335,
+    "height": 494,
+    "alpha": true,
+    "stemAnchor": {
+      "x": 0.47194961899363935,
+      "y": 0.9838056680161943
+    },
+    "baseAnchorPixels": {
+      "x": 158.1031223628692,
+      "y": 486
+    },
+    "atlas": 3,
+    "atlasCell": 8,
+    "sourceCrop": {
+      "left": 733,
+      "top": 946,
+      "width": 335,
+      "height": 494
+    },
+    "note": "Mechanically cropped to alpha > 1 bounding box with 4 px padding; original RGBA retained. Base anchor is alpha-weighted mean x of alpha > 64 in last 9 visible rows and lowest y. Atlas 3 row seam follows real gap at y=946; row 2 willow/eucalyptus column seam follows gap x=374 to preserve willow leaf tip and prevent contamination."
+  }
+]
