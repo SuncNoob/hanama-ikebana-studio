@@ -84,3 +84,45 @@ html[lang=en] .stage[data-scene=night] .scene-label{color:#d5d7ce;opacity:.68}
 .material-search{width:100%;border:0;border-bottom:1px solid var(--line,#ddd);background:transparent;padding:12px 2px;margin:0 0 16px;font:inherit;font-size:12px;outline-offset:4px}.material-filters{flex-wrap:wrap}
 
 html[lang="en"] .mood-options{flex-wrap:wrap}html[lang="en"] .mood-options button{flex:1 0 calc(50% - 7px)}
+
+/* Each script uses native glyph forms; compact controls stay on one line. */
+html[lang="ja"]{--serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif CJK JP","Noto Serif JP",serif;--sans:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo","Noto Sans CJK JP","Noto Sans JP",sans-serif}
+html[lang="en"]{--serif:Georgia,"Times New Roman",serif}
+.brand-word{white-space:nowrap}
+html[lang="en"] .brand-name{font-size:22px;letter-spacing:2px}
+select{font:inherit}
+.language-picker{display:inline-flex;align-items:center;flex:none}
+#language-select{height:34px;min-width:102px;padding:0 8px;border:1px solid #c9cbbf;border-radius:18px;background:#f4f3ed;color:var(--ink);font-family:var(--sans);font-size:12px;line-height:1;cursor:pointer}
+#language-select:hover{background:#e7eadf}
+#language-select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.header-actions,.header-actions>*,.brand-name{min-width:0}
+.button,.text-button,.adjust-actions button,.prune-modes button,.material-tabs button,.material-filters button,.study-filters button{white-space:nowrap}
+.adjust-actions button{min-width:0;min-height:38px;padding:8px 4px;gap:4px;font-size:12px}
+.adjust-actions button svg{flex:none}
+.generation-box .button{gap:6px;padding-inline:12px;font-size:13px}
+.modal-actions{flex-wrap:wrap}
+.modal-actions .button{flex:1 1 auto;min-width:max-content}
+.study-filters{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 4px}
+.study-filters button{border:1px solid var(--line);border-radius:999px;padding:8px 14px;background:#f4f3ed;color:var(--muted);font-size:13px;line-height:1.2}
+.study-filters button[aria-pressed="true"]{border-color:#8a9a7a;background:#e7ebdf;color:var(--ink)}
+.study-filters button:hover{border-color:#8a9a7a}
+.study-school{display:inline-block;margin:0 0 9px;color:#637358;font-size:11px;letter-spacing:.04em}
+.study-source a{text-decoration-thickness:1px;text-underline-offset:3px}
+.material-panel .panel-heading{display:block}
+.material-panel .panel-heading .tiny-index{display:block;margin-top:2px;padding:0;line-height:1.4}
+.workspace-heading>div{flex:1;min-width:0}
+.work-title{width:100%;min-width:0}
+.work-title input{width:100%;min-width:0}
+.work-title span{flex:none}
+@media(max-width:680px){
+ .brand-name small{display:none}
+ #language-select{width:96px;min-width:96px;height:34px;padding:0 5px}
+ .header-actions{gap:6px}
+ .main-nav{gap:clamp(14px,6vw,30px)}
+}
+@media(max-width:360px){
+ .brand-name{font-size:21px;letter-spacing:1px}
+ .brand .seal{width:31px;height:34px;font-size:23px}
+ html[lang="en"] .brand .seal{display:none}
+ #language-select{width:90px;min-width:90px}
+}

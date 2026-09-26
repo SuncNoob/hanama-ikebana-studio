@@ -7,15 +7,15 @@
 <meta name="description" content="在花间亲手挑选花材、舒展枝条，创作日式插花。保存草稿和 GPT Image 提示词，让一份灵感成为作品。">
 <meta name="theme-color" content="#efeee8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=10">
-<script type="module" src="/app.js?v=10">
+<link rel="stylesheet" href="/style.css?v=11">
+<script type="module" src="/app.js?v=11">
 </script>
 </head>
 <body>
 <header class="masthead">
 <a class="brand" href="/" aria-label="花间首页" data-aria-zh="花间首页" data-aria-en="Hanama home">
-<span class="seal">花</span>
-<span class="brand-name">花间 <small>HANAMA</small>
+<span class="seal" aria-hidden="true">花</span>
+<span class="brand-name"><span class="brand-word" data-zh="间" data-en="HANAMA">间</span><small data-zh="HANAMA" data-en="IKEBANA ATELIER">HANAMA</small>
 </span>
 </a>
 <nav class="main-nav" aria-label="主导航" data-aria-zh="主导航" data-aria-en="Main navigation">
@@ -35,7 +35,7 @@
 </span>
 <span data-zh="新建画布" data-en="New Canvas">新建画布</span>
 </button>
-<button class="language-toggle" id="language-toggle" type="button" aria-label="Switch to English" title="Switch to English">EN</button>
+<label class="language-picker" for="language-select"><span class="sr-only" data-zh="界面语言" data-en="Interface language">界面语言</span><select id="language-select"><option value="zh">中文</option><option value="en">English</option><option value="ja">日本語</option></select></label>
 <button class="text-button" id="help-button">
 <span data-icon="help">
 </span>
@@ -81,7 +81,7 @@
 <button data-vessel-style="french" aria-pressed="false" data-zh="法式" data-en="FR">法式</button>
 <button data-vessel-style="modern" aria-pressed="false" data-zh="现代" data-en="Modern">现代</button>
 </div>
-<input id="material-search" class="material-search" type="search" aria-label="搜索素材 / Search materials" placeholder="搜索花材、花器" data-placeholder-zh="搜索花材、花器" data-placeholder-en="Search materials">
+<input id="material-search" class="material-search" type="search" aria-label="搜索素材" data-aria-zh="搜索素材" data-aria-en="Search materials" placeholder="搜索花材、花器" data-placeholder-zh="搜索花材、花器" data-placeholder-en="Search materials">
 <div class="material-grid" id="material-grid">
 </div>
 <div class="material-foot">
@@ -103,7 +103,7 @@
 <div class="workspace-heading">
 <div>
 <div class="work-title">
-<input id="work-title" aria-label="作品名称" data-aria-zh="作品名称" data-aria-en="Work title" maxlength="40" value="风经过的地方">
+<input id="work-title" aria-label="作品名称" data-aria-zh="作品名称" data-aria-en="Work title" maxlength="40" value="">
 <span data-icon="pencil">
 </span>
 </div>
@@ -306,15 +306,15 @@
 </span>
 <span data-zh="复制图层" data-en="Duplicate">复制图层</span>
 </button>
-<button id="layer-button">
+<button id="layer-button" aria-label="移到花器前" data-aria-zh="移到花器前" data-aria-en="Move in front of vase">
 <span data-icon="layers">
 </span>
-<span data-zh="移到最前" data-en="Move to Front">移到最前</span>
+<span data-zh="移到最前" data-en="To Front">移到最前</span>
 </button>
-<button id="layer-back-button">
+<button id="layer-back-button" aria-label="移到花器后" data-aria-zh="移到花器后" data-aria-en="Move behind vase">
 <span data-icon="layers">
 </span>
-<span data-zh="移到最后" data-en="Move to Back">移到最后</span>
+<span data-zh="移到最后" data-en="To Back">移到最后</span>
 </button>
 </div>
 </div>
@@ -331,11 +331,11 @@
 <button data-mood="野趣" data-zh="野趣" data-en="Wild">野趣</button>
 </div>
 <label for="intention" class="sr-only" data-zh="创作想法" data-en="Creative note">创作想法</label>
-<textarea id="intention" rows="2" maxlength="600" placeholder="想象它放在哪里，光从哪里来……" data-placeholder-zh="想象它放在哪里，光从哪里来……" data-placeholder-en="Imagine where it lives and where the light comes from…">像清晨的风掠过庭院，安静、自然，留一点不完美。</textarea>
+<textarea id="intention" rows="2" maxlength="600" placeholder="想象它放在哪里，光从哪里来……" data-placeholder-zh="想象它放在哪里，光从哪里来……" data-placeholder-en="Imagine where it lives and where the light comes from…"></textarea>
 <label class="generation-mode-label" for="generation-mode" data-zh="生成整理程度" data-en="Refinement level">生成整理程度</label>
 <select id="generation-mode">
-<option value="natural" data-zh="小幅自然重整 · 推荐" data-en="Gentle natural refinement · Recommended">小幅自然重整 · 推荐</option>
-<option value="creative" data-zh="适度花艺润色" data-en="Moderate florist refinement">适度花艺润色</option>
+<option value="natural" data-zh="小幅自然重整 · 推荐" data-en="Gentle · Recommended">小幅自然重整 · 推荐</option>
+<option value="creative" data-zh="适度花艺润色" data-en="More refinement">适度花艺润色</option>
 <option value="faithful" data-zh="最小修正" data-en="Minimal correction">最小修正</option>
 </select>
 <p id="generation-mode-help">保留用花、主次和整体光感，小幅整理枝条、花面与瓶口连接，让作品更真实。</p>
@@ -354,7 +354,7 @@
 <button id="generate-button" class="button accent">
 <span data-icon="sparkles">
 </span>
-<span data-zh="生成创作包" data-en="Create Generation Pack">生成创作包</span> <span class="arrow">↗</span>
+<span data-zh="生成创作包" data-en="Create Image Pack">生成创作包</span> <span class="arrow">↗</span>
 </button>
 <small data-zh="草稿参考 · 物理修正 · 自然花瓣" data-en="Draft reference · Physical realism · Natural petals">草稿参考 · 物理修正 · 自然花瓣</small>
 </div>
