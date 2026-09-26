@@ -11,13 +11,15 @@ export function buildPrompt(s,assetById,scenes){
  const vessel=assetById[s.vessel],counts=new Map();
  for(const i of s.items){const a=assetById[i.type],key=`${a.en||a.name}${a.bundle?" group (all visible blooms)":""} (${a.colorEn||en(a.color)})`;counts.set(key,(counts.get(key)||0)+1)}
  const inventory=[...counts].map(([name,n])=>`${n} × ${name}`).join('; ');
+ const foreground=s.items.filter(i=>i.aboveVessel).map(i=>assetById[i.type].en||assetById[i.type].name),background=s.items.filter(i=>!i.aboveVessel).map(i=>assetById[i.type].en||assetById[i.type].name);
+ const depth=foreground.length||background.length?`Layer depth: ${foreground.length?`${foreground.join(', ')} sit in front of the vessel`:'keep the selected plants behind the vessel'}; ${background.length?`${background.join(', ')} emerge from behind its rim`:'other stems may cross naturally where the design allows'}.` : '';
  const refinement={natural:'Make a gentle florist refinement.',creative:'Gently refine the stem rhythm and depth within the same design.',faithful:'Make only the small corrections needed for physical realism.'}[s.generation]||'Make a gentle florist refinement.';
  const support={neck:'Let the neck support the stems.',kenzan:'Seat the stems in a discreet kenzan inside the basin.','integrated-holes':'Insert stems through the actual openings.','chicken-wire':'Support the stems with fitted floral wire inside the vessel.','hidden-grid':'Use a concealed grid below the rim.',crossbar:'Use a concealed crossbar below the rim.',foam:'Conceal the support inside the vessel.'}[vessel.fixture?.kind]||'Use discreet support suited to the vessel.';
  const n=hashText(`${s.id||''}-${s.generationVariation||0}`);
  const detail=pick(['uneven petal overlap and subtle pigment drift','relaxed petal folds and gently varied opening stages','slightly eccentric petals and soft color variation','small differences in petal curl and maturity'],n);
  return `Realize this collage sketch as a professional photograph of a real floral arrangement. Keep its recognizable composition, selected flowers and count, vessel and main negative spaces. ${refinement}
 
-Treat the draft as design intent, not a tracing. Allow small shifts in flower facing, stem curves and depth for natural growth, gravity and continuous stems entering the vessel. ${support}
+Treat the draft as design intent, not a tracing. Allow small shifts in flower facing, stem curves and depth for natural growth, gravity and continuous stems entering the vessel. ${depth} ${support}
 
 Keep the overall lighting and atmosphere; let local shadows and reflections follow the real forms. Give each bloom species-appropriate individuality through ${detail}, without exaggerated damage.
 

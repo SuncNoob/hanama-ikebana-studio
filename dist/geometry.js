@@ -41,14 +41,15 @@ export function dimensions(item, asset) {
   const split = asset.split ?? .5;
   const length = item.length ?? 1;
   const end = 1 - item.trim / 100;
-  return {split, length, end, height:warpY(end, split, length), ratio:asset.width / asset.heightPx, anchor:asset.anchor ?? .5};
+  const height=warpY(end, split, length);
+  return {split, length, end, height, ratio:asset.width / asset.heightPx, anchor:asset.anchor ?? .5, pivotY:(item.cropAnchorY??1)*height};
 }
 /** Source UV -> square stage UV, including clipping, length, pivot, mirror, rotation. */
 export function sourceToStage(point, item, asset) {
   const g = dimensions(item, asset);
   const scale = item.h / 100;
   const dx = (point[0] - g.anchor) * g.ratio * scale * (item.flip ? -1 : 1);
-  const dy = (warpY(point[1], g.split, g.length) - g.height) * scale;
+  const dy = (warpY(point[1], g.split, g.length) - g.pivotY) * scale;
   const a = item.angle * Math.PI / 180;
   return [item.x/100 + dx*Math.cos(a)-dy*Math.sin(a), item.y/100 + dx*Math.sin(a)+dy*Math.cos(a)];
 }
@@ -58,7 +59,7 @@ export function stageToSource(point, item, asset) {
   const a=item.angle*Math.PI/180;
   const localX=(dx*Math.cos(a)+dy*Math.sin(a))*(item.flip?-1:1);
   const localY=-dx*Math.sin(a)+dy*Math.cos(a);
-  return [localX/(scale*g.ratio)+g.anchor, unwarpY(localY/scale+g.height,g.split,g.length)];
+  return [localX/(scale*g.ratio)+g.anchor, unwarpY(localY/scale+g.pivotY,g.split,g.length)];
 }
 export function simplifyPoints(points, max=128) {
   const step=Math.max(1,(points.length-1)/(max-1));

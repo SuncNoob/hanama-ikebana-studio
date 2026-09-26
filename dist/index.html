@@ -1,59 +1,386 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>花间 HANAMA · 日式插花工房</title>
 <meta name="description" content="在花间亲手挑选花材、舒展枝条，创作日式插花。保存草稿和 GPT Image 提示词，让一份灵感成为作品。">
-<meta name="theme-color" content="#efeee8"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=9"><script type="module" src="/app.js?v=9"></script>
+<meta name="theme-color" content="#efeee8">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css?v=10">
+<script type="module" src="/app.js?v=10">
+</script>
 </head>
 <body>
 <header class="masthead">
-<a class="brand" href="/" aria-label="花间首页" data-aria-zh="花间首页" data-aria-en="Hanama home"><span class="seal">花</span><span class="brand-name">花间 <small>HANAMA</small></span></a>
-<nav class="main-nav" aria-label="主导航" data-aria-zh="主导航" data-aria-en="Main navigation"><button class="nav-button active" data-view="studio"><span data-zh="插花工房" data-en="Atelier">插花工房</span></button><button class="nav-button" data-view="inspiration"><span data-zh="灵感手帖" data-en="Inspiration">灵感手帖</span></button><button class="nav-button" data-view="gallery"><span data-zh="我的作品" data-en="My Works">我的作品</span> <span id="gallery-count">0</span></button></nav>
-<div class="header-actions"><button class="text-button header-new" id="new-canvas-button" aria-label="新建画布" title="新建画布" data-aria-zh="新建画布" data-aria-en="New canvas" data-title-zh="新建画布" data-title-en="New canvas"><span data-icon="plus"></span><span data-zh="新建画布" data-en="New Canvas">新建画布</span></button><button class="language-toggle" id="language-toggle" type="button" aria-label="Switch to English" title="Switch to English">EN</button><button class="text-button" id="help-button"><span data-icon="help"></span><span data-zh="怎么玩" data-en="Guide">怎么玩</span></button><button class="button dark small" id="save-button" aria-label="保存草稿" data-aria-zh="保存草稿" data-aria-en="Save draft"><span data-icon="bookmark"></span><span data-zh="保存草稿" data-en="Save Draft">保存草稿</span></button></div>
+<a class="brand" href="/" aria-label="花间首页" data-aria-zh="花间首页" data-aria-en="Hanama home">
+<span class="seal">花</span>
+<span class="brand-name">花间 <small>HANAMA</small>
+</span>
+</a>
+<nav class="main-nav" aria-label="主导航" data-aria-zh="主导航" data-aria-en="Main navigation">
+<button class="nav-button active" data-view="studio">
+<span data-zh="插花工房" data-en="Atelier">插花工房</span>
+</button>
+<button class="nav-button" data-view="inspiration">
+<span data-zh="灵感手帖" data-en="Inspiration">灵感手帖</span>
+</button>
+<button class="nav-button" data-view="gallery">
+<span data-zh="我的作品" data-en="My Works">我的作品</span> <span id="gallery-count">0</span>
+</button>
+</nav>
+<div class="header-actions">
+<button class="text-button header-new" id="new-canvas-button" aria-label="新建画布" title="新建画布" data-aria-zh="新建画布" data-aria-en="New canvas" data-title-zh="新建画布" data-title-en="New canvas">
+<span data-icon="plus">
+</span>
+<span data-zh="新建画布" data-en="New Canvas">新建画布</span>
+</button>
+<button class="language-toggle" id="language-toggle" type="button" aria-label="Switch to English" title="Switch to English">EN</button>
+<button class="text-button" id="help-button">
+<span data-icon="help">
+</span>
+<span data-zh="怎么玩" data-en="Guide">怎么玩</span>
+</button>
+<button class="button dark small" id="save-button" aria-label="保存草稿" data-aria-zh="保存草稿" data-aria-en="Save draft">
+<span data-icon="bookmark">
+</span>
+<span data-zh="保存草稿" data-en="Save Draft">保存草稿</span>
+</button>
+</div>
 </header>
 <main id="studio-view" class="view studio-layout">
 <aside class="material-panel" aria-label="花材库" data-aria-zh="花材库" data-aria-en="Material library">
-<div class="panel-heading"><div><p class="eyebrow">MATERIAL LIBRARY</p><h1 id="material-heading">一枝一叶</h1></div><span class="tiny-index" id="material-count"></span></div>
-<div class="material-tabs" role="tablist" aria-label="素材类型" data-aria-zh="素材类型" data-aria-en="Material type"><button role="tab" aria-selected="true" data-category="flowers"><span data-zh="花与枝" data-en="Plants">花与枝</span></button><button role="tab" aria-selected="false" data-category="vessels"><span data-zh="花器" data-en="Vessels">花器</span></button></div>
-<div class="material-filters" id="material-filters"><button data-family-group="all" class="active" data-zh="全部" data-en="All">全部</button><button data-family-group="book" data-zh="花之书" data-en="The Book">花之书</button><button data-family-group="bundle" data-zh="成组" data-en="Groups">成组</button><button data-family-group="bloom" data-zh="花朵" data-en="Blooms">花朵</button><button data-family-group="branch" data-zh="枝叶" data-en="Branches">枝叶</button></div><div class="material-filters" id="vessel-filters" role="group" aria-label="花器风格" data-aria-zh="花器风格" data-aria-en="Vessel style" hidden><button data-vessel-style="all" class="active" aria-pressed="true" data-zh="全部" data-en="All">全部</button><button data-vessel-style="book" aria-pressed="false" data-zh="花之书" data-en="The Book">花之书</button><button data-vessel-style="japanese" aria-pressed="false" data-zh="日式" data-en="JP">日式</button><button data-vessel-style="english" aria-pressed="false" data-zh="英式" data-en="EN">英式</button><button data-vessel-style="french" aria-pressed="false" data-zh="法式" data-en="FR">法式</button><button data-vessel-style="modern" aria-pressed="false" data-zh="现代" data-en="Modern">现代</button></div><input id="material-search" class="material-search" type="search" aria-label="搜索素材 / Search materials" placeholder="搜索花材、花器" data-placeholder-zh="搜索花材、花器" data-placeholder-en="Search materials"><div class="material-grid" id="material-grid"></div>
-<div class="material-foot"><span data-icon="hand"></span><p><span data-zh="点选花材，再挑姿态与花色。" data-en="Choose a material, then its pose and color.">点选花材，再挑姿态与花色。</span><br><span data-zh="枝梗可以单独拉长，也可以剪。" data-en="Lengthen or prune each stem independently.">枝梗可以单独拉长，也可以剪。</span></p></div>
-<button class="study-entry" data-view="inspiration"><span data-zh="从一组搭配开始" data-en="Start with a study">从一组搭配开始</span> ↗</button>
-<button id="sources-button" class="source-link"><span data-zh="素材与花道参考" data-en="Materials & ikebana references">素材与花道参考</span> <span>↗</span></button>
+<div class="panel-heading">
+<div>
+<p class="eyebrow">MATERIAL LIBRARY</p>
+<h1 id="material-heading">一枝一叶</h1>
+</div>
+<span class="tiny-index" id="material-count">
+</span>
+</div>
+<div class="material-tabs" role="tablist" aria-label="素材类型" data-aria-zh="素材类型" data-aria-en="Material type">
+<button role="tab" aria-selected="true" data-category="flowers">
+<span data-zh="花与枝" data-en="Plants">花与枝</span>
+</button>
+<button role="tab" aria-selected="false" data-category="vessels">
+<span data-zh="花器" data-en="Vessels">花器</span>
+</button>
+</div>
+<div class="material-filters" id="material-filters">
+<button data-family-group="all" class="active" data-zh="全部" data-en="All">全部</button>
+<button data-family-group="book" data-zh="花之书" data-en="The Book">花之书</button>
+<button data-family-group="bundle" data-zh="成组" data-en="Groups">成组</button>
+<button data-family-group="bloom" data-zh="花朵" data-en="Blooms">花朵</button>
+<button data-family-group="branch" data-zh="枝叶" data-en="Branches">枝叶</button>
+</div>
+<div class="material-filters" id="vessel-filters" role="group" aria-label="花器风格" data-aria-zh="花器风格" data-aria-en="Vessel style" hidden>
+<button data-vessel-style="all" class="active" aria-pressed="true" data-zh="全部" data-en="All">全部</button>
+<button data-vessel-style="book" aria-pressed="false" data-zh="花之书" data-en="The Book">花之书</button>
+<button data-vessel-style="japanese" aria-pressed="false" data-zh="日式" data-en="JP">日式</button>
+<button data-vessel-style="english" aria-pressed="false" data-zh="英式" data-en="EN">英式</button>
+<button data-vessel-style="french" aria-pressed="false" data-zh="法式" data-en="FR">法式</button>
+<button data-vessel-style="modern" aria-pressed="false" data-zh="现代" data-en="Modern">现代</button>
+</div>
+<input id="material-search" class="material-search" type="search" aria-label="搜索素材 / Search materials" placeholder="搜索花材、花器" data-placeholder-zh="搜索花材、花器" data-placeholder-en="Search materials">
+<div class="material-grid" id="material-grid">
+</div>
+<div class="material-foot">
+<span data-icon="hand">
+</span>
+<p>
+<span data-zh="点选花材，再挑姿态与花色。" data-en="Choose a material, then its pose and color.">点选花材，再挑姿态与花色。</span>
+<br>
+<span data-zh="枝梗可以单独拉长，也可以剪。" data-en="Lengthen or prune each stem independently.">枝梗可以单独拉长，也可以剪。</span>
+</p>
+</div>
+<button class="study-entry" data-view="inspiration">
+<span data-zh="从一组搭配开始" data-en="Start with a study">从一组搭配开始</span> ↗</button>
+<button id="sources-button" class="source-link">
+<span data-zh="素材与花道参考" data-en="Materials & ikebana references">素材与花道参考</span> <span>↗</span>
+</button>
 </aside>
 <section class="workspace" aria-label="插花画布" data-aria-zh="插花画布" data-aria-en="Ikebana canvas">
-<div class="workspace-heading"><div><div class="work-title"><input id="work-title" aria-label="作品名称" data-aria-zh="作品名称" data-aria-en="Work title" maxlength="40" value="风经过的地方"><span data-icon="pencil"></span></div></div><span id="save-state" class="save-state">草稿仅保存在本机</span></div>
-<div class="stage-shell"><div class="stage" id="stage" tabindex="0" role="application" aria-label="插花画布。拖动花材调整位置，双指旋转和缩放；右键打开花材图层；方向键微调，Delete 删除。" data-aria-zh="插花画布。拖动花材调整位置，双指旋转和缩放；右键打开花材图层；方向键微调，Delete 删除。" data-aria-en="Ikebana canvas. Drag materials to move; use two fingers to rotate and scale; right-click for layers; use arrow keys to nudge and Delete to remove."><div class="stage-grain"></div><div class="scene-label" aria-hidden="true" data-zh="一 花 一 世 界" data-en="ONE FLOWER, ONE WORLD">一 花 一 世 界</div><div class="scene-caption" aria-hidden="true"><span>花間</span><small>IKEBANA STUDY / <span id="study-count">001</span></small></div><div class="composition" id="composition"></div><canvas id="prune-overlay" aria-hidden="true"></canvas><img id="vessel" class="vessel" src="/assets/round.png" alt="窑变圆瓶" draggable="false"><canvas id="fixture-layer" aria-hidden="true"></canvas><div id="gesture-feedback" class="gesture-feedback" aria-hidden="true"><output>0°</output></div><div class="stage-floor"></div><div id="guide" class="composition-guide" hidden><i></i><i></i><span data-zh="让枝条伸向留白" data-en="Let the stem reach into space">让枝条伸向留白</span></div><section id="layer-menu" class="layer-menu" aria-label="花材图层顺序" data-aria-zh="花材图层顺序" data-aria-en="Material layer order" hidden><div class="layer-menu-heading"><div><strong data-zh="花材图层" data-en="Material Layers">花材图层</strong><small data-zh="最上方显示在最前面" data-en="Top item appears in front">最上方显示在最前面</small></div><button id="close-layers" class="icon-button" aria-label="关闭花材图层" data-aria-zh="关闭花材图层" data-aria-en="Close material layers"><span data-icon="close"></span></button></div><div id="layer-list" class="layer-list"></div><p class="layer-menu-tip" data-zh="拖动花材调整前后，也可以点箭头逐层移动。" data-en="Drag to reorder, or use the arrows one layer at a time.">拖动花材调整前后，也可以点箭头逐层移动。</p></section></div><div class="stage-tools"><button id="move-tool" class="icon-button" title="移动花材" aria-label="移动花材" data-title-zh="移动花材" data-title-en="Move material" data-aria-zh="移动花材" data-aria-en="Move material" aria-pressed="true"><span data-icon="move"></span></button><button id="prune-tool" class="icon-button" title="圈选剪枝" aria-label="圈选剪枝" data-title-zh="圈选剪枝" data-title-en="Lasso prune" data-aria-zh="圈选剪枝" data-aria-en="Lasso prune" aria-pressed="false"><span data-icon="scissors"></span></button><button id="layers-tool" class="icon-button" title="花材图层" aria-label="打开花材图层" data-title-zh="花材图层" data-title-en="Material layers" data-aria-zh="打开花材图层" data-aria-en="Open material layers" aria-expanded="false"><span data-icon="layers"></span></button><span class="tool-separator"></span><button id="undo-button" class="icon-button" title="撤销" aria-label="撤销" data-title-zh="撤销" data-title-en="Undo" data-aria-zh="撤销" data-aria-en="Undo"><span data-icon="undo"></span></button><button id="redo-button" class="icon-button" title="重做" aria-label="重做" data-title-zh="重做" data-title-en="Redo" data-aria-zh="重做" data-aria-en="Redo"><span data-icon="redo"></span></button><span class="tool-separator"></span><button id="guide-button" class="icon-button" title="构图辅助线" aria-label="构图辅助线" data-title-zh="构图辅助线" data-title-en="Composition guide" data-aria-zh="构图辅助线" data-aria-en="Composition guide" aria-pressed="false"><span data-icon="grid"></span></button><button id="reset-button" class="icon-button" title="清空花材" aria-label="清空花材" data-title-zh="清空花材" data-title-en="Clear materials" data-aria-zh="清空花材" data-aria-en="Clear materials"><span data-icon="refresh"></span></button></div></div>
-<div class="stage-bottom"><div class="scene-picker" role="group" aria-label="背景" data-aria-zh="背景" data-aria-en="Background"><span data-zh="光与景" data-en="Light & Scene">光与景</span><button data-scene="paper" class="scene-dot paper active" aria-label="素纸背景" title="素纸" data-aria-zh="素纸背景" data-aria-en="Paper background" data-title-zh="素纸" data-title-en="Paper"></button><button data-scene="stone" class="scene-dot stone" aria-label="青灰背景" title="青灰" data-aria-zh="青灰背景" data-aria-en="Stone background" data-title-zh="青灰" data-title-en="Stone"></button><button data-scene="night" class="scene-dot night" aria-label="墨夜背景" title="墨夜" data-aria-zh="墨夜背景" data-aria-en="Night background" data-title-zh="墨夜" data-title-en="Night"></button></div><span class="stage-hint" id="stage-hint">拖动移动 · 双指旋转缩放 · 右键调层次</span><button id="export-draft" class="text-button"><span data-icon="download"></span><span data-zh="草稿图" data-en="Draft Image">草稿图</span></button></div>
+<div class="workspace-heading">
+<div>
+<div class="work-title">
+<input id="work-title" aria-label="作品名称" data-aria-zh="作品名称" data-aria-en="Work title" maxlength="40" value="风经过的地方">
+<span data-icon="pencil">
+</span>
+</div>
+</div>
+<span id="save-state" class="save-state">草稿仅保存在本机</span>
+</div>
+<div class="stage-shell">
+<div class="stage" id="stage" tabindex="0" role="application" aria-label="插花画布。拖动花材调整位置，双指旋转和缩放；右键打开花材图层；方向键微调，Delete 删除。" data-aria-zh="插花画布。拖动花材调整位置，双指旋转和缩放；右键打开花材图层；方向键微调，Delete 删除。" data-aria-en="Ikebana canvas. Drag materials to move; use two fingers to rotate and scale; right-click for layers; use arrow keys to nudge and Delete to remove.">
+<div class="stage-grain">
+</div>
+<div class="scene-label" aria-hidden="true" data-zh="一 花 一 世 界" data-en="ONE FLOWER, ONE WORLD">一 花 一 世 界</div>
+<div class="scene-caption" aria-hidden="true">
+<span>花間</span>
+<small>IKEBANA STUDY / <span id="study-count">001</span>
+</small>
+</div>
+<div class="composition" id="composition">
+</div>
+<img id="vessel" class="vessel" src="/assets/round.png" alt="窑变圆瓶" draggable="false">
+<canvas id="fixture-layer" aria-hidden="true">
+</canvas>
+<div class="composition composition-front" id="composition-front">
+</div>
+<canvas id="prune-overlay" aria-hidden="true">
+</canvas>
+<div id="gesture-feedback" class="gesture-feedback" aria-hidden="true">
+<output>0°</output>
+</div>
+<div class="stage-floor">
+</div>
+<div id="guide" class="composition-guide" hidden>
+<i>
+</i>
+<i>
+</i>
+<span data-zh="让枝条伸向留白" data-en="Let the stem reach into space">让枝条伸向留白</span>
+</div>
+<section id="layer-menu" class="layer-menu" aria-label="花材图层顺序" data-aria-zh="花材图层顺序" data-aria-en="Material layer order" hidden>
+<div class="layer-menu-heading">
+<div>
+<strong data-zh="花材图层" data-en="Material Layers">花材图层</strong>
+<small data-zh="花器也是前后层次的分界" data-en="The vessel marks the front and back groups">花器也是前后层次的分界</small>
+</div>
+<button id="close-layers" class="icon-button" aria-label="关闭花材图层" data-aria-zh="关闭花材图层" data-aria-en="Close material layers">
+<span data-icon="close">
+</span>
+</button>
+</div>
+<div id="layer-list" class="layer-list">
+</div>
+<p class="layer-menu-tip" data-zh="拖动花材调整顺序；箭头可跨过花器。" data-en="Drag to reorder; arrows can move across the vessel.">拖动花材调整顺序；箭头可跨过花器。</p>
+</section>
+</div>
+<div class="stage-tools">
+<button id="move-tool" class="icon-button" title="移动花材" aria-label="移动花材" data-title-zh="移动花材" data-title-en="Move material" data-aria-zh="移动花材" data-aria-en="Move material" aria-pressed="true">
+<span data-icon="move">
+</span>
+</button>
+<button id="prune-tool" class="icon-button" title="圈选剪枝" aria-label="圈选剪枝" data-title-zh="圈选剪枝" data-title-en="Lasso prune" data-aria-zh="圈选剪枝" data-aria-en="Lasso prune" aria-pressed="false">
+<span data-icon="scissors">
+</span>
+</button>
+<button id="layers-tool" class="icon-button" title="花材图层" aria-label="打开花材图层" data-title-zh="花材图层" data-title-en="Material layers" data-aria-zh="打开花材图层" data-aria-en="Open material layers" aria-expanded="false">
+<span data-icon="layers">
+</span>
+</button>
+<span class="tool-separator">
+</span>
+<button id="undo-button" class="icon-button" title="撤销" aria-label="撤销" data-title-zh="撤销" data-title-en="Undo" data-aria-zh="撤销" data-aria-en="Undo">
+<span data-icon="undo">
+</span>
+</button>
+<button id="redo-button" class="icon-button" title="重做" aria-label="重做" data-title-zh="重做" data-title-en="Redo" data-aria-zh="重做" data-aria-en="Redo">
+<span data-icon="redo">
+</span>
+</button>
+<span class="tool-separator">
+</span>
+<button id="guide-button" class="icon-button" title="构图辅助线" aria-label="构图辅助线" data-title-zh="构图辅助线" data-title-en="Composition guide" data-aria-zh="构图辅助线" data-aria-en="Composition guide" aria-pressed="false">
+<span data-icon="grid">
+</span>
+</button>
+<button id="reset-button" class="icon-button" title="清空花材" aria-label="清空花材" data-title-zh="清空花材" data-title-en="Clear materials" data-aria-zh="清空花材" data-aria-en="Clear materials">
+<span data-icon="refresh">
+</span>
+</button>
+</div>
+</div>
+<div class="stage-bottom">
+<div class="scene-picker" role="group" aria-label="背景" data-aria-zh="背景" data-aria-en="Background">
+<span data-zh="光与景" data-en="Light & Scene">光与景</span>
+<button data-scene="paper" class="scene-dot paper active" aria-label="素纸背景" title="素纸" data-aria-zh="素纸背景" data-aria-en="Paper background" data-title-zh="素纸" data-title-en="Paper">
+</button>
+<button data-scene="stone" class="scene-dot stone" aria-label="青灰背景" title="青灰" data-aria-zh="青灰背景" data-aria-en="Stone background" data-title-zh="青灰" data-title-en="Stone">
+</button>
+<button data-scene="night" class="scene-dot night" aria-label="墨夜背景" title="墨夜" data-aria-zh="墨夜背景" data-aria-en="Night background" data-title-zh="墨夜" data-title-en="Night">
+</button>
+</div>
+<span class="stage-hint" id="stage-hint">拖动移动 · 双指旋转缩放 · 右键调层次</span>
+<button id="export-draft" class="text-button">
+<span data-icon="download">
+</span>
+<span data-zh="草稿图" data-en="Draft Image">草稿图</span>
+</button>
+</div>
 </section>
 <aside class="design-panel" aria-label="作品设计" data-aria-zh="作品设计" data-aria-en="Arrangement design">
-<div class="panel-heading"><div><h2 data-zh="枝间的分寸" data-en="Shape Each Stem">枝间的分寸</h2></div><span data-icon="sliders"></span></div>
+<div class="panel-heading">
+<div>
+<h2 data-zh="枝间的分寸" data-en="Shape Each Stem">枝间的分寸</h2>
+</div>
+<span data-icon="sliders">
+</span>
+</div>
 <div id="selected-empty" class="selection-empty" hidden data-zh="点选一枝花材，调整它的姿态。" data-en="Select a material to adjust its pose.">点选一枝花材，调整它的姿态。</div>
-<div id="selection-controls"><div class="selected-material"><img id="selected-thumb" alt=""><div><span class="eyebrow" data-zh="正在调整" data-en="EDITING">正在调整</span><strong id="selected-name"></strong></div><button class="icon-button" id="delete-button" aria-label="移除选中花材" title="移除花材" data-aria-zh="移除选中花材" data-aria-en="Remove selected material" data-title-zh="移除花材" data-title-en="Remove material"><span data-icon="trash"></span></button></div>
-<button id="change-variant" class="variant-trigger"><span><small data-zh="姿态与真实花色" data-en="Pose & natural color">姿态与真实花色</small><strong id="variant-label">当前花材</strong></span><span data-zh="更换 ↗" data-en="Change ↗">更换 ↗</span></button>
-<p id="botanical-note" class="botanical-note"></p>
-<div class="range-control"><label class="slider-label" for="angle"><span data-zh="整枝倾斜" data-en="Stem angle">整枝倾斜</span> <output id="angle-value">0°</output></label><input id="angle" type="range" min="-180" max="180" step="1"></div>
-<div class="range-control"><label class="slider-label" for="size"><span data-zh="花材大小" data-en="Material size">花材大小</span> <output id="size-value">100%</output></label><input id="size" type="range" min="10" max="95" step="1"></div>
-<details id="stem-details" class="stem-details"><summary><span data-zh="修剪与枝梗" data-en="Pruning & stem length">修剪与枝梗</span><span aria-hidden="true">＋</span></summary>
-<div class="range-control"><label class="slider-label" for="length"><span data-zh="枝梗长度" data-en="Stem length">枝梗长度</span> <output id="length-value">100%</output></label><input id="length" type="range" min="60" max="240" step="5"></div>
-<div class="range-control"><label class="slider-label" for="trim"><span data-zh="剪短根部" data-en="Trim base">剪短根部</span> <output id="trim-value">0%</output></label><input id="trim" type="range" min="0" max="60" step="1"></div>
-<div class="prune-controls"><div class="prune-heading"><strong data-zh="修剪枝叶" data-en="Prune foliage">修剪枝叶</strong><button id="restore-cuts" data-zh="恢复剪枝" data-en="Restore">恢复剪枝</button></div><div class="prune-modes"><button data-prune="lasso"><span data-icon="scissors"></span><span data-zh="圈选剪掉" data-en="Lasso cut">圈选剪掉</span></button><button data-prune="brush"><span data-icon="eraser"></span><span data-zh="细部擦除" data-en="Detail erase">细部擦除</span></button></div><p id="prune-help">先选中一枝，再圈住不要的枝叶。</p><label id="brush-setting" hidden><span data-zh="剪口大小" data-en="Brush size">剪口大小</span><input id="brush-size" type="range" min="5" max="35" value="16"><output id="brush-value">16</output></label></div>
+<div id="selection-controls">
+<div class="selected-material">
+<img id="selected-thumb" alt="">
+<div>
+<span class="eyebrow" data-zh="正在调整" data-en="EDITING">正在调整</span>
+<strong id="selected-name">
+</strong>
+</div>
+<button class="icon-button" id="delete-button" aria-label="移除选中花材" title="移除花材" data-aria-zh="移除选中花材" data-aria-en="Remove selected material" data-title-zh="移除花材" data-title-en="Remove material">
+<span data-icon="trash">
+</span>
+</button>
+</div>
+<button id="change-variant" class="variant-trigger">
+<span>
+<small data-zh="姿态与真实花色" data-en="Pose & natural color">姿态与真实花色</small>
+<strong id="variant-label">当前花材</strong>
+</span>
+<span data-zh="更换 ↗" data-en="Change ↗">更换 ↗</span>
+</button>
+<p id="botanical-note" class="botanical-note">
+</p>
+<div class="range-control">
+<label class="slider-label" for="angle">
+<span data-zh="整枝倾斜" data-en="Stem angle">整枝倾斜</span> <output id="angle-value">0°</output>
+</label>
+<input id="angle" type="range" min="-180" max="180" step="1">
+</div>
+<div class="range-control">
+<label class="slider-label" for="size">
+<span data-zh="花材大小" data-en="Material size">花材大小</span> <output id="size-value">100%</output>
+</label>
+<input id="size" type="range" min="10" max="95" step="1">
+</div>
+<details id="stem-details" class="stem-details">
+<summary>
+<span data-zh="修剪与枝梗" data-en="Pruning & stem length">修剪与枝梗</span>
+<span aria-hidden="true">＋</span>
+</summary>
+<div class="range-control">
+<label class="slider-label" for="length">
+<span data-zh="枝梗长度" data-en="Stem length">枝梗长度</span> <output id="length-value">100%</output>
+</label>
+<input id="length" type="range" min="60" max="240" step="5">
+</div>
+<div class="range-control">
+<label class="slider-label" for="trim">
+<span data-zh="剪短根部" data-en="Trim base">剪短根部</span> <output id="trim-value">0%</output>
+</label>
+<input id="trim" type="range" min="0" max="60" step="1">
+</div>
+<div class="prune-controls">
+<div class="prune-heading">
+<strong data-zh="修剪枝叶" data-en="Prune foliage">修剪枝叶</strong>
+<button id="restore-cuts" data-zh="恢复剪枝" data-en="Restore">恢复剪枝</button>
+</div>
+<div class="prune-modes">
+<button data-prune="lasso">
+<span data-icon="scissors">
+</span>
+<span data-zh="圈选剪掉" data-en="Lasso cut">圈选剪掉</span>
+</button>
+<button data-prune="brush">
+<span data-icon="eraser">
+</span>
+<span data-zh="细部擦除" data-en="Detail erase">细部擦除</span>
+</button>
+</div>
+<p id="prune-help">先选中一枝，再圈住不要的枝叶。</p>
+<label id="brush-setting" hidden>
+<span data-zh="剪口大小" data-en="Brush size">剪口大小</span>
+<input id="brush-size" type="range" min="5" max="35" value="16">
+<output id="brush-value">16</output>
+</label>
+</div>
 </details>
-<div class="adjust-actions"><button id="flip-button"><span data-icon="flip"></span><span data-zh="翻转" data-en="Flip">翻转</span></button><button id="layer-button"><span data-icon="layers"></span><span data-zh="移到前面" data-en="Bring Forward">移到前面</span></button></div></div>
-<div class="section-rule"></div>
-<div class="label-with-meta"><h3 data-zh="创作意境" data-en="Creative Intention">创作意境</h3><span data-zh="让想象继续" data-en="Let imagination continue">让想象继续</span></div>
-<div id="mood-options" class="mood-options"><button data-mood="静寂" class="active" data-zh="静寂" data-en="Stillness">静寂</button><button data-mood="侘寂" data-zh="侘寂" data-en="Wabi-sabi">侘寂</button><button data-mood="春意" data-zh="春意" data-en="Spring">春意</button><button data-mood="野趣" data-zh="野趣" data-en="Wild">野趣</button></div>
-<label for="intention" class="sr-only" data-zh="创作想法" data-en="Creative note">创作想法</label><textarea id="intention" rows="2" maxlength="600" placeholder="想象它放在哪里，光从哪里来……" data-placeholder-zh="想象它放在哪里，光从哪里来……" data-placeholder-en="Imagine where it lives and where the light comes from…">像清晨的风掠过庭院，安静、自然，留一点不完美。</textarea>
-<label class="generation-mode-label" for="generation-mode" data-zh="生成整理程度" data-en="Refinement level">生成整理程度</label><select id="generation-mode"><option value="natural" data-zh="小幅自然重整 · 推荐" data-en="Gentle natural refinement · Recommended">小幅自然重整 · 推荐</option><option value="creative" data-zh="适度花艺润色" data-en="Moderate florist refinement">适度花艺润色</option><option value="faithful" data-zh="最小修正" data-en="Minimal correction">最小修正</option></select><p id="generation-mode-help">保留用花、主次和整体光感，小幅整理枝条、花面与瓶口连接，让作品更真实。</p><div class="creative-tip"><span class="tip-mark">間</span><p><span data-zh="不必填满。" data-en="Leave room to breathe.">不必填满。</span><br><span data-zh="空白，也是作品的一部分。" data-en="Empty space is part of the work.">空白，也是作品的一部分。</span></p></div>
-<div class="generation-box"><p class="eyebrow">FROM YOUR HANDS TO ART</p><h3 data-zh="让灵感，成为作品" data-en="Turn Your Idea into Art">让灵感，成为作品</h3><p data-zh="保留你的设计，小幅整理成真实插花。" data-en="Keep your design; refine it into a real arrangement.">保留你的设计，小幅整理成真实插花。</p><button id="generate-button" class="button accent"><span data-icon="sparkles"></span><span data-zh="生成创作包" data-en="Create Generation Pack">生成创作包</span> <span class="arrow">↗</span></button><small data-zh="草稿参考 · 物理修正 · 自然花瓣" data-en="Draft reference · Physical realism · Natural petals">草稿参考 · 物理修正 · 自然花瓣</small></div>
+<div class="adjust-actions">
+<button id="flip-button">
+<span data-icon="flip">
+</span>
+<span data-zh="翻转" data-en="Flip">翻转</span>
+</button>
+<button id="duplicate-button">
+<span data-icon="copy">
+</span>
+<span data-zh="复制图层" data-en="Duplicate">复制图层</span>
+</button>
+<button id="layer-button">
+<span data-icon="layers">
+</span>
+<span data-zh="移到最前" data-en="Move to Front">移到最前</span>
+</button>
+<button id="layer-back-button">
+<span data-icon="layers">
+</span>
+<span data-zh="移到最后" data-en="Move to Back">移到最后</span>
+</button>
+</div>
+</div>
+<div class="section-rule">
+</div>
+<div class="label-with-meta">
+<h3 data-zh="创作意境" data-en="Creative Intention">创作意境</h3>
+<span data-zh="让想象继续" data-en="Let imagination continue">让想象继续</span>
+</div>
+<div id="mood-options" class="mood-options">
+<button data-mood="静寂" class="active" data-zh="静寂" data-en="Stillness">静寂</button>
+<button data-mood="侘寂" data-zh="侘寂" data-en="Wabi-sabi">侘寂</button>
+<button data-mood="春意" data-zh="春意" data-en="Spring">春意</button>
+<button data-mood="野趣" data-zh="野趣" data-en="Wild">野趣</button>
+</div>
+<label for="intention" class="sr-only" data-zh="创作想法" data-en="Creative note">创作想法</label>
+<textarea id="intention" rows="2" maxlength="600" placeholder="想象它放在哪里，光从哪里来……" data-placeholder-zh="想象它放在哪里，光从哪里来……" data-placeholder-en="Imagine where it lives and where the light comes from…">像清晨的风掠过庭院，安静、自然，留一点不完美。</textarea>
+<label class="generation-mode-label" for="generation-mode" data-zh="生成整理程度" data-en="Refinement level">生成整理程度</label>
+<select id="generation-mode">
+<option value="natural" data-zh="小幅自然重整 · 推荐" data-en="Gentle natural refinement · Recommended">小幅自然重整 · 推荐</option>
+<option value="creative" data-zh="适度花艺润色" data-en="Moderate florist refinement">适度花艺润色</option>
+<option value="faithful" data-zh="最小修正" data-en="Minimal correction">最小修正</option>
+</select>
+<p id="generation-mode-help">保留用花、主次和整体光感，小幅整理枝条、花面与瓶口连接，让作品更真实。</p>
+<div class="creative-tip">
+<span class="tip-mark">間</span>
+<p>
+<span data-zh="不必填满。" data-en="Leave room to breathe.">不必填满。</span>
+<br>
+<span data-zh="空白，也是作品的一部分。" data-en="Empty space is part of the work.">空白，也是作品的一部分。</span>
+</p>
+</div>
+<div class="generation-box">
+<p class="eyebrow">FROM YOUR HANDS TO ART</p>
+<h3 data-zh="让灵感，成为作品" data-en="Turn Your Idea into Art">让灵感，成为作品</h3>
+<p data-zh="保留你的设计，小幅整理成真实插花。" data-en="Keep your design; refine it into a real arrangement.">保留你的设计，小幅整理成真实插花。</p>
+<button id="generate-button" class="button accent">
+<span data-icon="sparkles">
+</span>
+<span data-zh="生成创作包" data-en="Create Generation Pack">生成创作包</span> <span class="arrow">↗</span>
+</button>
+<small data-zh="草稿参考 · 物理修正 · 自然花瓣" data-en="Draft reference · Physical realism · Natural petals">草稿参考 · 物理修正 · 自然花瓣</small>
+</div>
 </aside>
 </main>
-<main id="inspiration-view" class="view editorial-view" hidden></main>
-<main id="gallery-view" class="view gallery-view" hidden></main>
-<footer class="footer"><span data-zh="花间 · 让每一枝，都有自己的方向。" data-en="HANAMA · Give every stem its own direction.">花间 · 让每一枝，都有自己的方向。</span><span>A SMALL PRACTICE IN SLOW LIVING</span></footer>
-<dialog id="modal"><div class="modal-header"><span class="eyebrow" id="modal-kicker">HANAMA ATELIER</span><button class="icon-button" id="close-modal" aria-label="关闭" data-aria-zh="关闭" data-aria-en="Close"><span data-icon="close"></span></button></div><div id="modal-content"></div></dialog>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<main id="inspiration-view" class="view editorial-view" hidden>
+</main>
+<main id="gallery-view" class="view gallery-view" hidden>
+</main>
+<footer class="footer">
+<span data-zh="花间 · 让每一枝，都有自己的方向。" data-en="HANAMA · Give every stem its own direction.">花间 · 让每一枝，都有自己的方向。</span>
+<span>A SMALL PRACTICE IN SLOW LIVING</span>
+</footer>
+<dialog id="modal">
+<div class="modal-header">
+<span class="eyebrow" id="modal-kicker">HANAMA ATELIER</span>
+<button class="icon-button" id="close-modal" aria-label="关闭" data-aria-zh="关闭" data-aria-en="Close">
+<span data-icon="close">
+</span>
+</button>
+</div>
+<div id="modal-content">
+</div>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite">
+</div>
 <input type="file" id="art-upload" accept="image/png,image/jpeg,image/webp" hidden>
 <input type="file" id="draft-upload" accept="application/json,.json" hidden>
 </body>

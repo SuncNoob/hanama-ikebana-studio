@@ -1,4 +1,4 @@
-import {dimensions,vesselGeometry} from './geometry.js';
+import {dimensions,vesselGeometry} from './geometry.js?v=10';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Shared by the editor and exported artwork; cuts never mutate a source image. */
 export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browserCanvas){
@@ -13,7 +13,35 @@ export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browse
  const top=Math.min(g.split,g.end)*src.height;
  if(top>0)dest.drawImage(src,0,0,src.width,top,0,0,out.width,top);
  if(g.end>g.split){const sh=(g.end-g.split)*src.height;dest.drawImage(src,0,top,src.width,sh,0,top,out.width,sh*g.length)}
- return out;
+ const fullWidth=out.width,fullHeight=out.height;
+ let x=0,y=0,width=fullWidth,height=fullHeight;
+ if(!extraCut){
+  const probeScale=Math.min(1,144/Math.max(fullWidth,fullHeight)),pw=Math.max(1,Math.ceil(fullWidth*probeScale)),ph=Math.max(1,Math.ceil(fullHeight*probeScale));
+  const probe=createCanvas(pw,ph);probe.getContext('2d').drawImage(out,0,0,pw,ph);const pixels=probe.getContext('2d').getImageData(0,0,pw,ph).data;
+  let left=pw,topPixel=ph,right=-1,bottom=-1;
+  for(let py=0;py<ph;py++)for(let px=0;px<pw;px++)if(pixels[(py*pw+px)*4+3]>12){left=Math.min(left,px);topPixel=Math.min(topPixel,py);right=Math.max(right,px);bottom=Math.max(bottom,py)}
+  if(right>=left&&bottom>=topPixel){
+   const padX=Math.max(1,Math.ceil(pw*.012)),padY=Math.max(1,Math.ceil(ph*.012));
+   x=Math.max(0,Math.floor((left-padX)/probeScale));y=Math.max(0,Math.floor((topPixel-padY)/probeScale));
+   const r=Math.min(fullWidth,Math.ceil((right+1+padX)/probeScale)),b=Math.min(fullHeight,Math.ceil((bottom+1+padY)/probeScale));width=Math.max(1,r-x);height=Math.max(1,b-y);
+  }
+ }
+ const sprite=x===0&&y===0&&width===fullWidth&&height===fullHeight?out:createCanvas(width,height);
+ if(sprite!==out)sprite.getContext('2d').drawImage(out,x,y,width,height,0,0,width,height);
+ sprite.crop={x,y,width,height,fullWidth,fullHeight,bottom:(y+height)/fullHeight};
+ return sprite;
+}
+
+function drawBotanical(ctx,size,item,asset,getSprite,{alpha=1,filter='none',night=false}={}){
+ const src=getSprite(item),g=dimensions(item,asset);if(!src)return;
+ const crop=src.crop||{x:0,y:0,width:src.width,height:src.height,fullWidth:src.width,fullHeight:src.height,bottom:item.cropAnchorY??1};
+ const fullH=item.h/100*size*g.height,fullW=item.h/100*size*g.ratio;
+ const left=-fullW*g.anchor+fullW*crop.x/crop.fullWidth;
+ const top=fullH*(crop.y/crop.fullHeight-(item.cropAnchorY??1));
+ const width=fullW*crop.width/crop.fullWidth,height=fullH*crop.height/crop.fullHeight;
+ ctx.save();ctx.translate(item.x/100*size,item.y/100*size);ctx.rotate(item.angle*Math.PI/180);ctx.scale(item.flip?-1:1,1);ctx.globalAlpha=alpha;ctx.filter=filter;
+ ctx.shadowColor=filter==='none'?(night?'#07100b55':'#30372d24'):'transparent';ctx.shadowBlur=filter==='none'?size*.006:0;ctx.shadowOffsetX=filter==='none'?size*(night?.003:.005):0;ctx.shadowOffsetY=filter==='none'?size*.007:0;
+ ctx.drawImage(src,left,top,width,height);ctx.restore();
 }
 
 function traceOpening(ctx,size,opening){
@@ -73,13 +101,11 @@ export function paintArrangement(ctx,size,s,assets,scenes,getSprite,images){
  const wall=ctx.createLinearGradient(0,0,size,size);wall.addColorStop(0,colors[0]);wall.addColorStop(.56,colors[0]);wall.addColorStop(1,colors[1]);ctx.fillStyle=wall;ctx.fillRect(0,0,size,size);
  const light=ctx.createRadialGradient(size*.18,size*.12,0,size*.23,size*.18,size*.72);light.addColorStop(0,night?'#dfe9dc18':'#ffffff78');light.addColorStop(.48,night?'#b6c8b512':'#ffffff24');light.addColorStop(1,'#ffffff00');ctx.fillStyle=light;ctx.fillRect(0,0,size,size);
  const horizon=size*.795,floor=ctx.createLinearGradient(0,horizon,0,size);floor.addColorStop(0,night?'#202b25':'#d8d8cf');floor.addColorStop(1,night?'#141c18':'#bfc1b7');ctx.fillStyle=floor;ctx.fillRect(0,horizon,size,size-horizon);ctx.fillStyle=night?'#0d130f22':'#72796d16';ctx.fillRect(0,horizon,size,Math.max(1,size*.002));
- for(const [index,item] of s.items.entries()){
-  const src=getSprite(item),g=dimensions(item,assets[item.type]),h=item.h/100*size,w=h*g.ratio;
-  ctx.save();ctx.translate(item.x/100*size,item.y/100*size);ctx.rotate(item.angle*Math.PI/180);ctx.scale(item.flip?-1:1,1);ctx.globalAlpha=.97;ctx.shadowColor=night?'#07100b55':'#30372d24';ctx.shadowBlur=size*.006;ctx.shadowOffsetX=size*.005;ctx.shadowOffsetY=size*.007;ctx.drawImage(src,-w*g.anchor,-h*g.height,w,h*g.height);ctx.restore();
- }
+ for(const item of s.items.filter(i=>!i.aboveVessel))drawBotanical(ctx,size,item,assets[item.type],getSprite,{alpha:.97,night});
  const v=images[s.vessel],g=vesselGeometry(assets[s.vessel]);ctx.save();ctx.filter=`blur(${size*.013}px)`;ctx.fillStyle=night?'#07100b88':'#4a4e4638';ctx.beginPath();ctx.ellipse(size*.515,size*.867,size*g.width/180,size*.021,-.03,0,Math.PI*2);ctx.fill();ctx.restore();
  ctx.save();ctx.shadowColor=night?'#07100b88':'#34382f35';ctx.shadowBlur=size*.016;ctx.shadowOffsetX=size*.014;ctx.shadowOffsetY=size*.013;ctx.drawImage(v,g.left/100*size,g.top/100*size,g.width/100*size,g.height/100*size);ctx.restore();
  paintFixture(ctx,size,assets[s.vessel],{night});
+ for(const item of s.items.filter(i=>i.aboveVessel))drawBotanical(ctx,size,item,assets[item.type],getSprite,{alpha:.97,night});
  const vignette=ctx.createRadialGradient(size*.5,size*.45,size*.42,size*.5,size*.48,size*.78);vignette.addColorStop(.55,'#00000000');vignette.addColorStop(1,night?'#05090628':'#26302410');ctx.fillStyle=vignette;ctx.fillRect(0,0,size,size);
 }
 
@@ -88,10 +114,9 @@ export function paintCompositionGuide(ctx,size,s,assets,scenes,getSprite,images)
  const colors=scenes[s.scene],night=s.scene==='night',bg=ctx.createLinearGradient(0,0,size,size);bg.addColorStop(0,colors[0]);bg.addColorStop(1,colors[1]);ctx.fillStyle=bg;ctx.fillRect(0,0,size,size);
  ctx.fillStyle=night?'#10171320':'#ffffff66';ctx.fillRect(0,0,size,size);ctx.fillStyle=night?'#17211c66':'#bfc2b744';ctx.fillRect(0,size*.8,size,size*.2);
  const vessel=images[s.vessel],vg=vesselGeometry(assets[s.vessel]);ctx.save();ctx.globalAlpha=night?.34:.27;ctx.filter='grayscale(.65)';ctx.drawImage(vessel,vg.left/100*size,vg.top/100*size,vg.width/100*size,vg.height/100*size);ctx.restore();
- for(const [index,item] of s.items.entries()){
-  const src=getSprite(item),g=dimensions(item,assets[item.type]),h=item.h/100*size,w=h*g.ratio;
-  ctx.save();ctx.translate(item.x/100*size,item.y/100*size);ctx.rotate(item.angle*Math.PI/180);ctx.scale(item.flip?-1:1,1);ctx.globalAlpha=.24+index/Math.max(1,s.items.length)*.34;ctx.filter='grayscale(.38) saturate(.72)';ctx.drawImage(src,-w*g.anchor,-h*g.height,w,h*g.height);ctx.restore();
- }
+ const back=s.items.filter(i=>!i.aboveVessel),front=s.items.filter(i=>i.aboveVessel);
+ back.forEach((item,index)=>drawBotanical(ctx,size,item,assets[item.type],getSprite,{alpha:.24+index/Math.max(1,s.items.length)*.34,filter:'grayscale(.38) saturate(.72)'}));
+ front.forEach((item,index)=>drawBotanical(ctx,size,item,assets[item.type],getSprite,{alpha:.24+(back.length+index)/Math.max(1,s.items.length)*.34,filter:'grayscale(.38) saturate(.72)'}));
  paintFixture(ctx,size,assets[s.vessel],{guide:true,night});
  const insertion=vesselGeometry(assets[s.vessel]).insertion;ctx.save();ctx.fillStyle=night?'#dfe8d8aa':'#4f604d88';ctx.beginPath();ctx.arc(insertion[0]/100*size,insertion[1]/100*size,size*.006,0,Math.PI*2);ctx.fill();ctx.restore();
 }
