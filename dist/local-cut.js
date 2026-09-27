@@ -187,34 +187,43 @@ export function splitAlphaMask(alpha,w,h,a,b,options={}){
 }
 
 /**
- * A woody branch can remain alpha-connected through its overlapping leaves or
- * needles after the wood is cut. In that case use its brown branch core as a
- * temporary structure, then give each visible pixel to the nearest core.
- * The result is still the same two editable raster layers, with no asset-specific
- * hand-drawn masks and no change to cuts that already separate normally.
+ * Overlapping leaves, petals and twigs can keep a cut alpha-connected. Every
+ * specimen uses the same fallback: find a rooted, separable stem-colour core,
+ * then return the surrounding pixels to the closest side of that core. No
+ * catalogue ID or material family is needed to enable this analysis.
  */
 export function splitBotanicalMask(rgba,w,h,a,b,options={}){
  if(!rgba||rgba.length!==w*h*4||w*h>1600000)return {ok:false,reason:'invalid'};
  const alpha=new Uint8Array(w*h);
  for(let p=0;p<alpha.length;p++)alpha[p]=rgba[p*4+3];
  const direct=splitAlphaMask(alpha,w,h,a,b,options);
- if(direct.ok||direct.reason!=='not-separated'||!(options.woodyFallback||options.reddishStemFallback))return direct;
+ if(direct.ok||direct.reason!=='not-separated')return direct;
 
- const wood=new Uint8Array(w*h);let woodArea=0,visibleArea=0,top=h,bottom=-1,woodBottom=-1;
- for(let p=0;p<wood.length;p++){
-  const q=p*4,opacity=rgba[q+3],y=Math.floor(p/w);
-  if(opacity>=20){visibleArea++;top=Math.min(top,y);bottom=Math.max(bottom,y)}
-  const r=rgba[q],g=rgba[q+1],blue=rgba[q+2];
-  const stem=options.reddishStemFallback
-   ? r-g>=27&&r-blue>=20&&g<135&&blue<145&&r<190
-   : r-g>=10&&r-blue>=20&&g>=blue-6&&g>=25&&r<=g*1.9;
-  if(opacity>=64&&stem){wood[p]=255;woodArea++;woodBottom=Math.max(woodBottom,y)}
+ let visibleArea=0,top=h,bottom=-1;
+ for(let p=0;p<w*h;p++)if(rgba[p*4+3]>=20){visibleArea++;const y=Math.floor(p/w);top=Math.min(top,y);bottom=Math.max(bottom,y)}
+ const tones=[
+  {name:'reddish-stem-core',match:(r,g,b)=>r-g>=27&&r-b>=20&&g<135&&b<145&&r<190},
+  {name:'woody-core',match:(r,g,b)=>r-g>=10&&r-b>=20&&g>=b-6&&g>=25&&r<=g*1.9},
+  {name:'green-stem-core',match:(r,g,b)=>g-r>=5&&g-b>=15&&g>=35&&g<=175&&r<=g*1.05}
+ ];
+ const candidates=[];
+ for(const tone of tones){
+  const mask=new Uint8Array(w*h);let area=0,coreBottom=-1;
+  for(let p=0;p<mask.length;p++){
+   const q=p*4;if(rgba[q+3]<64)continue;
+   if(tone.match(rgba[q],rgba[q+1],rgba[q+2])){mask[p]=255;area++;coreBottom=Math.max(coreBottom,Math.floor(p/w))}
+  }
+  // A colour class must reach the base and occupy enough, but not most, of
+  // the specimen. Broad petals and leaf blades cannot stand in for a stem.
+  if(area<48||area<visibleArea*.012||area>visibleArea*(tone.name==='green-stem-core'?.92:.65)||coreBottom<bottom-Math.max(8,(bottom-top)*.18))continue;
+  const split=splitAlphaMask(mask,w,h,a,b,options);
+  if(!split.ok||split.stats.originalArea<Math.max(48,area*.25))continue;
+  const score=split.stats.originalArea/area+Math.min(.4,split.stats.detachedArea/Math.max(1,area));
+  candidates.push({wood:mask,woodArea:area,core:split,tone:tone.name,score});
  }
- // A usable branch core reaches the rooted end and is a meaningful fraction
- // of this specimen. This keeps warm flower petals from becoming false stems.
- if(woodArea<48||woodArea<visibleArea*.012||woodArea>visibleArea*.65||woodBottom<bottom-Math.max(8,(bottom-top)*.18))return direct;
- const core=splitAlphaMask(wood,w,h,a,b,options);
- if(!core.ok||core.stats.originalArea<Math.max(48,woodArea*.25))return direct;
+ if(!candidates.length)return direct;
+ candidates.sort((left,right)=>right.score-left.score);
+ const {wood,woodArea,core,tone}=candidates[0],clusteredHeads=tone==='reddish-stem-core';
  const coreDetached=decodeCutMask(core.cut.d,w*h),kerf=decodeCutMask(core.cut.k,w*h);
  if(!coreDetached||!kerf)return direct;
 
@@ -227,7 +236,7 @@ export function splitBotanicalMask(rgba,w,h,a,b,options={}){
    if(!owner[n]&&alpha[n]>=20&&!kerf[n]){owner[n]=owner[p];queue[tail++]=n}
   });
  }
- if(!options.reddishStemFallback){
+ if(!clusteredHeads){
  // Seven-pixel erosion leaves the dense centres of leaves or needle fans.
  // Keep each centre together before restoring its fine edges. An integral
  // image makes this linear rather than checking 49 neighbours per pixel.
@@ -273,7 +282,7 @@ export function splitBotanicalMask(rgba,w,h,a,b,options={}){
  // distinct. Extend a severed main stem into its own flower lobe along a seam
  // that prefers the transparent gaps between buds; tiny side twigs keep the
  // ordinary local result and do not steal an entire head.
- if(options.reddishStemFallback&&core.stats.detachedArea>=Math.max(120,woodArea*.018)){
+ if(clusteredHeads&&core.stats.detachedArea>=Math.max(120,woodArea*.018)){
   const photoBottom=options.photoHeightRatio?Math.min(bottom,h*options.photoHeightRatio):bottom;
   const canopyY=clamp(Math.round(top+(photoBottom-top)*.55),1,h-1),groups=stemGroupsAtRow(wood,coreDetached,w,h,canopyY);
   const detachedGroup=groups.filter(group=>group.off>=2).sort((a,b)=>b.off-a.off)[0];
@@ -307,7 +316,7 @@ export function splitBotanicalMask(rgba,w,h,a,b,options={}){
   else if(alpha[p]>0&&alpha[p]<20)cleanKerf[p]=1;
  }
  if(detachedArea<3||rootArea<3)return direct;
- return {ok:true,cut:{v:1,w,h,d:encodeCutMask(detached),k:encodeCutMask(cleanKerf)},anchors:core.anchors,stats:{...core.stats,rootArea,detachedArea,method:options.reddishStemFallback?'reddish-stem-core':'woody-core'}};
+ return {ok:true,cut:{v:1,w,h,d:encodeCutMask(detached),k:encodeCutMask(cleanKerf)},anchors:core.anchors,stats:{...core.stats,rootArea,detachedArea,method:tone}};
 }
 
 /**

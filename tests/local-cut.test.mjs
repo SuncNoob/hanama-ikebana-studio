@@ -119,13 +119,31 @@ test('a woody branch can be cut when fine green needles bridge around the cut',(
  const a=[40,39],b=[40,18];
  assert.equal(splitAlphaMask(alpha,w,h,a,b,{preferStart:true}).reason,'not-separated');
 
- const result=splitBotanicalMask(rgba,w,h,a,b,{preferStart:true,woodyFallback:true});
+ const result=splitBotanicalMask(rgba,w,h,a,b,{preferStart:true});
  assert.equal(result.ok,true,result.reason);
  const detached=decodeCutMask(result.cut.d,w*h),kerf=decodeCutMask(result.cut.k,w*h);
  assert.equal(detached[at(70,31)],1);
  assert.equal(detached[at(26,75)],0);
  assert.equal(detached[at(55,70)],0);
  assert.equal(kerf[at(55,70)],0);
+});
+
+test('the same fallback separates a green-stem leaf spray without a material flag',()=>{
+ const w=110,h=100,rgba=new Uint8ClampedArray(w*h*4),at=(x,y)=>y*w+x;
+ const paint=(x0,y0,x1,y1,rgb)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)rgba.set([...rgb,255],at(x,y)*4)};
+ paint(25,10,29,90,[55,105,49]);
+ paint(30,30,80,33,[55,105,49]);
+ paint(35,20,52,24,[37,83,75]);
+ paint(35,20,37,30,[37,83,75]);
+ paint(50,20,52,30,[37,83,75]); // Leaf overlap bridges the green stem.
+ const a=[42,38],b=[42,19],alpha=Uint8Array.from({length:w*h},(_,p)=>rgba[p*4+3]);
+ assert.equal(splitAlphaMask(alpha,w,h,a,b,{preferStart:true}).reason,'not-separated');
+ const result=splitBotanicalMask(rgba,w,h,a,b,{preferStart:true});
+ assert.equal(result.ok,true,result.reason);
+ assert.equal(result.stats.method,'green-stem-core');
+ const detached=decodeCutMask(result.cut.d,w*h);
+ assert.equal(detached[at(75,31)],1);
+ assert.equal(detached[at(27,80)],0);
 });
 
 test('a saved cut follows the photo’s fixed flower head and stretched lower stem separately',()=>{
@@ -156,7 +174,7 @@ test('Sedum side stem takes its connected flower lobe, while other flowers stay 
  if(spawnSync('ffmpeg',['-version'],{stdio:'ignore'}).error)return t.skip('ffmpeg is not installed');
  const w=760,h=796,path=fileURLToPath(new URL('../dist/assets/photo-sedum.webp',import.meta.url));
  const rgba=execFileSync('ffmpeg',['-loglevel','error','-i',path,'-vf',`scale=${w}:${h}`,'-f','rawvideo','-pix_fmt','rgba','pipe:1'],{maxBuffer:5e6});
- const result=splitBotanicalMask(rgba,w,h,[240,580],[310,565],{preferStart:true,reddishStemFallback:true});
+ const result=splitBotanicalMask(rgba,w,h,[240,580],[310,565],{preferStart:true});
  assert.equal(result.ok,true,result.reason);
  assert.equal(result.stats.method,'reddish-stem-core');
  const detached=decodeCutMask(result.cut.d,w*h),at=(x,y)=>y*w+x;
@@ -165,7 +183,7 @@ test('Sedum side stem takes its connected flower lobe, while other flowers stay 
  assert.equal(detached[at(350,250)],0,'central blooms should remain on the parent layer');
  assert.equal(detached[at(600,150)],0,'right blooms should remain on the parent layer');
  assert.equal(detached[at(350,650)],0,'the rooted stem should remain on the parent layer');
- const right=splitBotanicalMask(rgba,w,h,[410,620],[470,625],{preferStart:true,reddishStemFallback:true});
+ const right=splitBotanicalMask(rgba,w,h,[410,620],[470,625],{preferStart:true});
  assert.equal(right.ok,true,right.reason);
  const rightPiece=decodeCutMask(right.cut.d,w*h);
  assert.equal(rightPiece[at(600,150)],1,'the right flower lobe should follow its stem');

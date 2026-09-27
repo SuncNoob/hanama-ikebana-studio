@@ -1,16 +1,17 @@
-import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture} from './compositor.js?v=30';
+import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture} from './compositor.js?v=31';
 import {buildPrompt} from './prompt.js?v=26';
 import {newSpecimens} from './catalog.js?v=25';
 import {photoSpecimens} from './photo-catalog.js?v=25';
 import {bookSpecimens} from './book-catalog.js?v=25';
-import {foliageSpecimens} from './foliage-catalog.js?v=25';
+import {foliageSpecimens} from './foliage-catalog.js?v=31';
+import {studySpecimens} from './study-catalog.js?v=31';
 import {bookVessels} from './book-vessels.js?v=25';
 import {newVessels} from './vessels.js?v=25';
 import {botanicalNotes,vesselNote} from './floristry.js?v=25';
 import {studies,studySeasons} from './studies.js?v=25';
 import {applyRealScale,sizeBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,tipPoint,reach,MAX_STEM_CM,stemUnit,stemTrimmed,spriteScale,stageCanvasSize} from './scale.js?v=25';
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints} from './geometry.js?v=28';
-import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=28';
+import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=31';
 const $ = (s,root=document) => root.querySelector(s);
 const $$ = (s,root=document) => [...root.querySelectorAll(s)];
 const LANGUAGE_STORE='hanama-language';
@@ -74,9 +75,7 @@ const legacyFlowers=[
  {id:'maple',family:'maple',name:'枫枝',en:'Japanese maple',group:'branch',color:'秋红',pose:'原版舒展',swatch:'#98483e',height:45,width:432,heightPx:472,anchor:.534,split:.65},
  {id:'pampas',family:'pampas',name:'蒲苇',en:'Pampas grass',group:'branch',color:'麦白',pose:'自然穗形',swatch:'#d4c5ae',height:58,width:223,heightPx:501,anchor:.404,split:.6}
 ];
-const specimens=[...photoSpecimens,...bookSpecimens,...legacyFlowers,...newSpecimens,...foliageSpecimens];
-const woodyCutFamilies=new Set(['pine','sakura','quince','willow','eucalyptus']);
-const woodyCutIds=new Set(['photo-magnolia','photo-pussy-willow','maple-green-summer']);
+const specimens=[...photoSpecimens,...bookSpecimens,...legacyFlowers,...newSpecimens,...foliageSpecimens,...studySpecimens];
 applyRealScale(specimens);
 const browseSpecimens=specimens.filter(a=>!bookSpecimens.includes(a));
 const familyOrder=[...new Set(browseSpecimens.map(a=>a.family))];
@@ -505,7 +504,7 @@ function splitSelected(cut){
   if(!sprite||!w||!h)return false;
   const point=p=>[p[0]*w,warpY(p[1],g.split,g.length)*h/g.height];
   const anchor=item.localCuts?.at(-1)?.anchor;
-  const cutOptions={preferStart:true,woodyFallback:asset.group==='branch'&&(woodyCutFamilies.has(asset.family)||woodyCutIds.has(asset.id)),reddishStemFallback:asset.id==='photo-sedum',photoHeightRatio:Math.min(1,1/g.height)};
+  const cutOptions={preferStart:true,photoHeightRatio:Math.min(1,1/g.height)};
   if(anchor)cutOptions.rootPoint=[anchor[0]*w,anchor[1]*h];
   result=analyzeLocalCut(sprite,{a:point(p0),b:point(p1)},cutOptions);
   if(result.ok)result.cut={...result.cut,v:2,frame:{split:g.split,length:g.length,end:g.end}};
