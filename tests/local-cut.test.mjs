@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {decodeCutMask,encodeCutMask,splitAlphaMask,splitBotanicalMask} from '../dist/local-cut.js';
+import {execFileSync,spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {cutMaskBands,decodeCutMask,encodeCutMask,splitAlphaMask,splitBotanicalMask} from '../dist/local-cut.js';
+import {dimensions,sourceToStage} from '../dist/geometry.js';
 
 const specimen=(w,h)=>{
  const alpha=new Uint8Array(w*h);
@@ -123,4 +126,48 @@ test('a woody branch can be cut when fine green needles bridge around the cut',(
  assert.equal(detached[at(26,75)],0);
  assert.equal(detached[at(55,70)],0);
  assert.equal(kerf[at(55,70)],0);
+});
+
+test('a saved cut follows the photo’s fixed flower head and stretched lower stem separately',()=>{
+ const cut={v:2,w:100,h:100,frame:{split:.6,length:1,end:1}};
+ assert.deepEqual(cutMaskBands(cut,{split:.6,length:2,end:1,height:1.4},100,140),[
+  [0,0,100,60,0,0,100,60],
+  [0,60,100,40,0,60,100,80]
+ ]);
+ const shortened=cutMaskBands(cut,{split:.6,length:2,end:.9,height:1.2},100,120);
+ assert.deepEqual(shortened,[
+  [0,0,100,60,0,0,100,60],
+  [0,60,100,30.000000000000004,0,60,100,60.00000000000001]
+ ]);
+ assert.deepEqual(cutMaskBands({v:1,w:100,h:100},null,100,140),[[0,0,100,100,0,0,100,140]]);
+});
+
+test('a detached flower head keeps its source attachment when lower stem length changes',()=>{
+ const asset={width:100,heightPx:100,split:.9,anchor:.5};
+ const item={x:50,y:40,h:30,trim:0,angle:0,flip:false,cropAnchorY:.5,cropAnchorSourceY:.5,length:1};
+ const before=sourceToStage([.5,.5],item,asset);
+ item.length=8;
+ const after=sourceToStage([.5,.5],item,asset);
+ assert.deepEqual(after,before);
+ assert.equal(dimensions(item,asset).pivotY,.5);
+});
+
+test('Sedum side stem takes its connected flower lobe, while other flowers stay rooted',t=>{
+ if(spawnSync('ffmpeg',['-version'],{stdio:'ignore'}).error)return t.skip('ffmpeg is not installed');
+ const w=760,h=796,path=fileURLToPath(new URL('../dist/assets/photo-sedum.webp',import.meta.url));
+ const rgba=execFileSync('ffmpeg',['-loglevel','error','-i',path,'-vf',`scale=${w}:${h}`,'-f','rawvideo','-pix_fmt','rgba','pipe:1'],{maxBuffer:5e6});
+ const result=splitBotanicalMask(rgba,w,h,[240,580],[310,565],{preferStart:true,reddishStemFallback:true});
+ assert.equal(result.ok,true,result.reason);
+ assert.equal(result.stats.method,'reddish-stem-core');
+ const detached=decodeCutMask(result.cut.d,w*h),at=(x,y)=>y*w+x;
+ assert.equal(detached[at(70,250)],1,'left Sedum blooms should travel with their stem');
+ assert.equal(detached[at(240,500)],1,'the severed stem should travel with its bloom');
+ assert.equal(detached[at(350,250)],0,'central blooms should remain on the parent layer');
+ assert.equal(detached[at(600,150)],0,'right blooms should remain on the parent layer');
+ assert.equal(detached[at(350,650)],0,'the rooted stem should remain on the parent layer');
+ const right=splitBotanicalMask(rgba,w,h,[410,620],[470,625],{preferStart:true,reddishStemFallback:true});
+ assert.equal(right.ok,true,right.reason);
+ const rightPiece=decodeCutMask(right.cut.d,w*h);
+ assert.equal(rightPiece[at(600,150)],1,'the right flower lobe should follow its stem');
+ assert.equal(rightPiece[at(70,250)],0,'the left flowers should remain when the right stem is cut');
 });

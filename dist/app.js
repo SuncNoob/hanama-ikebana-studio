@@ -1,4 +1,4 @@
-import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture} from './compositor.js?v=27';
+import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture} from './compositor.js?v=28';
 import {buildPrompt} from './prompt.js?v=26';
 import {newSpecimens} from './catalog.js?v=25';
 import {photoSpecimens} from './photo-catalog.js?v=25';
@@ -9,8 +9,8 @@ import {newVessels} from './vessels.js?v=25';
 import {botanicalNotes,vesselNote} from './floristry.js?v=25';
 import {studies,studySeasons} from './studies.js?v=25';
 import {applyRealScale,sizeBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,tipPoint,reach,MAX_STEM_CM,stemUnit,stemTrimmed,spriteScale,stageCanvasSize} from './scale.js?v=25';
-import {dimensions, vesselGeometry, warpY, sourceToStage, stageToSource, simplifyPoints} from './geometry.js?v=25';
-import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=27';
+import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints} from './geometry.js?v=28';
+import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=28';
 const $ = (s,root=document) => root.querySelector(s);
 const $$ = (s,root=document) => [...root.querySelectorAll(s)];
 const LANGUAGE_STORE='hanama-language';
@@ -117,7 +117,7 @@ const shortVesselEN={
  'matte-black-long-neck':'Matte black long-neck','ivory-tall-cylinder':'Ivory tall cylinder','white-squat-round':'White squat vase','ink-black-low-bowl':'Ink black bowl','white-square-column':'White square column','charcoal-square-basin':'Charcoal square basin','celadon-shallow-suiban':'Celadon suiban','indigo-oval-suiban':'Indigo oval suiban','sand-wide-pottery-bowl':'Sand pottery bowl','rust-dark-cylinder':'Rust stoneware cylinder','gray-flat-round':'Gray flattened vase','forest-green-shoulder':'Green shoulder vase','english-cream-pitcher':'Creamware pitcher','english-pewter-compote':'Pewter compote','english-stone-garden-urn':'Stone garden urn','french-medicis-urn':'Ivory Medici urn','french-charcoal-compote':'Charcoal compote','french-blue-cachepot':'Mist-blue cachepot','modern-smoked-glass-column':'Smoked-glass column','modern-steel-loop-vessel':'Steel loop vessel','modern-travertine-trough':'Travertine trough','round':'Bronze-blue round vase','bottle':'Brown long-neck vase'
 };
 const STORE='hanama-draft-v1';const uid=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
-function makeItem(type,options={}){const a=assetById[type];return {id:uid(),type,x:50,y:65,h:a.height||48,angle:0,trim:0,flip:false,length:a.stemLength||1,cuts:[],segments:[],localCuts:[],pieceLabel:'',aboveVessel:false,cropAnchorY:1,...options};}
+function makeItem(type,options={}){const a=assetById[type];return {id:uid(),type,x:50,y:65,h:a.height||48,angle:0,trim:0,flip:false,length:a.stemLength||1,cuts:[],segments:[],localCuts:[],pieceLabel:'',aboveVessel:false,cropAnchorY:1,cropAnchorSourceY:null,...options};}
 const initial=()=>({version:2,id:uid(),title:L('风经过的地方','Where the Wind Passed'),subtitle:'',vessel:'round',scene:'paper',mood:'静寂',generation:'natural',intention:L('像清晨的风掠过庭院，安静、自然，留一点不完美。','Like a morning breeze through the garden: quiet, natural, and gently imperfect.'),items:[makeItem(specimenFor('pine').id,{h:49,angle:-20}),makeItem(specimenFor('calla').id,{h:45,angle:9}),makeItem(specimenFor('chrysanthemum').id,{h:16,angle:28})]});
 const localeIndex=locale=>locale==='zh'?0:locale==='en'?1:2;
 const untitledTitles=['未命名作品','Untitled Arrangement','タイトルなしの作品'];
@@ -149,14 +149,16 @@ function validate(v){
   if(i.localCuts?.length>8)throw Error(L('剪枝信息过多','The draft contains too much pruning detail'));
   const localCuts=(i.localCuts||[]).map(entry=>{
    const cut=entry?.cut,w=cut?.w,h=cut?.h;
-   if(!['main','detached'].includes(entry?.part)||cut?.v!==1||!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w*h>850000||typeof cut.d!=='string'||typeof cut.k!=='string')throw Error(L('剪枝信息不完整','Cut data is incomplete'));
+   if(!['main','detached'].includes(entry?.part)||![1,2].includes(cut?.v)||!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w*h>850000||typeof cut.d!=='string'||typeof cut.k!=='string')throw Error(L('剪枝信息不完整','Cut data is incomplete'));
+   const frame=cut.v===2?cut.frame:null;
+   if(cut.v===2&&(!frame||![frame.split,frame.length,frame.end].every(Number.isFinite)||frame.split<0||frame.split>1||frame.length<=0||frame.length>200||frame.end<.4||frame.end>1))throw Error(L('剪枝信息不完整','Cut data is incomplete'));
    totalMaskChars+=cut.d.length+cut.k.length;totalMaskPixels+=w*h;if(totalMaskChars>400000||totalMaskPixels>80000000||!decodeCutMask(cut.d,w*h)||!decodeCutMask(cut.k,w*h))throw Error(L('剪枝信息不完整','Cut data is incomplete'));
    const anchor=Array.isArray(entry.anchor)&&entry.anchor.length===2&&entry.anchor.every(n=>Number.isFinite(n)&&n>=0&&n<=1)?entry.anchor:null;
-   return {cut:{v:1,w,h,d:cut.d,k:cut.k},part:entry.part,...(anchor?{anchor}:{})};
+   return {cut:{v:cut.v,w,h,d:cut.d,k:cut.k,...(frame?{frame:{split:frame.split,length:frame.length,end:frame.end}}:{})},part:entry.part,...(anchor?{anchor}:{})};
   });
   const originId=typeof i.originId==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(i.originId)?i.originId:null;
   const pieceLabel=typeof i.pieceLabel==='string'&&/^[AB12]{1,8}$/.test(i.pieceLabel)?i.pieceLabel:'';
-  return makeItem(i.type,{id:itemId,x:clamp(i.x,5,95),y:clamp(i.y,15,95),h:clamp(i.h,2,95),angle:clamp(i.angle,-180,180),trim:clamp(i.trim,0,60),flip:!!i.flip,length:clamp(Number.isFinite(i.length)?i.length:1,...lengthBounds(assetById[i.type],clamp(i.h,2,95),clamp(i.trim,0,60))),cuts,segments,localCuts,originId,pieceLabel,aboveVessel:!!i.aboveVessel,cropAnchorY:clamp(Number.isFinite(i.cropAnchorY)?i.cropAnchorY:1,0,1)});
+  return makeItem(i.type,{id:itemId,x:clamp(i.x,5,95),y:clamp(i.y,15,95),h:clamp(i.h,2,95),angle:clamp(i.angle,-180,180),trim:clamp(i.trim,0,60),flip:!!i.flip,length:clamp(Number.isFinite(i.length)?i.length:1,...lengthBounds(assetById[i.type],clamp(i.h,2,95),clamp(i.trim,0,60))),cuts,segments,localCuts,originId,pieceLabel,aboveVessel:!!i.aboveVessel,cropAnchorY:clamp(Number.isFinite(i.cropAnchorY)?i.cropAnchorY:1,0,1),cropAnchorSourceY:Number.isFinite(i.cropAnchorSourceY)?clamp(i.cropAnchorSourceY,0,1):null});
  })};
 }
 let state=initial(),selected=null,category='flowers',familyFilter='all',vesselFilter='all',undoStack=[],redoStack=[],toastTimer,images={},galleryUrls=[],importArtFor=null,drag=null,gesture=null,canvasPan=null,zoomLevel=1,zoomPanX=0,zoomPanY=0,editMode='move',stroke=null,cutSession=null,layerDragId=null,suppressLayerContextUntil=0,touchHintShown=false;
@@ -221,7 +223,18 @@ function specimenCanvas(item){
  while(spriteCache.size>SPRITE_CACHE_LIMIT)dropSprite(spriteCache.keys().next().value);
  return canvas;
 }
-function stemStyle(i){const a=assetById[i.type],g=dimensions(i,a),src=specimenCanvas(i),crop=src?.crop||{x:0,y:0,width:src?.width||a.width, height:src?.height||a.heightPx,fullWidth:src?.width||a.width,fullHeight:src?.height||a.heightPx,bottom:i.cropAnchorY??1};const nextPivot=clamp(crop.bottom??1,0,1),previousPivot=i.cropAnchorY??1;if(Math.abs(nextPivot-previousPivot)>.0001){const dy=(nextPivot-previousPivot)*i.h*g.height,angle=i.angle*Math.PI/180;i.x=clamp(i.x-dy*Math.sin(angle),5,95);i.y=clamp(i.y+dy*Math.cos(angle),15,95);i.cropAnchorY=nextPivot}const anchorX=(g.anchor*crop.fullWidth-crop.x)/Math.max(1,crop.width),widthRatio=crop.width/Math.max(1,crop.fullWidth),heightRatio=crop.height/Math.max(1,crop.fullHeight),ax=anchorX*100;return `left:${i.x}%;top:${i.y}%;height:${i.h*g.height*heightRatio}%;width:${i.h*g.ratio*widthRatio}%;--anchor:${ax}%;transform-origin:${ax}% 100%;transform:translate(${-ax}%,-100%) rotate(${i.angle}deg) scaleX(${i.flip?-1:1});`}
+function stemStyle(i){
+ const a=assetById[i.type],g=dimensions(i,a),src=specimenCanvas(i);
+ const crop=src?.crop||{x:0,y:0,width:src?.width||a.width,height:src?.height||a.heightPx,fullWidth:src?.width||a.width,fullHeight:src?.height||a.heightPx,bottom:i.cropAnchorY??1};
+ const nextPivot=clamp(crop.bottom??1,0,1),previousPivot=i.cropAnchorY??1;
+ const nextSource=clamp(unwarpY(nextPivot*g.height,g.split,g.length),0,1);
+ const previousSource=Number.isFinite(i.cropAnchorSourceY)?i.cropAnchorSourceY:clamp(unwarpY(previousPivot*g.height,g.split,g.length),0,1);
+ const dy=(warpY(nextSource,g.split,g.length)-warpY(previousSource,g.split,g.length))*i.h;
+ if(Math.abs(dy)>.0001){const angle=i.angle*Math.PI/180;i.x=clamp(i.x-dy*Math.sin(angle),5,95);i.y=clamp(i.y+dy*Math.cos(angle),15,95)}
+ i.cropAnchorY=nextPivot;i.cropAnchorSourceY=nextSource;
+ const anchorX=(g.anchor*crop.fullWidth-crop.x)/Math.max(1,crop.width),widthRatio=crop.width/Math.max(1,crop.fullWidth),heightRatio=crop.height/Math.max(1,crop.fullHeight),ax=anchorX*100;
+ return `left:${i.x}%;top:${i.y}%;height:${i.h*g.height*heightRatio}%;width:${i.h*g.ratio*widthRatio}%;--anchor:${ax}%;transform-origin:${ax}% 100%;transform:translate(${-ax}%,-100%) rotate(${i.angle}deg) scaleX(${i.flip?-1:1});`;
+}
 /** Stage width in CSS px; a hidden studio (0 px) falls back to a typical width until the ResizeObserver redraws. */
 function stageWidth(){const w=$('#stage')?.getBoundingClientRect().width||0;return w>=40?w:720}
 const drawnStems=new WeakMap();
@@ -471,9 +484,10 @@ function splitSelected(cut){
   if(!sprite||!w||!h)return false;
   const point=p=>[p[0]*w,warpY(p[1],g.split,g.length)*h/g.height];
   const anchor=item.localCuts?.at(-1)?.anchor;
-  const cutOptions={preferStart:true,woodyFallback:asset.group==='branch'&&(woodyCutFamilies.has(asset.family)||woodyCutIds.has(asset.id))};
+  const cutOptions={preferStart:true,woodyFallback:asset.group==='branch'&&(woodyCutFamilies.has(asset.family)||woodyCutIds.has(asset.id)),reddishStemFallback:asset.id==='photo-sedum',photoHeightRatio:Math.min(1,1/g.height)};
   if(anchor)cutOptions.rootPoint=[anchor[0]*w,anchor[1]*h];
   result=analyzeLocalCut(sprite,{a:point(p0),b:point(p1)},cutOptions);
+  if(result.ok)result.cut={...result.cut,v:2,frame:{split:g.split,length:g.length,end:g.end}};
  }catch(err){canvasTrouble(err);return false}
  if(!result.ok){toast(result.reason==='short'?L('请横划过想剪开的连接处。','Draw across the attachment to cut it.','切りたい付け根を横切ってください。'):L('这一剪还没把局部剪开，请靠近枝叶连接处再试。','That stroke did not separate a local piece. Try near its attachment.','まだ切り離されていません。枝葉の付け根で試してください。'));return false}
  const root=item.originId||item.id,prefix=item.pieceLabel||'',makePiece=(part,label)=>({...clone(item),id:uid(),originId:root,pieceLabel:label,localCuts:[...(item.localCuts||[]),{cut:result.cut,part,anchor:result.anchors[part]}]});

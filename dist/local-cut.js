@@ -4,8 +4,9 @@
  * and separates only the part that no longer reaches its lower (root) end.
  *
  * Cut records contain two small, run-length encoded masks in the coordinate
- * space of the *uncropped* composed specimen. They are plain JSON, so an edit
- * survives undo, local storage and export at a different resolution.
+ * space of the *uncropped* composed specimen. Version 2 also records the stem
+ * stretch at cut time, so later length changes can warp the masks in exactly
+ * the same two bands as the photograph.
  */
 
 const createCanvas=(w,h)=>{const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;return canvas};
@@ -58,6 +59,35 @@ function near8(index,w,h,visit){
 function distanceSquared(px,py,ax,ay,bx,by){
  const dx=bx-ax,dy=by-ay,denom=dx*dx+dy*dy,t=denom?clamp(((px-ax)*dx+(py-ay)*dy)/denom,0,1):0;
  const x=px-(ax+t*dx),y=py-(ay+t*dy);return x*x+y*y;
+}
+
+function lowAlphaSeam(alpha,wood,w,yEnd,middle){
+ const lo=clamp(Math.round(middle)-90,0,w-1),hi=clamp(Math.round(middle)+90,0,w-1),count=hi-lo+1;
+ let next=new Float32Array(count).fill(Infinity),current=new Float32Array(count),links=new Int16Array(Math.max(1,yEnd)*count);
+ next[clamp(Math.round(middle)-lo,0,count-1)]=0;
+ for(let y=yEnd-1;y>=0;y--){
+  current.fill(Infinity);
+  for(let x=0;x<count;x++)for(let step=-2;step<=2;step++){
+   const nextX=x+step;if(nextX<0||nextX>=count||next[nextX]===Infinity)continue;
+   const p=y*w+lo+x,opacity=alpha[p],penalty=(opacity>=20?8:opacity/20*8)+(wood[p]?14:0)+Math.abs(lo+x-middle)*.014;
+   const score=next[nextX]+penalty;
+   if(score<current[x]){current[x]=score;links[y*count+x]=nextX}
+  }
+  [next,current]=[current,next];
+ }
+ let best=0;for(let x=1;x<count;x++)if(next[x]<next[best])best=x;
+ const seam=new Int16Array(yEnd);
+ for(let y=0;y<yEnd;y++){seam[y]=lo+best;best=links[y*count+best]}
+ return seam;
+}
+
+function stemGroupsAtRow(wood,detached,w,h,y){
+ const row=new Uint16Array(w),detRow=new Uint16Array(w),lo=clamp(y-3,0,h-1),hi=clamp(y+3,0,h-1);
+ for(let py=lo;py<=hi;py++)for(let x=0;x<w;x++)if(wood[py*w+x]){row[x]++;if(detached[py*w+x])detRow[x]++}
+ const groups=[];let pixels=[],last=-10;
+ const finish=()=>{if(pixels.length>=4){let total=0,off=0;for(const x of pixels){total+=x;off+=detRow[x]}groups.push({x:total/pixels.length,off,weight:pixels.length})}pixels=[]};
+ for(let x=0;x<w;x++)if(row[x]>=2){if(x-last>8)finish();pixels.push(x);last=x}
+ finish();return groups;
 }
 
 /**
@@ -168,14 +198,17 @@ export function splitBotanicalMask(rgba,w,h,a,b,options={}){
  const alpha=new Uint8Array(w*h);
  for(let p=0;p<alpha.length;p++)alpha[p]=rgba[p*4+3];
  const direct=splitAlphaMask(alpha,w,h,a,b,options);
- if(direct.ok||direct.reason!=='not-separated'||!options.woodyFallback)return direct;
+ if(direct.ok||direct.reason!=='not-separated'||!(options.woodyFallback||options.reddishStemFallback))return direct;
 
  const wood=new Uint8Array(w*h);let woodArea=0,visibleArea=0,top=h,bottom=-1,woodBottom=-1;
  for(let p=0;p<wood.length;p++){
   const q=p*4,opacity=rgba[q+3],y=Math.floor(p/w);
   if(opacity>=20){visibleArea++;top=Math.min(top,y);bottom=Math.max(bottom,y)}
   const r=rgba[q],g=rgba[q+1],blue=rgba[q+2];
-  if(opacity>=64&&r-g>=10&&r-blue>=20&&g>=blue-6&&g>=25&&r<=g*1.9){wood[p]=255;woodArea++;woodBottom=Math.max(woodBottom,y)}
+  const stem=options.reddishStemFallback
+   ? r-g>=27&&r-blue>=20&&g<135&&blue<145&&r<190
+   : r-g>=10&&r-blue>=20&&g>=blue-6&&g>=25&&r<=g*1.9;
+  if(opacity>=64&&stem){wood[p]=255;woodArea++;woodBottom=Math.max(woodBottom,y)}
  }
  // A usable branch core reaches the rooted end and is a meaningful fraction
  // of this specimen. This keeps warm flower petals from becoming false stems.
@@ -194,6 +227,7 @@ export function splitBotanicalMask(rgba,w,h,a,b,options={}){
    if(!owner[n]&&alpha[n]>=20&&!kerf[n]){owner[n]=owner[p];queue[tail++]=n}
   });
  }
+ if(!options.reddishStemFallback){
  // Seven-pixel erosion leaves the dense centres of leaves or needle fans.
  // Keep each centre together before restoring its fine edges. An integral
  // image makes this linear rather than checking 49 neighbours per pixel.
@@ -234,6 +268,29 @@ export function splitBotanicalMask(rgba,w,h,a,b,options={}){
    if(!owner[n]&&alpha[n]>=20&&!kerf[n]){owner[n]=owner[p];queue[tail++]=n}
   });
  }
+ }
+ // Sedum's flower heads overlap in the photograph even where their stems are
+ // distinct. Extend a severed main stem into its own flower lobe along a seam
+ // that prefers the transparent gaps between buds; tiny side twigs keep the
+ // ordinary local result and do not steal an entire head.
+ if(options.reddishStemFallback&&core.stats.detachedArea>=Math.max(120,woodArea*.018)){
+  const photoBottom=options.photoHeightRatio?Math.min(bottom,h*options.photoHeightRatio):bottom;
+  const canopyY=clamp(Math.round(top+(photoBottom-top)*.55),1,h-1),groups=stemGroupsAtRow(wood,coreDetached,w,h,canopyY);
+  const detachedGroup=groups.filter(group=>group.off>=2).sort((a,b)=>b.off-a.off)[0];
+  if(detachedGroup){
+   const neighbours=groups.filter(group=>group!==detachedGroup&&group.off<2&&group.weight>=8);
+   const left=neighbours.filter(group=>group.x<detachedGroup.x).sort((a,b)=>b.x-a.x)[0];
+   const right=neighbours.filter(group=>group.x>detachedGroup.x).sort((a,b)=>a.x-b.x)[0];
+   if(left||right){
+    const leftSeam=left?lowAlphaSeam(alpha,wood,w,canopyY,(left.x+detachedGroup.x)/2):null;
+    const rightSeam=right?lowAlphaSeam(alpha,wood,w,canopyY,(right.x+detachedGroup.x)/2):null;
+    for(let y=0;y<canopyY;y++)for(let x=0;x<w;x++){
+     const p=y*w+x;if(alpha[p]<20||kerf[p])continue;
+     owner[p]=(!leftSeam||x>leftSeam[y])&&(!rightSeam||x<rightSeam[y])?2:1;
+    }
+   }
+  }
+ }
  // Very faint antialiasing can extend several pixels past a needle. Give it
  // the same owner as the visible needle instead of leaving a ghost in the root.
  head=0;tail=0;
@@ -245,12 +302,12 @@ export function splitBotanicalMask(rgba,w,h,a,b,options={}){
  }
  const detached=new Uint8Array(w*h),cleanKerf=kerf.slice();let detachedArea=0,rootArea=0;
  for(let p=0;p<owner.length;p++){
-  if(owner[p]===2){detached[p]=1;detachedArea++}
-  else if(owner[p]===1)rootArea++;
+  if(owner[p]===2&&alpha[p]>0){detached[p]=1;detachedArea++}
+  else if(owner[p]===1&&alpha[p]>0)rootArea++;
   else if(alpha[p]>0&&alpha[p]<20)cleanKerf[p]=1;
  }
  if(detachedArea<3||rootArea<3)return direct;
- return {ok:true,cut:{v:1,w,h,d:encodeCutMask(detached),k:encodeCutMask(cleanKerf)},anchors:core.anchors,stats:{...core.stats,rootArea,detachedArea,method:'woody-core'}};
+ return {ok:true,cut:{v:1,w,h,d:encodeCutMask(detached),k:encodeCutMask(cleanKerf)},anchors:core.anchors,stats:{...core.stats,rootArea,detachedArea,method:options.reddishStemFallback?'reddish-stem-core':'woody-core'}};
 }
 
 /**
@@ -282,14 +339,43 @@ function maskCanvas(encoded,w,h,makeCanvas){
  ctx.putImageData(image,0,0);return canvas;
 }
 
+/** Source and destination bands for a saved cut mask after a stem-length edit. */
+export function cutMaskBands(cut,frame,outWidth,outHeight){
+ if(cut?.v!==2||!cut.frame||!frame||!Number.isFinite(frame.height)||frame.height<=0)return [[0,0,cut.w,cut.h,0,0,outWidth,outHeight]];
+ const old=cut.frame,sourceHeight=old.end<=old.split?old.end:old.split+(old.end-old.split)*old.length;
+ if(!(sourceHeight>0)||old.split!==frame.split)return [[0,0,cut.w,cut.h,0,0,outWidth,outHeight]];
+ const oldScale=cut.h/sourceHeight,newScale=outHeight/frame.height,bands=[];
+ const upperEnd=Math.min(frame.end,frame.split,old.end);
+ if(upperEnd>0)bands.push([0,0,cut.w,upperEnd*oldScale,0,0,outWidth,upperEnd*newScale]);
+ const lowerEnd=Math.min(frame.end,old.end);
+ if(lowerEnd>frame.split){
+  const oldTop=frame.split*oldScale,newTop=frame.split*newScale;
+  bands.push([0,oldTop,cut.w,(lowerEnd-frame.split)*old.length*oldScale,0,newTop,outWidth,(lowerEnd-frame.split)*frame.length*newScale]);
+ }
+ return bands;
+}
+
 /** Apply one saved cut to a full composed canvas, before its alpha crop. */
-export function applyLocalCut(ctx,out,cut,part,makeCanvas=createCanvas){
- if(!cut||cut.v!==1||!Number.isInteger(cut.w)||!Number.isInteger(cut.h)||cut.w<1||cut.h<1||cut.w*cut.h>1600000||!['main','detached'].includes(part))return false;
+export function applyLocalCut(ctx,out,cut,part,makeCanvas=createCanvas,frame=null){
+ if(!cut||![1,2].includes(cut.v)||!Number.isInteger(cut.w)||!Number.isInteger(cut.h)||cut.w<1||cut.h<1||cut.w*cut.h>1600000||!['main','detached'].includes(part))return false;
  const detached=maskCanvas(cut.d,cut.w,cut.h,makeCanvas),kerf=maskCanvas(cut.k,cut.w,cut.h,makeCanvas);
  if(!detached||!kerf){if(detached)detached.width=detached.height=0;if(kerf)kerf.width=kerf.height=0;return false}
+ if(cut.v===1){
+  try{
+   ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+   ctx.globalCompositeOperation=part==='detached'?'destination-in':'destination-out';ctx.drawImage(detached,0,0,out.width,out.height);
+   ctx.globalCompositeOperation='destination-out';ctx.drawImage(kerf,0,0,out.width,out.height);ctx.restore();return true;
+  }finally{detached.width=detached.height=0;kerf.width=kerf.height=0}
+ }
+ const aligned=makeCanvas(out.width,out.height),alignedContext=aligned.getContext('2d');
+ if(!alignedContext){detached.width=detached.height=0;kerf.width=kerf.height=0;aligned.width=aligned.height=0;return false}
  try{
-  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-  ctx.globalCompositeOperation=part==='detached'?'destination-in':'destination-out';ctx.drawImage(detached,0,0,out.width,out.height);
-  ctx.globalCompositeOperation='destination-out';ctx.drawImage(kerf,0,0,out.width,out.height);ctx.restore();return true;
- }finally{detached.width=detached.height=0;kerf.width=kerf.height=0}
+  ctx.save();alignedContext.imageSmoothingEnabled=true;alignedContext.imageSmoothingQuality='high';
+  const bands=cutMaskBands(cut,frame,out.width,out.height);
+  for(const band of bands)alignedContext.drawImage(detached,...band);
+  ctx.globalCompositeOperation=part==='detached'?'destination-in':'destination-out';ctx.drawImage(aligned,0,0);
+  alignedContext.clearRect(0,0,out.width,out.height);
+  for(const band of bands)alignedContext.drawImage(kerf,...band);
+  ctx.globalCompositeOperation='destination-out';ctx.drawImage(aligned,0,0);ctx.restore();return true;
+ }finally{detached.width=detached.height=0;kerf.width=kerf.height=0;aligned.width=aligned.height=0}
 }

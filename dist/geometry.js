@@ -42,7 +42,8 @@ export function dimensions(item, asset) {
   const length = item.length ?? 1;
   const end = 1 - item.trim / 100;
   const height=warpY(end, split, length);
-  return {split, length, end, height, ratio:asset.width / asset.heightPx, anchor:asset.anchor ?? .5, pivotY:(item.cropAnchorY??1)*height};
+  const pivotY=Number.isFinite(item.cropAnchorSourceY)?warpY(item.cropAnchorSourceY,split,length):(item.cropAnchorY??1)*height;
+  return {split, length, end, height, ratio:asset.width / asset.heightPx, anchor:asset.anchor ?? .5, pivotY};
 }
 /** Source UV -> square stage UV, including clipping, length, pivot, mirror, rotation. */
 export function sourceToStage(point, item, asset) {

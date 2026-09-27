@@ -1,5 +1,5 @@
-import {dimensions,vesselGeometry,warpY} from './geometry.js?v=13';
-import {applyLocalCut} from './local-cut.js?v=27';
+import {dimensions,vesselGeometry,warpY} from './geometry.js?v=28';
+import {applyLocalCut} from './local-cut.js?v=28';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
@@ -48,7 +48,7 @@ export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browse
  if(top>0)dest.drawImage(src,0,0,src.width,top,0,0,out.width,top);
  if(g.end>g.split){const sh=(g.end-g.split)*src.height;dest.drawImage(src,0,top,src.width,sh,0,top,out.width,drawnStem?sh:sh*g.length)}
  if(item.segments?.length)applySegments(dest,out,item,g,src.height);
- if(item.localCuts?.length)for(const entry of item.localCuts)applyLocalCut(dest,out,entry.cut,entry.part,createCanvas);
+ if(item.localCuts?.length)for(const entry of item.localCuts)applyLocalCut(dest,out,entry.cut,entry.part,createCanvas,g);
  const fullWidth=out.width,fullHeight=out.height;
  let x=0,y=0,width=fullWidth,height=fullHeight,mask=null;
  if(!extraCut){
@@ -94,7 +94,8 @@ function drawBotanical(ctx,size,item,asset,getSprite,{alpha=1,filter='none',nigh
  const crop=src.crop||{x:0,y:0,width:src.width,height:src.height,fullWidth:src.width,fullHeight:src.height,bottom:item.cropAnchorY??1};
  const fullH=item.h/100*size*g.height,fullW=item.h/100*size*g.ratio;
  const left=-fullW*g.anchor+fullW*crop.x/crop.fullWidth;
- const top=fullH*(crop.y/crop.fullHeight-(item.cropAnchorY??1));
+ const pivot=Number.isFinite(item.cropAnchorSourceY)?warpY(item.cropAnchorSourceY,g.split,g.length)/g.height:(item.cropAnchorY??1);
+ const top=fullH*(crop.y/crop.fullHeight-pivot);
  const width=fullW*crop.width/crop.fullWidth,height=fullH*crop.height/crop.fullHeight;
  ctx.save();ctx.translate(item.x/100*size,item.y/100*size);ctx.rotate(item.angle*Math.PI/180);ctx.scale(item.flip?-1:1,1);ctx.globalAlpha=alpha;ctx.filter=filter;
  ctx.shadowColor=filter==='none'?(night?'#07100b55':'#30372d24'):'transparent';ctx.shadowBlur=filter==='none'?size*.006:0;ctx.shadowOffsetX=filter==='none'?size*(night?.003:.005):0;ctx.shadowOffsetY=filter==='none'?size*.007:0;
