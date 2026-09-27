@@ -49,3 +49,12 @@
 - Extraction provenance and printed/PDF page mapping: `docs/book-photo-extraction.md`, `docs/book-photo-catalog.json`.
 
 - Eight book-derived vessels with calibrated opening coordinates and concealed support: `docs/book-vessel-sources.json`. Total vessel library:31.
+
+## v12 · 真实比例与 50 组灵感
+
+- **真实比例**：画布按 100 cm 见方计算（1% = 1 cm）。99 款花材逐一标定真实尺寸，见 `dist/real-scale.js`（`cm` 为素材整图的真实高度）。新加入的花材默认就是真实大小；「花材大小 · 真实比例」只允许在真实尺寸的 80%–125% 之间调整，双指缩放同样受限。面板显示「此枝约 N cm · 花器高约 N cm」，方便对照。
+- 旧草稿里超出真实比例的花材会提示「这枝超出了真实比例」，可一键恢复；不会在打开时被自动改动。
+- **书中实拍花材补枝梗**：60 款实拍花头原本几乎没有枝梗。现在「枝梗长度」以厘米计（+0–60 cm），从照片底部的真实剪口延续画出自然枝梗；成束花材的多根枝梗会在瓶口收拢。新加入时自动长出足够的枝梗，让花头高过瓶口。
+- **插回花器**：保持花头位置不动，自动调整角度和枝长，让枝梗落回花器口。更换花材款式时也会保持花头位置与相对大小。
+- **灵感手帖 50 组**：新数据在 `dist/studies.js`，按池坊、小原流、草月流、自由花与春夏秋冬筛选，覆盖全部 31 款花器。每组只描述花头要落的位置（相对瓶口的厘米数），枝梗角度和长度自动求解，因此全部按真实比例摆放。预览按作品范围自动取景，滚动到附近才渲染。
+- 生成 Prompt 增加花器实际高度，并要求保持每种花材相对花器的真实尺寸。

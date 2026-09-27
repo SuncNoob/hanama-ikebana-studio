@@ -1,35 +1,68 @@
-import {dimensions,vesselGeometry} from './geometry.js?v=10';
+import {dimensions,vesselGeometry} from './geometry.js?v=13';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
-/** Shared by the editor and exported artwork; cuts never mutate a source image. */
-export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browserCanvas){
- const src=createCanvas(img.naturalWidth||img.width,img.naturalHeight||img.height),ctx=src.getContext('2d');
- ctx.drawImage(img,0,0);ctx.globalCompositeOperation='destination-out';ctx.strokeStyle='#000';ctx.fillStyle='#000';ctx.lineCap='round';ctx.lineJoin='round';
+/** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
+export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
+const context2d=canvas=>{const ctx=canvas.getContext('2d');if(!ctx)throw new CanvasUnavailableError(canvas.width,canvas.height);return ctx};
+const release=canvas=>{try{canvas.width=canvas.height=0}catch{}};
+/**
+ * Shared by the editor and exported artwork; cuts never mutate a source image.
+ * `k` scales the source photograph (see spriteScale in scale.js). Cuts, drawn stems, probe and crop are all ratio-based,
+ * so every consumer that reads `sprite.crop` works at any k. `sprite.mask` keeps the probe's alpha (w×h, uncropped).
+ */
+export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browserCanvas,k=1){
+ const scale=Number.isFinite(k)&&k>0?Math.min(1,k):1,sw=Math.max(1,Math.round((img.naturalWidth||img.width)*scale)),sh=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
+ const src=createCanvas(sw,sh),ctx=context2d(src);
+ if(scale<1){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,sw,sh)}else ctx.drawImage(img,0,0);
+ ctx.globalCompositeOperation='destination-out';ctx.strokeStyle='#000';ctx.fillStyle='#000';ctx.lineCap='round';ctx.lineJoin='round';
  for(const cut of [...(item.cuts||[]),...(extraCut?[extraCut]:[])]){
   if(!cut.points.length)continue;ctx.beginPath();cut.points.forEach((p,k)=>ctx[k?'lineTo':'moveTo'](p[0]*src.width,p[1]*src.height));
   if(cut.kind==='lasso'){if(cut.points.length<3)continue;ctx.closePath();ctx.fill()}
   else {ctx.lineWidth=cut.radius*2*src.height;if(cut.points.length===1){const p=cut.points[0];ctx.arc(p[0]*src.width,p[1]*src.height,cut.radius*src.height,0,Math.PI*2);ctx.fill()}else ctx.stroke()}
  }
- const g=dimensions(item,asset),out=createCanvas(src.width,Math.max(1,Math.round(src.height*g.height))),dest=out.getContext('2d');
+ const g=dimensions(item,asset),out=createCanvas(src.width,Math.max(1,Math.round(src.height*g.height)));let dest;try{dest=context2d(out)}catch(err){release(src);release(out);throw err}
  const top=Math.min(g.split,g.end)*src.height;
+ const drawnStem=asset.stems&&g.length>1&&g.end>g.split;
+ if(drawnStem)paintStems(dest,asset,src.width,src.height,g.end*src.height,out.height);
  if(top>0)dest.drawImage(src,0,0,src.width,top,0,0,out.width,top);
- if(g.end>g.split){const sh=(g.end-g.split)*src.height;dest.drawImage(src,0,top,src.width,sh,0,top,out.width,sh*g.length)}
+ if(g.end>g.split){const sh=(g.end-g.split)*src.height;dest.drawImage(src,0,top,src.width,sh,0,top,out.width,drawnStem?sh:sh*g.length)}
  const fullWidth=out.width,fullHeight=out.height;
- let x=0,y=0,width=fullWidth,height=fullHeight;
+ let x=0,y=0,width=fullWidth,height=fullHeight,mask=null;
  if(!extraCut){
   const probeScale=Math.min(1,144/Math.max(fullWidth,fullHeight)),pw=Math.max(1,Math.ceil(fullWidth*probeScale)),ph=Math.max(1,Math.ceil(fullHeight*probeScale));
-  const probe=createCanvas(pw,ph);probe.getContext('2d').drawImage(out,0,0,pw,ph);const pixels=probe.getContext('2d').getImageData(0,0,pw,ph).data;
+  const probe=createCanvas(pw,ph),pctx=context2d(probe);pctx.drawImage(out,0,0,pw,ph);const pixels=pctx.getImageData(0,0,pw,ph).data;release(probe);
+  const alpha=new Uint8Array(pw*ph);for(let n=0;n<alpha.length;n++)alpha[n]=pixels[n*4+3];mask={w:pw,h:ph,data:alpha};
   let left=pw,topPixel=ph,right=-1,bottom=-1;
-  for(let py=0;py<ph;py++)for(let px=0;px<pw;px++)if(pixels[(py*pw+px)*4+3]>12){left=Math.min(left,px);topPixel=Math.min(topPixel,py);right=Math.max(right,px);bottom=Math.max(bottom,py)}
+  for(let py=0;py<ph;py++)for(let px=0;px<pw;px++)if(alpha[py*pw+px]>12){left=Math.min(left,px);topPixel=Math.min(topPixel,py);right=Math.max(right,px);bottom=Math.max(bottom,py)}
   if(right>=left&&bottom>=topPixel){
    const padX=Math.max(1,Math.ceil(pw*.012)),padY=Math.max(1,Math.ceil(ph*.012));
    x=Math.max(0,Math.floor((left-padX)/probeScale));y=Math.max(0,Math.floor((topPixel-padY)/probeScale));
    const r=Math.min(fullWidth,Math.ceil((right+1+padX)/probeScale)),b=Math.min(fullHeight,Math.ceil((bottom+1+padY)/probeScale));width=Math.max(1,r-x);height=Math.max(1,b-y);
   }
  }
+ release(src);
  const sprite=x===0&&y===0&&width===fullWidth&&height===fullHeight?out:createCanvas(width,height);
- if(sprite!==out)sprite.getContext('2d').drawImage(out,x,y,width,height,0,0,width,height);
- sprite.crop={x,y,width,height,fullWidth,fullHeight,bottom:(y+height)/fullHeight};
+ if(sprite!==out){try{context2d(sprite).drawImage(out,x,y,width,height,0,0,width,height)}finally{release(out)}}
+ sprite.crop={x,y,width,height,fullWidth,fullHeight,bottom:(y+height)/fullHeight};sprite.scale=scale;if(mask)sprite.mask=mask;
  return sprite;
+}
+
+const shade=(hex,f)=>'#'+[1,3,5].map(i=>Math.round(Math.min(255,parseInt(hex.slice(i,i+2),16)*f)).toString(16).padStart(2,'0')).join('');
+/** Book photographs end just below the flower head; continue each cut stem so it can reach the vessel. */
+function paintStems(ctx,asset,width,height,from,to){
+ const pxPerCm=height/asset.height,anchor=(asset.anchor??.5)*width,length=to-from;
+ for(const [u,startCm,endCm,color] of asset.stems){
+  const x0=u*width,x1=anchor+(x0-anchor)*.18,w0=Math.max(1.5,startCm*pxPerCm),w1=Math.max(1.2,endCm*pxPerCm);
+  const top=from-Math.min(w0*2,height*.06),bend=(x0-x1)*.35,midY=from+length*.45;
+  ctx.save();
+  const fill=ctx.createLinearGradient(0,top,0,to);fill.addColorStop(0,color);fill.addColorStop(1,shade(color,.82));
+  ctx.fillStyle=fill;ctx.beginPath();
+  ctx.moveTo(x0-w0/2,top);ctx.quadraticCurveTo(x0-w0/2-bend*.2,midY,x1-w1/2,to);ctx.lineTo(x1+w1/2,to);ctx.quadraticCurveTo(x0+w0/2-bend*.2,midY,x0+w0/2,top);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=shade(color,1.28);ctx.globalAlpha=.42;ctx.lineWidth=Math.max(.6,w1*.22);ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x0-w0*.14,top+w0);ctx.quadraticCurveTo(x0-w0*.14-bend*.2,midY,x1-w1*.14,to-w1);ctx.stroke();
+  ctx.strokeStyle=shade(color,.62);ctx.globalAlpha=.35;ctx.lineWidth=Math.max(.5,w1*.16);
+  ctx.beginPath();ctx.moveTo(x0+w0*.38,top+w0);ctx.quadraticCurveTo(x0+w0*.38-bend*.2,midY,x1+w1*.38,to-w1);ctx.stroke();
+  ctx.restore();
+ }
 }
 
 function drawBotanical(ctx,size,item,asset,getSprite,{alpha=1,filter='none',night=false}={}){

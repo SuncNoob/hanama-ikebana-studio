@@ -6,24 +6,49 @@ const termEN={
  '静寂':'Stillness','侘寂':'Wabi-sabi','春意':'Spring','野趣':'Wild spirit'
 };
 const en=value=>termEN[value]||value;
+/** Mood as a photographic direction rather than a bare word. */
+const moodEN={'静寂':'calm, soft diffuse side light, muted palette, generous empty space','侘寂':'low-key light, tactile surfaces, gentle imperfection','春意':'fresh morning light, airy and bright','野趣':'loose, just-gathered garden feeling'};
+const lowerName=name=>/^(Japanese|Icelandic|Peruvian|English|French|Chinese|Dutch)\b/.test(name)?name:name.charAt(0).toLowerCase()+name.slice(1);
+/** Simple English plural of a plant name. Latin -s/-x/-i names and mass nouns stay unchanged; "lily of the valley" pluralises its head. */
+export function pluralName(name){
+ const of=String(name).match(/^(.+?)( of .+)$/);if(of)return pluralName(of[1])+of[2];
+ if(/(s|x|i|lavender|gypsophila|statice|jasmine|yarrow|grass|mantle|weed|bleeding)$/i.test(name))return name;
+ if(/[^aeiou]y$/i.test(name))return name.slice(0,-1)+'ies';
+ if(/(ch|sh)$/i.test(name))return name+'es';
+ return name+'s';
+}
+/** "2 anemones, 1 ranunculus, 1 lavender bunch": items grouped by English name, in draft order. */
+export function countedNames(items,assetById){
+ const groups=new Map();
+ for(const i of items){const a=assetById[i.type];if(!a)continue;const name=lowerName(a.en||a.name),key=`${name}|${a.bundle?1:0}`;const g=groups.get(key)||{name,bundle:!!a.bundle,n:0};g.n++;groups.set(key,g)}
+ return [...groups.values()].map(({name,bundle,n})=>`${n} ${bundle?`${name} ${n===1?'bunch':'bunches'}`:n===1?name:pluralName(name)}`).join(', ');
+}
 
-export function buildPrompt(s,assetById,scenes){
- const vessel=assetById[s.vessel],counts=new Map();
- for(const i of s.items){const a=assetById[i.type],key=`${a.en||a.name}${a.bundle?" group (all visible blooms)":""} (${a.colorEn||en(a.color)})`;counts.set(key,(counts.get(key)||0)+1)}
+/** Prompt text only; `extras.outOfScale` (optional) drops the true-scale claim for drafts whose sizes are outside real bounds. */
+export function buildPrompt(s,assetById,scenes,extras={}){
+ const vessel=assetById[s.vessel],counts=new Map(),items=s.items.filter(i=>assetById[i.type]);
+ for(const i of items){const a=assetById[i.type],color=a.colorEn||en(a.color),detail=[color,a.bundle&&'a natural bunch'].filter(Boolean).join(', '),key=`${a.en||a.name}${detail?` (${detail})`:''}`;counts.set(key,(counts.get(key)||0)+1)}
  const inventory=[...counts].map(([name,n])=>`${n} × ${name}`).join('; ');
- const foreground=s.items.filter(i=>i.aboveVessel).map(i=>assetById[i.type].en||assetById[i.type].name),background=s.items.filter(i=>!i.aboveVessel).map(i=>assetById[i.type].en||assetById[i.type].name);
- const depth=foreground.length||background.length?`Layer depth: ${foreground.length?`${foreground.join(', ')} sit in front of the vessel`:'keep the selected plants behind the vessel'}; ${background.length?`${background.join(', ')} emerge from behind its rim`:'other stems may cross naturally where the design allows'}.` : '';
+ const front=items.filter(i=>i.aboveVessel),back=items.filter(i=>!i.aboveVessel),several=(vessel.openings?.length||0)>1,opening=several?'the openings':'the opening';
+ const concealed=!vessel.fixture||vessel.fixture.visibility==='hidden';
+ const stems=items.length?`Every stem rises continuously from ${several?'one of the vessel openings':'the vessel opening'}${concealed?'; the rim hides the cut ends':''}.`:'';
+ const nearer=front.length?`Nearer the camera, crossing in front of the rim: ${countedNames(front,assetById)} (${front.length===1?`its stem still enters ${several?'one of the openings':opening}`:`their stems still enter ${opening}`}).`:'';
+ const further=back.length?`Further back, partly hidden by the rim: ${countedNames(back,assetById)}.`:'';
  const refinement={natural:'Make a gentle florist refinement.',creative:'Gently refine the stem rhythm and depth within the same design.',faithful:'Make only the small corrections needed for physical realism.'}[s.generation]||'Make a gentle florist refinement.';
  const support={neck:'Let the neck support the stems.',kenzan:'Seat the stems in a discreet kenzan inside the basin.','integrated-holes':'Insert stems through the actual openings.','chicken-wire':'Support the stems with fitted floral wire inside the vessel.','hidden-grid':'Use a concealed grid below the rim.',crossbar:'Use a concealed crossbar below the rim.',foam:'Conceal the support inside the vessel.'}[vessel.fixture?.kind]||'Use discreet support suited to the vessel.';
  const n=hashText(`${s.id||''}-${s.generationVariation||0}`);
  const detail=pick(['uneven petal overlap and subtle pigment drift','relaxed petal folds and gently varied opening stages','slightly eccentric petals and soft color variation','small differences in petal curl and maturity'],n);
- return `Realize this collage sketch as a professional photograph of a real floral arrangement. Keep its recognizable composition, selected flowers and count, vessel and main negative spaces. ${refinement}
+ const scaleNote=extras?.outOfScale?'Keep flower sizes as drawn relative to the vessel.':'The draft is drawn at true botanical scale; keep every flower head, leaf and branch at its real size relative to the vessel.';
+ const mood=moodEN[s.mood]?`${en(s.mood)} — ${moodEN[s.mood]}`:en(s.mood),note=String(s.intention||'').trim();
+ const scene=scenes[s.scene]||scenes.paper||[];
+ return `Create an image from the attached draft image: a square professional photograph of a real floral arrangement. Keep the draft's recognizable composition, selected flowers and count, vessel and main negative spaces. ${refinement}
 
-Treat the draft as design intent, not a tracing. Allow small shifts in flower facing, stem curves and depth for natural growth, gravity and continuous stems entering the vessel. ${depth} ${support}
+${['Treat the draft as design intent, not a tracing. Allow small shifts in flower facing, stem curves and depth for natural growth and gravity.',stems,support,nearer,further].filter(Boolean).join(' ')}
 
 Keep the overall lighting and atmosphere; let local shadows and reflections follow the real forms. Give each bloom species-appropriate individuality through ${detail}, without exaggerated damage.
 
-Materials: ${inventory||'as shown in the draft'}. Vessel: ${vessel.en||vessel.name}.
-Setting: ${scenes[s.scene][3]||scenes[s.scene][2]}. Mood: ${en(s.mood)}.${s.intention?`\nCreative note: ${s.intention}`:''}
+Materials: ${inventory||'as shown in the draft'}. Vessel: ${vessel.en||vessel.name}, about ${Math.round(vessel.height)} cm tall.
+${scaleNote}
+Setting: ${scene[3]||scene[2]||'as in the draft'}. Mood: ${mood}.${note?`\nCreative note: ${note}\nIf the creative note names a place, season or light, follow the note over the setting and the draft's lighting.`:''}
 No added text or watermark.`;
 }

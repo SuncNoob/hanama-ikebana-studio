@@ -7,8 +7,8 @@
 <meta name="description" content="在花间亲手挑选花材、舒展枝条，创作日式插花。保存草稿和 GPT Image 提示词，让一份灵感成为作品。">
 <meta name="theme-color" content="#efeee8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=11">
-<script type="module" src="/app.js?v=11">
+<link rel="stylesheet" href="/style.css?v=15">
+<script type="module" src="/app.js?v=15">
 </script>
 </head>
 <body>
@@ -71,6 +71,7 @@
 <button data-family-group="book" data-zh="花之书" data-en="The Book">花之书</button>
 <button data-family-group="bundle" data-zh="成组" data-en="Groups">成组</button>
 <button data-family-group="bloom" data-zh="花朵" data-en="Blooms">花朵</button>
+<button data-family-group="foliage" data-zh="叶材" data-en="Foliage">叶材</button>
 <button data-family-group="branch" data-zh="枝叶" data-en="Branches">枝叶</button>
 </div>
 <div class="material-filters" id="vessel-filters" role="group" aria-label="花器风格" data-aria-zh="花器风格" data-aria-en="Vessel style" hidden>
@@ -249,21 +250,31 @@
 </div>
 <div class="range-control">
 <label class="slider-label" for="size">
-<span data-zh="花材大小" data-en="Material size">花材大小</span> <output id="size-value">100%</output>
+<span data-zh="花材大小 · 真实比例" data-en="Size · true to life">花材大小 · 真实比例</span> <output id="size-value">100%</output>
 </label>
 <input id="size" type="range" min="10" max="95" step="1">
 </div>
-<details id="stem-details" class="stem-details">
-<summary>
-<span data-zh="修剪与枝梗" data-en="Pruning & stem length">修剪与枝梗</span>
-<span aria-hidden="true">＋</span>
-</summary>
 <div class="range-control">
 <label class="slider-label" for="length">
 <span data-zh="枝梗长度" data-en="Stem length">枝梗长度</span> <output id="length-value">100%</output>
 </label>
 <input id="length" type="range" min="60" max="240" step="5">
 </div>
+<div class="real-size">
+<p id="real-size"></p>
+<button id="reseat-button" type="button" title="保持花头位置，把枝梗接回花器口" data-title-zh="保持花头位置，把枝梗接回花器口" data-title-en="Keep the flower in place and run its stem back into the vessel">
+<span data-zh="插回花器" data-en="Into vessel">插回花器</span>
+</button>
+</div>
+<p id="scale-warning" class="scale-warning" hidden>
+<span data-zh="这枝超出了真实比例。" data-en="This stem is outside its true-to-life size.">这枝超出了真实比例。</span>
+<button id="scale-reset" type="button" data-zh="恢复真实比例" data-en="Restore real size">恢复真实比例</button>
+</p>
+<details id="stem-details" class="stem-details">
+<summary>
+<span id="stem-details-label" data-zh="修剪枝叶与根部" data-en="Pruning">修剪枝叶与根部</span>
+<span aria-hidden="true">＋</span>
+</summary>
 <div class="range-control">
 <label class="slider-label" for="trim">
 <span data-zh="剪短根部" data-en="Trim base">剪短根部</span> <output id="trim-value">0%</output>
