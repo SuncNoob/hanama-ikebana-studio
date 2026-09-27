@@ -1,0 +1,57 @@
+/* A small, canvas-adjacent entry keeps the full library out of the way until needed. */
+.quick-material-bar{display:flex;align-items:center;gap:15px;width:min(100%,calc(100dvh - 315px));min-height:58px;margin:7px auto 0;padding:9px 0 4px;border-bottom:1px solid #d9ddd1}
+.quick-material-open{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:none;min-height:40px;padding:8px 14px;border-radius:8px;background:#344335;color:#fff;font-size:13px;font-weight:500;white-space:nowrap;transition:background .16s ease,transform .16s ease}
+.quick-material-open:hover{background:#435645;transform:translateY(-1px)}
+.quick-material-open[aria-expanded=true]{background:#536748}
+.quick-material-open>span:first-child{font-size:21px;font-weight:300;line-height:0.7}
+.quick-material-recent{display:flex;align-items:center;gap:7px;min-width:0}
+.quick-material-recent-label{color:#677165;font-size:11px;white-space:nowrap}
+.quick-material-recent-item{display:grid;place-items:center;flex:none;width:39px;height:39px;padding:2px;border:1px solid #d9ddd1;border-radius:7px;background:#f7f7f2;overflow:hidden}
+.quick-material-recent-item:hover:not(:disabled){border-color:#8e9f7e;background:#edf0e7}
+.quick-material-recent-item img{display:block;width:100%;height:100%;object-fit:contain}
+.quick-material-recent-item:disabled{opacity:.6}
+.quick-material-recent[hidden],.quick-material-recent-item[hidden],.quick-material-drawer[hidden],.quick-material-empty[hidden]{display:none!important}
+
+/* The expanded library replaces the inspector beside the canvas; it never covers the art. */
+.quick-material-drawer{display:flex;flex-direction:column;gap:13px;min-width:0;width:100%;max-height:min(78dvh,760px);padding:18px;border:1px solid #d4d9cd;border-radius:10px;background:#f8f8f3;box-shadow:0 10px 27px #27362610}
+.quick-material-drawer:not([hidden])~.design-panel{display:none!important}
+.quick-material-heading{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.quick-material-heading .eyebrow{font-size:9px;letter-spacing:.12em}
+.quick-material-heading h2{margin:4px 0 0;font:500 21px var(--serif);letter-spacing:.04em}
+.quick-material-heading .icon-button{flex:none}
+.quick-material-search-label{display:flex;align-items:center;gap:8px;min-height:41px;padding:0 11px;border:1px solid #d4d9cd;border-radius:8px;background:#fff;color:#667264}
+.quick-material-search-label:focus-within{border-color:#7c906f;box-shadow:0 0 0 2px #869b762a}
+.quick-material-search-label>span[aria-hidden]{font-size:22px;line-height:1;transform:rotate(-18deg)}
+#quick-material-search{display:block;min-width:0;width:100%;height:37px;padding:0;border:0;outline:0;background:transparent;color:var(--ink);font-size:13px}
+#quick-material-search::-webkit-search-cancel-button{cursor:pointer}
+.quick-material-filters{display:flex;align-items:center;gap:6px;flex:none;min-height:38px;overflow-x:auto;padding:1px 0 5px;scrollbar-width:none}
+.quick-material-filters::-webkit-scrollbar{display:none}
+.quick-material-filters button{flex:none;min-height:31px;padding:5px 10px;border:1px solid transparent;border-radius:999px;color:#5d6a5a;font-size:12px;white-space:nowrap}
+.quick-material-filters button:hover{background:#edf0e9}
+.quick-material-filters button[aria-pressed=true]{border-color:#a8b6a1;background:#e4eadf;color:#304232}
+.quick-material-status{display:flex;justify-content:space-between;gap:8px;color:#7b8378;font-size:11px;line-height:1.35}
+.quick-material-status>span:last-child{text-align:right}
+.quick-material-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:10px;flex:1;min-height:0;overflow-y:auto;padding:1px 3px 3px 0;scrollbar-width:thin;scrollbar-color:#c0cbb9 transparent}
+.quick-material-grid .material-card,.quick-material-grid .quick-material-card{min-width:0;min-height:155px;padding:8px 6px;text-align:center}
+.quick-material-grid .material-card img,.quick-material-grid .quick-material-card img{display:block;width:100%;height:96px;object-fit:contain;margin:0 auto 6px}
+.quick-material-grid .material-card strong,.quick-material-grid .quick-material-card strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;line-height:1.35}
+.quick-material-grid .material-card small,.quick-material-grid .quick-material-card small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#687266;font-size:11px;line-height:1.35}
+.quick-material-empty{margin:auto;padding:20px 0;color:#737c70;text-align:center;font-size:13px}
+
+@media(min-width:901px){
+ .workspace>.quick-material-drawer{grid-column:2;grid-row:1/3;position:sticky;top:16px;align-self:start}
+}
+@media(min-width:1150px){
+ .workspace:has(>.quick-material-drawer:not([hidden])){grid-template-columns:minmax(320px,1fr) minmax(320px,410px)}
+}
+@media(max-width:900px){
+ .quick-material-bar{width:100%}
+ .workspace>.quick-material-drawer{order:1;max-width:760px;max-height:min(56dvh,560px);margin:8px auto 16px}
+}
+@media(max-width:380px){
+ .quick-material-bar{gap:10px}
+ .quick-material-open{padding-inline:11px}
+ .quick-material-recent-label{display:none}
+ .quick-material-recent-item{width:34px;height:34px}
+ .quick-material-drawer{padding:14px}
+}

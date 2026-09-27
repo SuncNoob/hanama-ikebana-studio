@@ -7,8 +7,9 @@
 <meta name="description" content="在花间亲手挑选花材、舒展枝条，创作日式插花。保存草稿和 GPT Image 提示词，让一份灵感成为作品。">
 <meta name="theme-color" content="#efeee8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=22">
-<script type="module" src="/app.js?v=22">
+<link rel="stylesheet" href="/style.css?v=25">
+<link rel="stylesheet" href="/material-drawer.css?v=25">
+<script type="module" src="/app.js?v=25">
 </script>
 </head>
 <body>
@@ -112,6 +113,7 @@
 <span id="save-state" class="save-state">草稿仅保存在本机</span>
 </div>
 <div class="stage-shell">
+<div id="canvas-viewport" class="canvas-viewport">
 <div class="stage" id="stage" tabindex="0" role="application" aria-label="插花画布。拖动花材调整位置，双指旋转和缩放；右键打开花材图层；方向键微调，Delete 删除。" data-aria-zh="插花画布。拖动花材调整位置，双指旋转和缩放；右键打开花材图层；方向键微调，Delete 删除。" data-aria-en="Ikebana canvas. Drag materials to move; use two fingers to rotate and scale; right-click for layers; use arrow keys to nudge and Delete to remove.">
 <div class="stage-grain">
 </div>
@@ -158,6 +160,7 @@
 <p class="layer-menu-tip" data-zh="拖动花材调整顺序；箭头可跨过花器。" data-en="Drag to reorder; arrows can move across the vessel.">拖动花材调整顺序；箭头可跨过花器。</p>
 </section>
 </div>
+</div>
 <div class="stage-tools">
 <button id="move-tool" class="icon-button" title="移动花材" aria-label="移动花材" data-title-zh="移动花材" data-title-en="Move material" data-aria-zh="移动花材" data-aria-en="Move material" aria-pressed="true">
 <span data-icon="move">
@@ -192,10 +195,20 @@
 </span>
 </button>
 </div>
+<div class="zoom-controls" role="group" aria-label="画布缩放" data-aria-zh="画布缩放" data-aria-en="Canvas zoom" data-aria-ja="キャンバスの拡大・縮小"><button id="zoom-in" type="button" aria-label="放大画布" data-aria-zh="放大画布" data-aria-en="Zoom in" data-aria-ja="拡大">＋</button><button id="zoom-reset" type="button" aria-label="重置画布缩放" data-aria-zh="重置画布缩放" data-aria-en="Reset zoom" data-aria-ja="倍率をリセット">100%</button><button id="zoom-out" type="button" aria-label="缩小画布" data-aria-zh="缩小画布" data-aria-en="Zoom out" data-aria-ja="縮小">−</button></div>
 <div id="cut-choice" class="cut-choice" role="status" aria-live="polite" hidden>
 <div class="cut-choice-copy"><strong data-zh="这一剪，分成两段" data-en="Two pieces, one cut">这一剪，分成两段</strong><small id="cut-choice-detail"></small></div>
 <div class="cut-piece-picker" role="group" aria-label="选择剪开的部分" data-aria-zh="选择剪开的部分" data-aria-en="Select cut piece"><button type="button" data-cut-piece="0" aria-pressed="false">A</button><button type="button" data-cut-piece="1" aria-pressed="false">B</button></div>
 <div class="cut-choice-actions"><button id="cut-delete" type="button" data-zh="删除选中段" data-en="Remove selected piece">删除选中段</button><button id="cut-keep" type="button" data-zh="两段都保留" data-en="Keep both">两段都保留</button></div>
+</div>
+<div class="quick-material-bar" role="group" aria-label="画布旁选花" data-aria-zh="画布旁选花" data-aria-en="Choose materials beside the canvas" data-aria-ja="キャンバスのそばで花材を選ぶ">
+<button id="quick-material-open" class="quick-material-open" type="button" aria-controls="quick-material-drawer" aria-expanded="false" aria-label="添加花材" data-aria-zh="添加花材" data-aria-en="Add a stem" data-aria-ja="花材を追加"><span aria-hidden="true">＋</span><span data-zh="添加花材" data-en="Add a stem" data-ja="花材を追加">添加花材</span></button>
+<div id="quick-material-recent" class="quick-material-recent" role="group" aria-label="最近使用的花材" data-aria-zh="最近使用的花材" data-aria-en="Recently used materials" data-aria-ja="最近使った花材" hidden>
+<span class="quick-material-recent-label" data-zh="最近" data-en="Recent" data-ja="最近">最近</span>
+<button type="button" class="quick-material-recent-item" data-recent-slot="0" aria-label="最近使用的花材 1" disabled hidden></button>
+<button type="button" class="quick-material-recent-item" data-recent-slot="1" aria-label="最近使用的花材 2" disabled hidden></button>
+<button type="button" class="quick-material-recent-item" data-recent-slot="2" aria-label="最近使用的花材 3" disabled hidden></button>
+</div>
 </div>
 <div class="stage-bottom">
 <div class="scene-picker" role="group" aria-label="背景" data-aria-zh="背景" data-aria-en="Background">
@@ -215,6 +228,21 @@
 </button>
 </div>
  </div>
+<section id="quick-material-drawer" class="quick-material-drawer" aria-label="挑选花材" data-aria-zh="挑选花材" data-aria-en="Choose a material" data-aria-ja="花材を選ぶ" hidden>
+<div class="quick-material-heading"><div><p class="eyebrow">BOTANICAL LIBRARY</p><h2 data-zh="挑一枝" data-en="Choose a stem" data-ja="一枝を選ぶ">挑一枝</h2></div><button id="quick-material-close" class="icon-button" type="button" aria-label="关闭选花" data-aria-zh="关闭选花" data-aria-en="Close material picker" data-aria-ja="花材選びを閉じる"><span data-icon="close"></span></button></div>
+<label class="quick-material-search-label" for="quick-material-search"><span class="sr-only" data-zh="搜索花材" data-en="Search materials" data-ja="花材を検索">搜索花材</span><span aria-hidden="true">⌕</span><input id="quick-material-search" type="search" autocomplete="off" placeholder="搜索花材" data-placeholder-zh="搜索花材" data-placeholder-en="Search materials" data-placeholder-ja="花材を検索"></label>
+<div id="quick-material-filters" class="quick-material-filters" role="group" aria-label="花材分类" data-aria-zh="花材分类" data-aria-en="Material categories" data-aria-ja="花材の種類">
+<button type="button" data-quick-family-group="all" aria-pressed="true" data-zh="全部" data-en="All" data-ja="すべて">全部</button>
+<button type="button" data-quick-family-group="book" aria-pressed="false" data-zh="花之书" data-en="The Book" data-ja="花の本">花之书</button>
+<button type="button" data-quick-family-group="bundle" aria-pressed="false" data-zh="成组" data-en="Groups" data-ja="ブーケ">成组</button>
+<button type="button" data-quick-family-group="bloom" aria-pressed="false" data-zh="花朵" data-en="Blooms" data-ja="花">花朵</button>
+<button type="button" data-quick-family-group="foliage" aria-pressed="false" data-zh="叶材" data-en="Foliage" data-ja="葉もの">叶材</button>
+<button type="button" data-quick-family-group="branch" aria-pressed="false" data-zh="枝叶" data-en="Branches" data-ja="枝葉">枝叶</button>
+</div>
+<div class="quick-material-status"><span id="quick-material-count" aria-live="polite"></span><span data-zh="选择后再挑姿态与花色" data-en="Choose a pose and color next" data-ja="次に姿と色を選びます">选择后再挑姿态与花色</span></div>
+<div id="quick-material-grid" class="quick-material-grid"></div>
+<p id="quick-material-empty" class="quick-material-empty" data-zh="没有找到花材，试试别的名字。" data-en="No materials found. Try another name." data-ja="花材が見つかりません。別の名前で検索してください。" hidden>没有找到花材，试试别的名字。</p>
+</section>
 <aside class="design-panel" data-editor-tab="shape" aria-label="作品设计" data-aria-zh="作品设计" data-aria-en="Arrangement design">
 <div class="panel-heading">
 <div>
@@ -287,7 +315,7 @@
 <div class="prune-controls">
 <div class="prune-heading">
 <strong data-zh="修剪枝叶" data-en="Prune foliage">修剪枝叶</strong>
-<button id="restore-cuts" data-zh="恢复剪枝" data-en="Restore">恢复剪枝</button>
+<button id="restore-cuts" data-zh="恢复细部擦除" data-en="Restore brushwork" data-ja="細部消去を戻す">恢复细部擦除</button>
 </div>
 <div class="prune-modes">
 <button data-prune="split">
@@ -295,18 +323,13 @@
 </span>
 <span data-zh="一剪两段" data-en="Split in two">一剪两段</span>
 </button>
-<button data-prune="lasso">
-<span data-icon="scissors">
-</span>
-<span data-zh="圈选移除" data-en="Remove area">圈选移除</span>
-</button>
 <button data-prune="brush">
 <span data-icon="eraser">
 </span>
 <span data-zh="细部擦除" data-en="Detail erase">细部擦除</span>
 </button>
 </div>
-<p id="prune-help">先选中一枝，再圈住不要的枝叶。</p>
+<p id="prune-help">先选中一枝，再剪开局部连接或修掉细节。</p>
 <label id="brush-setting" hidden>
 <span data-zh="剪口大小" data-en="Brush size">剪口大小</span>
 <input id="brush-size" type="range" min="5" max="35" value="16">
