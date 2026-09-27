@@ -39,7 +39,9 @@ export function buildPrompt(s,assetById,scenes,extras={}){
  const n=hashText(`${s.id||''}-${s.generationVariation||0}`);
  const detail=pick(['uneven petal overlap and subtle pigment drift','relaxed petal folds and gently varied opening stages','slightly eccentric petals and soft color variation','small differences in petal curl and maturity'],n);
  const scaleNote=extras?.outOfScale?'Keep flower sizes as drawn relative to the vessel.':'The draft is drawn at true botanical scale; keep every flower head, leaf and branch at its real size relative to the vessel.';
- const mood=moodEN[s.mood]?`${en(s.mood)} — ${moodEN[s.mood]}`:en(s.mood),note=String(s.intention||'').trim();
+ const mood=moodEN[s.mood]?`${en(s.mood)} — ${moodEN[s.mood]}`:en(s.mood),note=String(s.intention||'').trim(),title=String(s.title||'').trim(),subtitle=String(s.subtitle||'').trim();
+ const namedTitle=['未命名作品','Untitled Arrangement','タイトルなしの作品'].includes(title)?'':title;
+ const theme=[namedTitle,subtitle].filter(Boolean).join(' — ').replace(/\s+/g,' ').slice(0,140);
  const scene=scenes[s.scene]||scenes.paper||[];
  return `Create an image from the attached draft image: a square professional photograph of a real floral arrangement. Keep the draft's recognizable composition, selected flowers and count, vessel and main negative spaces. ${refinement}
 
@@ -49,6 +51,6 @@ Keep the overall lighting and atmosphere; let local shadows and reflections foll
 
 Materials: ${inventory||'as shown in the draft'}. Vessel: ${vessel.en||vessel.name}, about ${Math.round(vessel.height)} cm tall.
 ${scaleNote}
-Setting: ${scene[3]||scene[2]||'as in the draft'}. Mood: ${mood}.${note?`\nCreative note: ${note}\nIf the creative note names a place, season or light, follow the note over the setting and the draft's lighting.`:''}
+Setting: ${scene[3]||scene[2]||'as in the draft'}. Mood: ${mood}.${theme?`\nPoetic theme (an atmosphere cue, not text to print): ${theme}.`:''}${note?`\nCreative note: ${note}\nIf the creative note names a place, season or light, follow the note over the setting and the draft's lighting.`:''}
 No added text or watermark.`;
 }

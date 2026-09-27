@@ -7,9 +7,9 @@
 <meta name="description" content="在花间亲手挑选花材、舒展枝条，创作日式插花。保存草稿和 GPT Image 提示词，让一份灵感成为作品。">
 <meta name="theme-color" content="#efeee8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=25">
+<link rel="stylesheet" href="/style.css?v=26">
 <link rel="stylesheet" href="/material-drawer.css?v=25">
-<script type="module" src="/app.js?v=25">
+<script type="module" src="/app.js?v=26">
 </script>
 </head>
 <body>
@@ -103,11 +103,15 @@
 </aside>
 <section class="workspace" aria-label="插花画布" data-aria-zh="插花画布" data-aria-en="Ikebana canvas">
 <div class="workspace-heading">
-<div>
+<div class="work-naming">
+<label class="work-naming-label" for="work-title" data-zh="给这一枝起名" data-en="NAME THIS ARRANGEMENT" data-ja="この一枝に名前を">给这一枝起名</label>
 <div class="work-title">
-<input id="work-title" aria-label="作品名称" data-aria-zh="作品名称" data-aria-en="Work title" maxlength="40" value="">
-<span data-icon="pencil">
-</span>
+<input id="work-title" aria-label="作品名称" data-aria-zh="作品名称" data-aria-en="Work title" data-aria-ja="作品の名前" data-placeholder-zh="写下它的名字" data-placeholder-en="Give this work a name" data-placeholder-ja="作品の名前をつける" maxlength="40" value="">
+<label class="work-title-edit" for="work-title"><span data-icon="pencil"></span><span data-zh="改名" data-en="Rename" data-ja="改名">改名</span></label>
+</div>
+<div class="work-subtitle">
+<label for="work-subtitle" data-zh="副题 · 可选" data-en="Subtitle · optional" data-ja="副題 · 任意">副题 · 可选</label>
+<input id="work-subtitle" aria-label="作品副题" data-aria-zh="作品副题" data-aria-en="Work subtitle" data-aria-ja="作品の副題" data-placeholder-zh="写一句，留住此刻的气息" data-placeholder-en="One line to hold its mood" data-placeholder-ja="この瞬間の気配を、ひと言" maxlength="90" value="">
 </div>
 </div>
 <span id="save-state" class="save-state">草稿仅保存在本机</span>
@@ -248,7 +252,7 @@
 <div>
 <h2 data-zh="调整花枝" data-en="Adjust Stem">调整花枝</h2>
 </div>
-<div class="editor-tabs" role="tablist" aria-label="画布旁的创作工具" data-aria-zh="画布旁的创作工具" data-aria-en="Canvas tools"><button type="button" role="tab" data-editor-tab="shape" aria-selected="true" data-zh="造型" data-en="Shape">造型</button><button type="button" role="tab" data-editor-tab="create" aria-selected="false" data-zh="意境" data-en="Create">意境</button></div>
+<div class="editor-tabs" role="tablist" aria-label="画布旁的创作工具" data-aria-zh="画布旁的创作工具" data-aria-en="Canvas tools"><button type="button" role="tab" data-editor-tab="shape" aria-selected="true" data-zh="造型" data-en="Shape">造型</button><button type="button" role="tab" data-editor-tab="create" aria-selected="false" data-zh="出图" data-en="Image Pack" data-ja="生成パック">出图</button></div>
 </div>
 <div id="selected-empty" class="selection-empty" hidden data-zh="点选一枝花材，调整它的姿态。" data-en="Select a material to adjust its pose.">点选一枝花材，调整它的姿态。</div>
 <div id="selection-controls">
@@ -366,6 +370,7 @@
 <h3 data-zh="创作意境" data-en="Creative Intention">创作意境</h3>
 <span data-zh="让想象继续" data-en="Let imagination continue">让想象继续</span>
 </div>
+<p class="image-flow-intro" data-zh="写下意境，预览创意 Prompt，再带走生图包。" data-en="Shape the mood, preview a creative prompt, then take the image pack." data-ja="イメージを記し、プロンプトを確認して生成用パックを保存。">写下意境，预览创意 Prompt，再带走生图包。</p>
 <div id="mood-options" class="mood-options">
 <button data-mood="静寂" class="active" data-zh="静寂" data-en="Stillness">静寂</button>
 <button data-mood="侘寂" data-zh="侘寂" data-en="Wabi-sabi">侘寂</button>
@@ -391,14 +396,14 @@
 </div>
 <div class="generation-box">
 <p class="eyebrow">FROM YOUR HANDS TO ART</p>
-<h3 data-zh="让灵感，成为作品" data-en="Turn Your Idea into Art">让灵感，成为作品</h3>
-<p data-zh="保留你的设计，小幅整理成真实插花。" data-en="Keep your design; refine it into a real arrangement.">保留你的设计，小幅整理成真实插花。</p>
+<h3 data-zh="让这一枝，走进画面" data-en="From Stem to Image" data-ja="この一枝を、作品へ">让这一枝，走进画面</h3>
+<p data-zh="草稿、创意 Prompt 和可编辑文件，都为下一步备好。" data-en="Your draft, creative prompt and editable file are ready for the next step." data-ja="下書き、創作プロンプト、編集できるファイルをまとめます。">草稿、创意 Prompt 和可编辑文件，都为下一步备好。</p>
 <button id="generate-button" class="button accent">
 <span data-icon="sparkles">
 </span>
-<span data-zh="生成创作包" data-en="Create Image Pack">生成创作包</span> <span class="arrow">↗</span>
+<span data-zh="预览生图包" data-en="Preview Image Pack" data-ja="生成用パックを見る">预览生图包</span> <span class="arrow">↗</span>
 </button>
-<small data-zh="草稿参考 · 物理修正 · 自然花瓣" data-en="Draft reference · Physical realism · Natural petals">草稿参考 · 物理修正 · 自然花瓣</small>
+<small data-zh="预览后可下载，带到 GPT Image 创作" data-en="Preview, download, then create with GPT Image" data-ja="確認・保存して GPT Image で制作">预览后可下载，带到 GPT Image 创作</small>
 </div>
 </aside>
 </section>
