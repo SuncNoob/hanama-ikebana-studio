@@ -7,8 +7,8 @@
 <meta name="description" content="在花间亲手挑选花材、舒展枝条，创作日式插花。保存草稿和 GPT Image 提示词，让一份灵感成为作品。">
 <meta name="theme-color" content="#efeee8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=15">
-<script type="module" src="/app.js?v=15">
+<link rel="stylesheet" href="/style.css?v=22">
+<script type="module" src="/app.js?v=22">
 </script>
 </head>
 <body>
@@ -163,7 +163,7 @@
 <span data-icon="move">
 </span>
 </button>
-<button id="prune-tool" class="icon-button" title="圈选剪枝" aria-label="圈选剪枝" data-title-zh="圈选剪枝" data-title-en="Lasso prune" data-aria-zh="圈选剪枝" data-aria-en="Lasso prune" aria-pressed="false">
+<button id="prune-tool" class="icon-button" title="剪成两段" aria-label="剪成两段" data-title-zh="剪成两段" data-title-en="Cut into two pieces" data-aria-zh="剪成两段" data-aria-en="Cut into two pieces" aria-pressed="false">
 <span data-icon="scissors">
 </span>
 </button>
@@ -192,6 +192,10 @@
 </span>
 </button>
 </div>
+<div id="cut-choice" class="cut-choice" role="status" aria-live="polite" hidden>
+<div class="cut-choice-copy"><strong data-zh="这一剪，分成两段" data-en="Two pieces, one cut">这一剪，分成两段</strong><small id="cut-choice-detail"></small></div>
+<div class="cut-piece-picker" role="group" aria-label="选择剪开的部分" data-aria-zh="选择剪开的部分" data-aria-en="Select cut piece"><button type="button" data-cut-piece="0" aria-pressed="false">A</button><button type="button" data-cut-piece="1" aria-pressed="false">B</button></div>
+<div class="cut-choice-actions"><button id="cut-delete" type="button" data-zh="删除选中段" data-en="Remove selected piece">删除选中段</button><button id="cut-keep" type="button" data-zh="两段都保留" data-en="Keep both">两段都保留</button></div>
 </div>
 <div class="stage-bottom">
 <div class="scene-picker" role="group" aria-label="背景" data-aria-zh="背景" data-aria-en="Background">
@@ -210,14 +214,13 @@
 <span data-zh="草稿图" data-en="Draft Image">草稿图</span>
 </button>
 </div>
-</section>
-<aside class="design-panel" aria-label="作品设计" data-aria-zh="作品设计" data-aria-en="Arrangement design">
+ </div>
+<aside class="design-panel" data-editor-tab="shape" aria-label="作品设计" data-aria-zh="作品设计" data-aria-en="Arrangement design">
 <div class="panel-heading">
 <div>
-<h2 data-zh="枝间的分寸" data-en="Shape Each Stem">枝间的分寸</h2>
+<h2 data-zh="调整花枝" data-en="Adjust Stem">调整花枝</h2>
 </div>
-<span data-icon="sliders">
-</span>
+<div class="editor-tabs" role="tablist" aria-label="画布旁的创作工具" data-aria-zh="画布旁的创作工具" data-aria-en="Canvas tools"><button type="button" role="tab" data-editor-tab="shape" aria-selected="true" data-zh="造型" data-en="Shape">造型</button><button type="button" role="tab" data-editor-tab="create" aria-selected="false" data-zh="意境" data-en="Create">意境</button></div>
 </div>
 <div id="selected-empty" class="selection-empty" hidden data-zh="点选一枝花材，调整它的姿态。" data-en="Select a material to adjust its pose.">点选一枝花材，调整它的姿态。</div>
 <div id="selection-controls">
@@ -287,10 +290,15 @@
 <button id="restore-cuts" data-zh="恢复剪枝" data-en="Restore">恢复剪枝</button>
 </div>
 <div class="prune-modes">
+<button data-prune="split">
+<span data-icon="scissors">
+</span>
+<span data-zh="一剪两段" data-en="Split in two">一剪两段</span>
+</button>
 <button data-prune="lasso">
 <span data-icon="scissors">
 </span>
-<span data-zh="圈选剪掉" data-en="Lasso cut">圈选剪掉</span>
+<span data-zh="圈选移除" data-en="Remove area">圈选移除</span>
 </button>
 <button data-prune="brush">
 <span data-icon="eraser">
@@ -370,6 +378,7 @@
 <small data-zh="草稿参考 · 物理修正 · 自然花瓣" data-en="Draft reference · Physical realism · Natural petals">草稿参考 · 物理修正 · 自然花瓣</small>
 </div>
 </aside>
+</section>
 </main>
 <main id="inspiration-view" class="view editorial-view" hidden>
 </main>

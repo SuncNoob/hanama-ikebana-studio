@@ -19,15 +19,15 @@ export function pluralName(name){
 }
 /** "2 anemones, 1 ranunculus, 1 lavender bunch": items grouped by English name, in draft order. */
 export function countedNames(items,assetById){
- const groups=new Map();
- for(const i of items){const a=assetById[i.type];if(!a)continue;const name=lowerName(a.en||a.name),key=`${name}|${a.bundle?1:0}`;const g=groups.get(key)||{name,bundle:!!a.bundle,n:0};g.n++;groups.set(key,g)}
+ const groups=new Map(),seen=new Set();
+ for(const i of items){const a=assetById[i.type],origin=i.originId||i.id;if(!a||seen.has(origin))continue;seen.add(origin);const name=lowerName(a.en||a.name),key=`${name}|${a.bundle?1:0}`;const g=groups.get(key)||{name,bundle:!!a.bundle,n:0};g.n++;groups.set(key,g)}
  return [...groups.values()].map(({name,bundle,n})=>`${n} ${bundle?`${name} ${n===1?'bunch':'bunches'}`:n===1?name:pluralName(name)}`).join(', ');
 }
 
 /** Prompt text only; `extras.outOfScale` (optional) drops the true-scale claim for drafts whose sizes are outside real bounds. */
 export function buildPrompt(s,assetById,scenes,extras={}){
- const vessel=assetById[s.vessel],counts=new Map(),items=s.items.filter(i=>assetById[i.type]);
- for(const i of items){const a=assetById[i.type],color=a.colorEn||en(a.color),detail=[color,a.bundle&&'a natural bunch'].filter(Boolean).join(', '),key=`${a.en||a.name}${detail?` (${detail})`:''}`;counts.set(key,(counts.get(key)||0)+1)}
+ const vessel=assetById[s.vessel],counts=new Map(),items=s.items.filter(i=>assetById[i.type]),seen=new Set();
+ for(const i of items){const origin=i.originId||i.id;if(seen.has(origin))continue;seen.add(origin);const a=assetById[i.type],color=a.colorEn||en(a.color),detail=[color,a.bundle&&'a natural bunch'].filter(Boolean).join(', '),key=`${a.en||a.name}${detail?` (${detail})`:''}`;counts.set(key,(counts.get(key)||0)+1)}
  const inventory=[...counts].map(([name,n])=>`${n} × ${name}`).join('; ');
  const front=items.filter(i=>i.aboveVessel),back=items.filter(i=>!i.aboveVessel),several=(vessel.openings?.length||0)>1,opening=several?'the openings':'the opening';
  const concealed=!vessel.fixture||vessel.fixture.visibility==='hidden';

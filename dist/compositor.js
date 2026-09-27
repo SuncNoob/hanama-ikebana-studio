@@ -1,9 +1,30 @@
-import {dimensions,vesselGeometry} from './geometry.js?v=13';
+import {dimensions,vesselGeometry,warpY} from './geometry.js?v=13';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
 const context2d=canvas=>{const ctx=canvas.getContext('2d');if(!ctx)throw new CanvasUnavailableError(canvas.width,canvas.height);return ctx};
 const release=canvas=>{try{canvas.width=canvas.height=0}catch{}};
+/** Clip a rectangle to one side of a straight cut; a narrow kerf separates the two pieces. */
+export function cutHalfPlane(width,height,a,b,side,gap=0){
+ const dx=b[0]-a[0],dy=b[1]-a[1],span=Math.hypot(dx,dy);
+ if(span<.001)return [];
+ const signed=p=>side*(dx*(p[1]-a[1])-dy*(p[0]-a[0]))+gap*span;
+ let polygon=[[0,0],[width,0],[width,height],[0,height]],output=[];
+ for(let i=0;i<polygon.length;i++){
+  const start=polygon[i],end=polygon[(i+1)%polygon.length],d0=signed(start),d1=signed(end),inside0=d0>=0,inside1=d1>=0;
+  if(inside0!==inside1){const t=d0/(d0-d1);output.push([start[0]+(end[0]-start[0])*t,start[1]+(end[1]-start[1])*t])}
+  if(inside1)output.push(end);
+ }
+ return output;
+}
+function applySegments(ctx,out,item,g,sourceHeight){
+ for(const segment of item.segments||[]){
+  const [[u0,v0],[u1,v1]]=segment.line,a=[u0*out.width,warpY(v0,g.split,g.length)*sourceHeight],b=[u1*out.width,warpY(v1,g.split,g.length)*sourceHeight];
+  const remove=cutHalfPlane(out.width,out.height,a,b,-segment.side,Math.max(.5,out.width*.001));
+  if(!remove.length)continue;
+  ctx.save();ctx.globalCompositeOperation='destination-out';ctx.fillStyle='#000';ctx.beginPath();remove.forEach((p,index)=>ctx[index?'lineTo':'moveTo'](...p));ctx.closePath();ctx.fill();ctx.restore();
+ }
+}
 /**
  * Shared by the editor and exported artwork; cuts never mutate a source image.
  * `k` scales the source photograph (see spriteScale in scale.js). Cuts, drawn stems, probe and crop are all ratio-based,
@@ -25,6 +46,7 @@ export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browse
  if(drawnStem)paintStems(dest,asset,src.width,src.height,g.end*src.height,out.height);
  if(top>0)dest.drawImage(src,0,0,src.width,top,0,0,out.width,top);
  if(g.end>g.split){const sh=(g.end-g.split)*src.height;dest.drawImage(src,0,top,src.width,sh,0,top,out.width,drawnStem?sh:sh*g.length)}
+ if(item.segments?.length)applySegments(dest,out,item,g,src.height);
  const fullWidth=out.width,fullHeight=out.height;
  let x=0,y=0,width=fullWidth,height=fullHeight,mask=null;
  if(!extraCut){
