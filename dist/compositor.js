@@ -26,6 +26,18 @@ function applySegments(ctx,out,item,g,sourceHeight){
   ctx.save();ctx.globalCompositeOperation='destination-out';ctx.fillStyle='#000';ctx.beginPath();remove.forEach((p,index)=>ctx[index?'lineTo':'moveTo'](...p));ctx.closePath();ctx.fill();ctx.restore();
  }
 }
+/** Erase on the finished piece so a brush can also remove generated stems and tiny split-off fragments. */
+function eraseDetails(ctx,out,item,g,sourceHeight,extraCut){
+ ctx.save();ctx.globalCompositeOperation='destination-out';ctx.strokeStyle='#000';ctx.fillStyle='#000';ctx.lineCap='round';ctx.lineJoin='round';
+ for(const cut of [...(item.cuts||[]),...(extraCut?[extraCut]:[])]){
+  if(!cut.points?.length)continue;
+  const point=p=>[p[0]*out.width,warpY(p[1],g.split,g.length)*sourceHeight];
+  ctx.beginPath();cut.points.forEach((p,index)=>ctx[index?'lineTo':'moveTo'](...point(p)));
+  if(cut.kind==='lasso'){if(cut.points.length<3)continue;ctx.closePath();ctx.fill()}
+  else {ctx.lineWidth=cut.radius*2*sourceHeight;if(cut.points.length===1){const [x,y]=point(cut.points[0]);ctx.arc(x,y,cut.radius*sourceHeight,0,Math.PI*2);ctx.fill()}else ctx.stroke()}
+ }
+ ctx.restore();
+}
 /**
  * Shared by the editor and exported artwork; cuts never mutate a source image.
  * `k` scales the source photograph (see spriteScale in scale.js). Cuts, drawn stems, probe and crop are all ratio-based,
@@ -35,12 +47,6 @@ export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browse
  const scale=Number.isFinite(k)&&k>0?Math.min(1,k):1,sw=Math.max(1,Math.round((img.naturalWidth||img.width)*scale)),sh=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
  const src=createCanvas(sw,sh),ctx=context2d(src);
  if(scale<1){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,sw,sh)}else ctx.drawImage(img,0,0);
- ctx.globalCompositeOperation='destination-out';ctx.strokeStyle='#000';ctx.fillStyle='#000';ctx.lineCap='round';ctx.lineJoin='round';
- for(const cut of [...(item.cuts||[]),...(extraCut?[extraCut]:[])]){
-  if(!cut.points.length)continue;ctx.beginPath();cut.points.forEach((p,k)=>ctx[k?'lineTo':'moveTo'](p[0]*src.width,p[1]*src.height));
-  if(cut.kind==='lasso'){if(cut.points.length<3)continue;ctx.closePath();ctx.fill()}
-  else {ctx.lineWidth=cut.radius*2*src.height;if(cut.points.length===1){const p=cut.points[0];ctx.arc(p[0]*src.width,p[1]*src.height,cut.radius*src.height,0,Math.PI*2);ctx.fill()}else ctx.stroke()}
- }
  const g=dimensions(item,asset),out=createCanvas(src.width,Math.max(1,Math.round(src.height*g.height)));let dest;try{dest=context2d(out)}catch(err){release(src);release(out);throw err}
  const top=Math.min(g.split,g.end)*src.height;
  const drawnStem=asset.stems&&g.length>1&&g.end>g.split;
@@ -49,6 +55,7 @@ export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browse
  if(g.end>g.split){const sh=(g.end-g.split)*src.height;dest.drawImage(src,0,top,src.width,sh,0,top,out.width,drawnStem?sh:sh*g.length)}
  if(item.segments?.length)applySegments(dest,out,item,g,src.height);
  if(item.localCuts?.length)for(const entry of item.localCuts)applyLocalCut(dest,out,entry.cut,entry.part,createCanvas,g);
+ if(item.cuts?.length||extraCut)eraseDetails(dest,out,item,g,src.height,extraCut);
  const fullWidth=out.width,fullHeight=out.height;
  let x=0,y=0,width=fullWidth,height=fullHeight,mask=null;
  if(!extraCut){

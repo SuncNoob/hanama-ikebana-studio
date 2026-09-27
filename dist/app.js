@@ -1,4 +1,4 @@
-import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture} from './compositor.js?v=28';
+import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture} from './compositor.js?v=30';
 import {buildPrompt} from './prompt.js?v=26';
 import {newSpecimens} from './catalog.js?v=25';
 import {photoSpecimens} from './photo-catalog.js?v=25';
@@ -239,17 +239,22 @@ function stemStyle(i){
 function stageWidth(){const w=$('#stage')?.getBoundingClientRect().width||0;return w>=40?w:720}
 const drawnStems=new WeakMap();
 /** The DOM canvas is sized to its displayed size (≤2× DPR, 25% headroom), not to the sprite. */
-function drawStemCanvas(el,item,stageW=stageWidth()){
+function drawStemCanvas(el,item,{stageW=stageWidth(),previewCut=null}={}){
  const canvas=el&&$('canvas',el);if(!canvas)return;const src=specimenCanvas(item);
  if(!src||!src.width||!src.height){if(canvas.width||canvas.height){canvas.width=canvas.height=0}drawnStems.delete(canvas);return}
  const g=dimensions(item,assetById[item.type]),crop=src.crop,heightRatio=crop?crop.height/Math.max(1,crop.fullHeight):1;
  const [w,h]=stageCanvasSize(src.width,src.height,stageW*item.h*g.height*heightRatio/100,window.devicePixelRatio||1);
- if(drawnStems.get(canvas)===src&&canvas.width===w&&canvas.height===h)return;
+ if(!previewCut&&drawnStems.get(canvas)===src&&canvas.width===w&&canvas.height===h)return;
  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
  const ctx=canvas.getContext('2d');if(!ctx){drawnStems.delete(canvas);canvasTrouble();return}
- ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(src,0,0,w,h);drawnStems.set(canvas,src);
+ let preview=null;
+ if(previewCut)try{preview=composeSpecimen(images[item.type],item,assetById[item.type],previewCut,undefined,src.scale)}catch(err){canvasTrouble(err)}
+ ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ if(preview&&crop)ctx.drawImage(preview,crop.x,crop.y,crop.width,crop.height,0,0,w,h);
+ else ctx.drawImage(src,0,0,w,h);
+ if(preview){preview.width=preview.height=0;drawnStems.delete(canvas)}else drawnStems.set(canvas,src);
 }
-function redrawStemCanvases(){const w=stageWidth();for(const i of state.items)drawStemCanvas($(`.stem[data-id="${i.id}"]`),i,w)}
+function redrawStemCanvases(){const w=stageWidth();for(const i of state.items)drawStemCanvas($(`.stem[data-id="${i.id}"]`),i,{stageW:w})}
 /** Restyle one stem without rebuilding the stage; its canvas is redrawn only when its sprite or display size changed. */
 function updateStem(item){
  const el=$(`.stem[data-id="${item.id}"]`);if(!el){renderStage();return}
@@ -263,7 +268,7 @@ function renderStage(){
  const focusedStemId=document.activeElement?.classList?.contains('stem')?document.activeElement.dataset.id:null;
  const markup=i=>{const name=assetName(assetById[i.type]),piece=i.pieceLabel?` ${i.pieceLabel}`:'',instructions=lang==='ja'?`${name}${piece}。ドラッグで移動、2本指で回転・拡大縮小`:L(`${name}${piece}，拖动移动，双指旋转缩放`,`${name}${piece}; drag to move, use two fingers to rotate and scale`);return `<div class="stem ${i.id===selected?'selected':''} ${cutSession?.ids.includes(i.id)?'fresh-cut':''}" data-id="${i.id}" data-piece="${esc(i.pieceLabel||'')}" style="${stemStyle(i)}" role="button" tabindex="0" aria-label="${esc(instructions)}" aria-pressed="${i.id===selected}"><canvas class="specimen-image" aria-hidden="true"></canvas></div>`};
  $('#composition').innerHTML=state.items.filter(i=>!i.aboveVessel).map(markup).join('');$('#composition-front').innerHTML=state.items.filter(i=>i.aboveVessel).map(markup).join('');
- const stageW=stageWidth();for(const i of state.items){drawStemCanvas($(`.stem[data-id="${i.id}"]`),i,stageW)}
+ const stageW=stageWidth();for(const i of state.items){drawStemCanvas($(`.stem[data-id="${i.id}"]`),i,{stageW})}
  for(const id of [...spriteCache.keys()]){if(!state.items.some(i=>i.id===id))dropSprite(id)}
  $('#vessel').src=assetPath(state.vessel);$('#vessel').alt=assetName(assetById[state.vessel]);const vg=vesselGeometry(assetById[state.vessel]);$('#vessel').style.height=vg.height+'%';$('#vessel').style.width=vg.width+'%';$('#stage').dataset.scene=state.scene;renderFixture();
  $$('[data-scene]').forEach(b=>b.classList.toggle('active',b.dataset.scene===state.scene));$('#study-count').textContent=String(new Set(state.items.map(i=>i.originId||i.id)).size).padStart(3,'0');renderSelection();renderHistory();renderLayerList();renderCutChoice();drawPruneOverlay();
@@ -488,7 +493,8 @@ $('#restore-cuts').onclick=()=>{if(!current()?.cuts.length)return;checkpoint();c
 function drawPruneOverlay(){const c=$('#prune-overlay');if(!c)return;const size=Math.max(1,Math.round($('#stage').getBoundingClientRect().width));c.width=c.height=size;const ctx=c.getContext('2d');if(!stroke?.points.length||!current())return;const item=current(),asset=assetById[item.type],points=stroke.kind==='split'?[stroke.points[0],stroke.points.at(-1)]:stroke.points;ctx.beginPath();points.forEach((p,k)=>{const q=sourceToStage(p,item,asset);ctx[k?'lineTo':'moveTo'](q[0]*size,q[1]*size)});ctx.strokeStyle='#a5533e';ctx.lineWidth=stroke.kind==='split'?2.5:2;ctx.setLineDash(stroke.kind==='split'?[7,4]:[5,4]);ctx.stroke();}
 new ResizeObserver(()=>{applyCanvasZoom();drawPruneOverlay();renderFixture();mountLayerDock()}).observe($('#stage'));
 $('#stage').addEventListener('pointerdown',e=>{if(editMode==='move'||e.button!==0||!current()||stroke)return;e.preventDefault();if(editMode==='split'&&(current().localCuts||[]).length>=8)return toast(L('这一段已经剪得很细，可先整理现有片段。','This piece has reached the cut limit. Arrange its pieces first.','この部分はこれ以上分割できません。'));if(editMode!=='split'&&current().cuts.length>=24)return toast(L('这枝已有 24 处剪口；可恢复剪枝后重剪。','This stem already has 24 cuts. Restore it before pruning again.'));const total=state.items.reduce((n,i)=>n+i.cuts.reduce((m,c)=>m+c.points.length,0),0);if(editMode!=='split'&&total>7800)return toast(L('剪枝细节已很多，请先恢复部分剪口。','There is extensive pruning detail. Restore some cuts first.'));const item=current(),p=stageToSource(pointerStage(e),item,assetById[item.type]);stroke={kind:editMode,points:[p],radius:clamp(Number($('#brush-size').value)/$('#stage').getBoundingClientRect().width/(item.h/100)/2,.002,.3),pointer:e.pointerId};$('#stage').setPointerCapture(e.pointerId);drawPruneOverlay()});
-$('#stage').addEventListener('pointermove',e=>{if(!stroke||stroke.pointer!==e.pointerId)return;const item=current();const p=stageToSource(pointerStage(e),item,assetById[item.type]);const previous=sourceToStage(stroke.points.at(-1),item,assetById[item.type]),next=pointerStage(e);if(Math.hypot(next[0]-previous[0],next[1]-previous[1])<.003)return;if(stroke.kind==='split')stroke.points=[stroke.points[0],p];else stroke.points.push(p);if(stroke.points.length>512)stroke.points=simplifyPoints(stroke.points,256);if(stroke.kind==='brush')drawStemCanvas($(`.stem[data-id="${item.id}"]`),item,stroke);drawPruneOverlay()});
+let brushPreviewFrame=0;
+$('#stage').addEventListener('pointermove',e=>{if(!stroke||stroke.pointer!==e.pointerId)return;const item=current();const p=stageToSource(pointerStage(e),item,assetById[item.type]);const previous=sourceToStage(stroke.points.at(-1),item,assetById[item.type]),next=pointerStage(e);if(Math.hypot(next[0]-previous[0],next[1]-previous[1])<.003)return;if(stroke.kind==='split')stroke.points=[stroke.points[0],p];else stroke.points.push(p);if(stroke.points.length>512)stroke.points=simplifyPoints(stroke.points,256);if(stroke.kind==='brush'&&!brushPreviewFrame){const itemId=item.id;brushPreviewFrame=requestAnimationFrame(()=>{brushPreviewFrame=0;if(stroke?.kind==='brush'&&current()?.id===itemId)drawStemCanvas($(`.stem[data-id="${itemId}"]`),item,{previewCut:stroke})})}drawPruneOverlay()});
 function splitSelected(cut){
  const item=current(),asset=item&&assetById[item.type],img=item&&images[item.type];if(!item||!img)return false;
  if(state.items.length>=24){toast(L('画布最多放置 24 段花材。','The canvas can hold up to 24 pieces.','キャンバスには24点まで配置できます。'));return false}
@@ -509,7 +515,18 @@ function splitSelected(cut){
  const pieces=[makePiece('main',prefix?`${prefix}1`:'A'),makePiece('detached',prefix?`${prefix}2`:'B')];
  checkpoint();const index=state.items.findIndex(i=>i.id===item.id);state.items.splice(index,1,...pieces);selected=pieces[1].id;cutSession={ids:pieces.map(i=>i.id)};dropSprite(item.id);setEditMode('move');$('#stem-details').open=false;renderStage();persist();return true;
 }
-function finishPrune(e,cancel=false){if(!stroke||stroke.pointer!==e.pointerId)return;const cut=stroke;stroke=null;if(e.pointerType==='touch')suppressLayerContextUntil=performance.now()+600;if(!cancel&&cut.kind==='split'){if(cut.points.length>=2&&splitSelected(cut))return;renderStage();return}if(!cancel&&cut.kind==='brush'){checkpoint();current().cuts.push({kind:cut.kind,points:simplifyPoints(cut.points),radius:clamp(cut.radius,.002,.3)});toast(L('已剪去选中的枝叶，可撤销。','Selected foliage removed. You can undo this action.'))}renderStage();if(!cancel)persist()}
+function finishPrune(e,cancel=false){
+ if(!stroke||stroke.pointer!==e.pointerId)return;const cut=stroke;stroke=null;
+ if(e.pointerType==='touch')suppressLayerContextUntil=performance.now()+600;
+ if(!cancel&&cut.kind==='split'){if(cut.points.length>=2&&splitSelected(cut))return;renderStage();return}
+ if(!cancel&&cut.kind==='brush'){
+  const item=current();checkpoint();item.cuts.push({kind:cut.kind,points:simplifyPoints(cut.points),radius:clamp(cut.radius,.002,.3)});
+  const mask=specimenCanvas(item)?.mask,fullyErased=!!mask&&!mask.data.some(alpha=>alpha>12);
+  if(fullyErased){state.items=state.items.filter(entry=>entry.id!==item.id);dropSprite(item.id);selected=state.items.find(entry=>entry.originId&&entry.originId===item.originId)?.id||state.items.at(-1)?.id||null;cutSession=null;setEditMode('move');toast(L('这一小段已擦除，可撤销。','This piece was erased. You can undo.','この部分を消去しました。元に戻せます。'))}
+  else toast(L('已剪去选中的枝叶，可撤销。','Selected foliage removed. You can undo this action.'));
+ }
+ renderStage();if(!cancel)persist();
+}
 $('#stage').addEventListener('pointerup',e=>finishPrune(e));$('#stage').addEventListener('pointercancel',e=>finishPrune(e,true));
 $('#stage').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeLayerMenu();cutSession=null;renderCutChoice();setEditMode('move');renderStage();return}if(e.target.closest('input,textarea'))return;if(e.key==='Enter'&&e.target.closest('.stem')){selectItem(e.target.closest('.stem').dataset.id);return}const item=current();if(!item)return;if(['Delete','Backspace'].includes(e.key)){e.preventDefault();removeSelected();return}if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();checkpoint();const step=e.shiftKey?2:.5;item.x=clamp(item.x+(e.key==='ArrowRight'?step:e.key==='ArrowLeft'?-step:0),5,95);item.y=clamp(item.y+(e.key==='ArrowDown'?step:e.key==='ArrowUp'?-step:0),15,95);const el=$(`.stem[data-id="${item.id}"]`);if(el)el.style.cssText=stemStyle(item);persist()});
 /** Slider ticks restyle only the selected stem once per frame; drawn stems keep their centimetres and never pass MAX_STEM_CM. */
