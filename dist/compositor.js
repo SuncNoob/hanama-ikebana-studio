@@ -1,5 +1,6 @@
 import {dimensions,vesselGeometry,warpY} from './geometry.js?v=28';
 import {applyLocalCut} from './local-cut.js?v=31';
+import {naturalStemRoutes} from './natural-stems.js?v=1';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
@@ -58,11 +59,13 @@ function eraseDetails(ctx,out,item,g,sourceHeight,extraCut){
 export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browserCanvas,k=1){
  const scale=Number.isFinite(k)&&k>0?Math.min(1,k):1,sw=Math.max(1,Math.round((img.naturalWidth||img.width)*scale)),sh=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
  const src=createCanvas(sw,sh),ctx=context2d(src);
+ if(asset.saturation)ctx.filter=`saturate(${asset.saturation})`;
  if(scale<1)drawReducedImage(ctx,img,sw,sh,createCanvas);else ctx.drawImage(img,0,0);
+ ctx.filter='none';
  const g=dimensions(item,asset),out=createCanvas(src.width,Math.max(1,Math.round(src.height*g.height)));let dest;try{dest=context2d(out)}catch(err){release(src);release(out);throw err}
  const top=Math.min(g.split,g.end)*src.height;
  const drawnStem=asset.stems&&g.length>1&&g.end>g.split;
- if(drawnStem)paintStems(dest,asset,src.width,src.height,g.end*src.height,out.height);
+ if(drawnStem)paintStems(dest,asset,src,g.end*src.height,out.height,createCanvas);
  if(top>0)dest.drawImage(src,0,0,src.width,top,0,0,out.width,top);
  if(g.end>g.split){const sh=(g.end-g.split)*src.height;dest.drawImage(src,0,top,src.width,sh,0,top,out.width,drawnStem?sh:sh*g.length)}
  if(item.segments?.length)applySegments(dest,out,item,g,src.height);
@@ -90,21 +93,31 @@ export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browse
 }
 
 const shade=(hex,f)=>'#'+[1,3,5].map(i=>Math.round(Math.min(255,parseInt(hex.slice(i,i+2),16)*f)).toString(16).padStart(2,'0')).join('');
-/** Book photographs end just below the flower head; continue each cut stem so it can reach the vessel. */
-function paintStems(ctx,asset,width,height,from,to){
- const pxPerCm=height/asset.height,anchor=(asset.anchor??.5)*width,length=to-from;
- for(const [u,startCm,endCm,color] of asset.stems){
-  const x0=u*width,x1=anchor+(x0-anchor)*.18,w0=Math.max(1.5,startCm*pxPerCm),w1=Math.max(1.2,endCm*pxPerCm);
-  const top=from-Math.min(w0*2,height*.06),bend=(x0-x1)*.35,midY=from+length*.45;
-  ctx.save();
-  const fill=ctx.createLinearGradient(0,top,0,to);fill.addColorStop(0,color);fill.addColorStop(1,shade(color,.82));
-  ctx.fillStyle=fill;ctx.beginPath();
-  ctx.moveTo(x0-w0/2,top);ctx.quadraticCurveTo(x0-w0/2-bend*.2,midY,x1-w1/2,to);ctx.lineTo(x1+w1/2,to);ctx.quadraticCurveTo(x0+w0/2-bend*.2,midY,x0+w0/2,top);ctx.closePath();ctx.fill();
-  ctx.strokeStyle=shade(color,1.28);ctx.globalAlpha=.42;ctx.lineWidth=Math.max(.6,w1*.22);ctx.lineCap='round';
-  ctx.beginPath();ctx.moveTo(x0-w0*.14,top+w0);ctx.quadraticCurveTo(x0-w0*.14-bend*.2,midY,x1-w1*.14,to-w1);ctx.stroke();
-  ctx.strokeStyle=shade(color,.62);ctx.globalAlpha=.35;ctx.lineWidth=Math.max(.5,w1*.16);
-  ctx.beginPath();ctx.moveTo(x0+w0*.38,top+w0);ctx.quadraticCurveTo(x0+w0*.38-bend*.2,midY,x1+w1*.38,to-w1);ctx.stroke();
-  ctx.restore();
+/** Resolve each drawn stem to an actual opaque cut end. Missing ends do not receive invented connectors. */
+function visibleStemRoots(src,asset,end,createCanvas){
+ const pw=Math.min(256,src.width),ph=Math.min(256,src.height),probe=createCanvas(pw,ph),ctx=context2d(probe);
+ ctx.drawImage(src,0,0,pw,ph);const alpha=ctx.getImageData(0,0,pw,ph).data;release(probe);
+ const last=Math.min(ph-1,Math.floor(end/src.height*ph)-1),first=Math.max(0,Math.floor(last-ph*.38));
+ return asset.stems.flatMap(([u,startCm,endCm,color])=>{
+  const target=Math.round(u*(pw-1)),radius=Math.max(2,Math.round(pw*.045));
+  for(let y=last;y>=first;y--){
+   let best=-1,distance=Infinity;
+   for(let x=Math.max(0,target-radius);x<=Math.min(pw-1,target+radius);x++)if(alpha[(y*pw+x)*4+3]>48&&Math.abs(x-target)<distance){best=x;distance=Math.abs(x-target)}
+   if(best<0)continue;
+   let left=best,right=best;while(left>0&&alpha[(y*pw+left-1)*4+3]>48)left--;while(right<pw-1&&alpha[(y*pw+right+1)*4+3]>48)right++;
+   return [{x:(best+.5)/pw*src.width,y:Math.min(end,(y+.5)/ph*src.height),width:(right-left+1)/pw*src.width,startCm,endCm,color}];
+  }
+  return [];
+ });
+}
+/** Follow the photograph's existing cut ends with tapered, gently curved, order-preserving stems. */
+function paintStems(ctx,asset,src,from,to,createCanvas){
+ const roots=visibleStemRoots(src,asset,from,createCanvas);
+ for(const {p0,p1,p2,p3,w0,w1,color} of naturalStemRoutes(asset,roots,src.width,src.height,to)){
+  if(p3[1]-p0[1]<2)continue;
+  ctx.save();const fill=ctx.createLinearGradient(0,p0[1],0,p3[1]);fill.addColorStop(0,color);fill.addColorStop(1,shade(color,.78));ctx.fillStyle=fill;
+  ctx.beginPath();ctx.moveTo(p0[0]-w0/2,p0[1]);ctx.bezierCurveTo(p1[0]-w0*.44,p1[1],p2[0]-w1*.56,p2[1],p3[0]-w1/2,p3[1]);ctx.lineTo(p3[0]+w1/2,p3[1]);ctx.bezierCurveTo(p2[0]+w1*.56,p2[1],p1[0]+w0*.44,p1[1],p0[0]+w0/2,p0[1]);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=shade(color,1.22);ctx.globalAlpha=.27;ctx.lineWidth=Math.max(.5,w1*.16);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(p0[0]-w0*.1,p0[1]);ctx.bezierCurveTo(p1[0]-w0*.1,p1[1],p2[0]-w1*.1,p2[1],p3[0]-w1*.1,p3[1]);ctx.stroke();ctx.restore();
  }
 }
 

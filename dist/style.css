@@ -202,9 +202,26 @@ select{font:inherit}
 @media(max-width:900px){.canvas-viewport{max-width:100%}.zoom-controls{position:static;transform:none;flex-direction:row;align-self:flex-end;margin:8px 0 -2px}.zoom-controls button{width:38px;min-height:36px}.zoom-controls #zoom-reset{width:48px}}
 
 /* A compact, named scissors control remains visible beside the canvas on touch screens. */
-#prune-tool{display:inline-flex;flex-direction:column;gap:1px;padding:2px 0;border:1px solid #c5cdbf;background:#edf0e8;color:#53604f;line-height:1}
-#prune-tool [data-icon] svg{width:14px;height:14px;stroke-width:1.8}
-#prune-tool .prune-tool-label{display:block;font-size:9px;font-weight:600;letter-spacing:0;white-space:nowrap}
-#prune-tool:hover{border-color:#9cae94;background:#e6ebdf}
-#prune-tool[aria-pressed=true],#prune-tool[aria-pressed=true]:hover{border-color:#a5533e;background:#a5533e;color:#fff;box-shadow:0 2px 8px #7b3d2c36}
-@media(max-width:600px){.stage-tools .icon-button{flex-basis:39px;width:39px}#prune-tool [data-icon] svg{width:16px;height:16px}#prune-tool .prune-tool-label{font-size:10px}}
+#prune-tool,#erase-tool{display:inline-flex;flex-direction:column;gap:1px;padding:2px 0;border:1px solid #c5cdbf;background:#edf0e8;color:#53604f;line-height:1}
+#prune-tool [data-icon] svg,#erase-tool [data-icon] svg{width:14px;height:14px;stroke-width:1.8}
+#prune-tool .prune-tool-label,#erase-tool .prune-tool-label{display:block;font-size:9px;font-weight:600;letter-spacing:0;white-space:nowrap}
+#prune-tool:hover,#erase-tool:hover{border-color:#9cae94;background:#e6ebdf}
+#prune-tool[aria-pressed=true],#prune-tool[aria-pressed=true]:hover,#erase-tool[aria-pressed=true],#erase-tool[aria-pressed=true]:hover{border-color:#a5533e;background:#a5533e;color:#fff;box-shadow:0 2px 8px #7b3d2c36}
+.layer-quick-actions #layer-quick-organize{grid-column:1/-1;background:#eef1e9;border-color:#c8d3c2;font-weight:600}
+.layer-menu.compact .layer-row{min-height:43px;padding-block:3px}
+.layer-menu.compact .layer-select img{height:30px;width:30px}
+.layer-menu.compact .layer-select small{display:none}
+@media(max-width:600px){.stage-tools .icon-button{flex-basis:36px;width:36px}#prune-tool [data-icon] svg,#erase-tool [data-icon] svg{width:16px;height:16px}#prune-tool .prune-tool-label,#erase-tool .prune-tool-label{font-size:10px}}
+@media(max-width:600px){
+ dialog.variant-modal{max-height:calc(100dvh - 20px);padding:14px 15px 18px}
+ .variant-modal h2{font-size:21px;line-height:1.35;margin:7px 0}
+ .variant-modal #modal-content>p:not(.file-note){font-size:12px;line-height:1.5;margin:5px 0}
+ .variant-modal .insert-position{margin:10px 0 0}
+ .variant-modal .insert-position button{padding:6px 8px}
+ .variant-modal .variant-grid{margin:12px 0 5px;gap:8px}
+ .variant-modal .variant-card{padding:8px 5px}
+ .variant-modal .variant-card img{height:132px;margin-bottom:5px}
+ .variant-modal .variant-card strong{font-size:12px}
+ .variant-modal .variant-card>span{font-size:11px}
+ .variant-modal .file-note{font-size:10px!important;line-height:1.5!important;margin:5px 0}
+}

@@ -7,9 +7,9 @@
 <meta name="description" content="在花间亲手挑选花材、舒展枝条，创作日式插花。保存草稿和 GPT Image 提示词，让一份灵感成为作品。">
 <meta name="theme-color" content="#efeee8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=30">
-<link rel="stylesheet" href="/material-drawer.css?v=25">
-<script type="module" src="/app.js?v=32">
+<link rel="stylesheet" href="/style.css?v=33">
+<link rel="stylesheet" href="/material-drawer.css?v=33">
+<script type="module" src="/app.js?v=33">
 </script>
 </head>
 <body>
@@ -162,8 +162,9 @@
 <div class="layer-quick-actions" role="group" aria-label="选中花材的快捷操作" data-aria-zh="选中花材的快捷操作" data-aria-en="Quick actions for selected material" data-aria-ja="選択した花材の操作">
 <button id="layer-quick-front" type="button" data-zh="放在花器前" data-en="Vessel front" data-ja="花器の前へ" disabled>放在花器前</button>
 <button id="layer-quick-back" type="button" data-zh="放在最后" data-en="Send to back" data-ja="最後面へ" disabled>放在最后</button>
-<button id="layer-quick-middle" type="button" data-zh="中间随机" data-en="Random middle" data-ja="中間に配置" disabled>中间随机</button>
+<button id="layer-quick-middle" type="button" data-zh="花器后随机" data-en="Random behind vase" data-ja="花器の後ろでランダム" disabled>花器后随机</button>
 <button id="layer-quick-focus" type="button" data-zh="虚化其他图层" data-en="Blur others" data-ja="他をぼかす" aria-pressed="false" disabled>虚化其他图层</button>
+<button id="layer-quick-organize" type="button" data-zh="一键整理图层" data-en="Tidy layers" data-ja="レイヤーを整理" aria-pressed="false">一键整理图层</button>
 </div>
 <div id="layer-list" class="layer-list">
 </div>
@@ -180,6 +181,10 @@
 <span data-icon="scissors" aria-hidden="true">
 </span>
 <span class="prune-tool-label" data-zh="剪枝" data-en="Cut" data-ja="切る">剪枝</span>
+</button>
+<button id="erase-tool" class="icon-button" title="擦除细节" aria-label="擦除细节" data-title-zh="擦除细节" data-title-en="Erase details" data-aria-zh="擦除细节" data-aria-en="Erase details" data-aria-ja="細部を消す" aria-pressed="false">
+<span data-icon="eraser" aria-hidden="true"></span>
+<span class="prune-tool-label" data-zh="擦除" data-en="Erase" data-ja="消す">擦除</span>
 </button>
 <button id="layers-tool" class="icon-button" title="花材图层" aria-label="打开花材图层" data-title-zh="花材图层" data-title-en="Material layers" data-aria-zh="打开花材图层" data-aria-en="Open material layers" aria-expanded="false">
 <span data-icon="layers">
