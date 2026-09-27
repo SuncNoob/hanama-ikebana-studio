@@ -1,0 +1,276 @@
+/* Hanama interface rhythm: 4 px details, 8 px spacing, quiet surfaces. */
+:root {
+  --ui-line: #d6d9d0;
+  --ui-strong: #344235;
+  --ui-muted: #626d61;
+  --ui-surface: #f8f8f4;
+  --ui-focus: #738c6b;
+  --ui-shadow: 0 8px 28px #26352812;
+}
+
+html { scroll-behavior: smooth; }
+body { color: #29352d; }
+button, input, select, textarea { font-family: var(--sans); }
+button, a, input, textarea, select, summary { -webkit-tap-highlight-color: transparent; }
+:is(button, a, input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 3px;
+}
+button { transition: background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease; }
+.eyebrow, .panel-heading .eyebrow, .workspace-heading .eyebrow {
+  color: var(--ui-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  letter-spacing: .105em;
+}
+.tiny-index, .save-state, .material-card small, .quick-material-status,
+.quick-material-recent-label, .real-size, .botanical-note, .generation-box>small,
+.study-content .eyebrow, .study-source, .art-card p {
+  color: var(--ui-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Navigation and global actions */
+.masthead { background: #f8f7f3; border-bottom-color: var(--ui-line); }
+.nav-button { min-height: 44px; font-size: 14px; letter-spacing: .01em; }
+.nav-button:hover:not(.active) { color: var(--ui-strong); }
+.nav-button.active:after { left: 4px; right: 4px; height: 2px; }
+.header-actions .text-button { min-height: 40px; }
+.header-new { padding-inline: 8px; border-radius: 8px; }
+.header-new:hover, #help-button:hover { background: #e9ede6; }
+#language-select { min-height: 40px; padding-inline: 13px 28px; border-color: #cbd2c6; background-color: #fbfbf8; font-size: 13px; }
+#language-select:hover { border-color: #98a995; }
+#save-button { min-height: 42px; border-radius: 8px; }
+.button { border-radius: 8px; }
+.button:active:not(:disabled), .quick-material-open:active:not(:disabled) { transform: scale(.98); }
+
+/* Library: one card size and one reading rhythm across languages. */
+.material-panel { border-color: var(--ui-line); }
+.material-panel .panel-heading { margin-bottom: 20px; }
+.material-panel .panel-heading h1 { margin-top: 5px; font-size: 22px; line-height: 1.35; }
+.material-tabs { min-height: 44px; padding: 3px; border-radius: 9px; }
+.material-tabs button { min-height: 38px; border-radius: 7px; font-size: 13px; }
+.material-filters { gap: 4px 5px; }
+#material-filters button, #vessel-filters button {
+  min-height: 30px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.25;
+}
+.material-filters button:hover:not(.active) { background: #ebeee7; }
+.material-search { min-height: 44px; margin-bottom: 14px; padding-block: 10px; color: var(--ui-strong); font-size: 13px; }
+.material-search::placeholder { color: #758074; opacity: 1; }
+.material-grid { gap: 10px; }
+.material-card { border-color: var(--ui-line); border-radius: 9px; background: #f9f9f5; }
+.material-card:hover { border-color: #94a68d; background: #f0f3ec; box-shadow: 0 3px 12px #2e3d2b0d; }
+.material-card:active { transform: scale(.985); }
+.material-card strong { font-size: 13px; line-height: 1.3; }
+.material-card small { font-size: 11px; }
+.material-card .add-mark { top: 5px; right: 8px; }
+.study-entry, .source-link { min-height: 44px; font-size: 13px; line-height: 1.4; }
+
+/* The canvas is the product. Its related controls share its left and right edges. */
+.workspace { background: #eceee9; }
+.workspace-heading { align-items: flex-start; margin-bottom: 20px; }
+.work-naming-label { color: #667563; font-size: 11px; letter-spacing: .08em; }
+.work-title input { padding-bottom: 4px; border-bottom-color: #9fab9b; font-size: clamp(21px, 2vw, 27px); line-height: 1.3; letter-spacing: .025em; }
+.work-title-edit { min-height: 32px; color: #586a58; font-size: 12px; }
+.work-subtitle label { color: #657064; font-size: 11px; }
+.work-subtitle input { min-height: 25px; color: #5a675b; font-size: 13px; }
+.canvas-viewport { border-color: #d7dcd3; box-shadow: 0 4px 20px #3040300e; }
+.stage-tools { gap: 2px; padding: 4px; border-color: #d9ddd3; border-radius: 10px; background: #fbfbf8f2; box-shadow: 0 3px 14px #27392717; }
+.stage-tools .icon-button { width: 36px; height: 36px; border-radius: 7px; }
+.stage-tools .icon-button:hover:not(:disabled) { background: #e7ece5; }
+.stage-tools .icon-button[aria-pressed=true] { background: #e8ede5; color: #415d45; }
+.stage-tools :is(#prune-tool,#erase-tool) { border-radius: 7px; }
+.stage-tools .tool-separator { margin-inline: 1px; }
+.zoom-controls { border-color: #d3dad0; background: #fbfbf8f2; box-shadow: 0 5px 18px #26352820; }
+.zoom-controls button { width: 40px; min-height: 40px; }
+.stage-bottom, .quick-material-bar { width: min(100%, calc(100dvh - 315px)); max-width: 100%; }
+.stage-bottom { margin-inline: auto; min-height: 58px; }
+.scene-picker { gap: 4px; color: #566657; font-size: 13px; white-space: nowrap; }
+.scene-picker>span { margin-right: 5px; }
+.scene-dot { position: relative; flex: none; width: 36px; height: 36px; border: 0; background: transparent !important; }
+.scene-dot:before { content: ''; position: absolute; inset: 9px; border: 1px solid #9ca99a; border-radius: 50%; background: #ebe5d7; }
+.scene-dot.stone:before { background: #a3b0a8; }
+.scene-dot.night:before { background: #39483e; }
+.scene-dot.active { outline: none; }
+.scene-dot.active:after { content: ''; position: absolute; inset: 5px; border: 1px solid #6a7c66; border-radius: 50%; }
+.scene-dot:hover:before { border-color: #445e47; }
+.stage-bottom .text-button { min-height: 40px; padding-inline: 5px; font-size: 13px; }
+.stage-hint { display: none; }
+.quick-material-bar { min-height: 60px; margin-top: 8px; gap: 12px; }
+.quick-material-open { min-height: 44px; border-radius: 9px; font-size: 14px; }
+.quick-material-recent-item { width: 42px; height: 42px; border-radius: 8px; }
+
+/* Inspector: clear hierarchy without shortening the controls' names. */
+.workspace>.design-panel, .workspace>.layer-menu, .quick-material-drawer {
+  border-color: var(--ui-line);
+  border-radius: 12px;
+  background: var(--ui-surface);
+  box-shadow: var(--ui-shadow);
+}
+.workspace>.design-panel { padding: 20px; }
+.workspace>.design-panel>.panel-heading { align-items: stretch; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.workspace>.design-panel>.panel-heading h2 { font-size: 21px; line-height: 1.35; white-space: normal; }
+.editor-tabs { width: 100%; min-height: 40px; padding: 3px; border-radius: 9px; }
+.editor-tabs button { flex: 1; min-height: 34px; font-size: 13px; }
+.selected-material { padding: 0 0 12px; border-bottom: 1px solid #e1e5dc; }
+.selected-material>img { width: 48px; height: 56px; border-radius: 7px; }
+.selected-material strong { font-size: 15px; }
+.selected-material .icon-button { flex: none; width: 40px; height: 40px; }
+.variant-trigger { min-height: 64px; padding: 10px 12px; border-radius: 8px; }
+.variant-trigger small { font-size: 12px; }
+.variant-trigger strong { font-size: 13px; line-height: 1.35; }
+.variant-trigger>span:last-child { flex: none; font-size: 12px; }
+.workspace>.design-panel .botanical-note { font-size: 12px; line-height: 1.55; }
+.workspace>.design-panel .slider-label { margin-top: 12px; margin-bottom: 7px; font-size: 13px; }
+.slider-label output { color: #586558; font-size: 13px; }
+input[type=range] { min-height: 24px; }
+.real-size { align-items: center; gap: 8px; font-size: 12px; }
+.real-size p { min-width: 0; }
+#reseat-button { min-height: 32px; border-radius: 6px; }
+.scale-warning { border-radius: 7px; font-size: 12px; }
+.stem-details summary { min-height: 44px; font-size: 13px; }
+.adjust-actions { gap: 8px; }
+.adjust-actions button { min-height: 42px; padding: 7px 5px; border-color: var(--ui-line); border-radius: 7px; font-size: 12px; }
+.adjust-actions button:hover, .cut-choice-actions button:hover { border-color: #92a18d; background: #ebf0e9; }
+.generation-box>small { font-size: 12px; }
+.generation-box .button { min-height: 44px; }
+
+/* Layer and material sheets use the same control scale as the inspector. */
+.layer-menu-heading { padding: 14px; }
+.layer-menu-heading strong { font-size: 16px; }
+.layer-menu-heading small, .layer-menu-tip { color: var(--ui-muted); font-size: 12px; line-height: 1.5; }
+.layer-menu-heading .icon-button, .quick-material-heading .icon-button { width: 40px; height: 40px; }
+.layer-quick-actions { gap: 8px; padding: 12px; }
+.layer-quick-actions button { min-height: 42px; border-radius: 7px; font-size: 12px; line-height: 1.25; }
+.layer-row { min-height: 52px; border-radius: 7px; }
+.layer-menu.compact .layer-row { min-height: 44px; }
+.layer-select { min-height: 44px; }
+.layer-step button { min-width: 32px; min-height: 36px; }
+.quick-material-drawer { gap: 12px; }
+.quick-material-heading .eyebrow { font-size: 11px; }
+.quick-material-heading h2 { font-size: 22px; }
+.quick-material-search-label { min-height: 44px; border-radius: 9px; }
+#quick-material-search { min-height: 42px; font-size: 14px; }
+.quick-material-filters { min-height: 42px; }
+.quick-material-filters button { min-height: 36px; padding-inline: 12px; font-size: 13px; }
+.quick-material-status { font-size: 12px; }
+.quick-material-grid .material-card, .quick-material-grid .quick-material-card { min-height: 160px; border-radius: 9px; }
+.quick-material-grid .material-card strong, .quick-material-grid .quick-material-card strong { font-size: 14px; }
+.quick-material-grid .material-card small, .quick-material-grid .quick-material-card small { font-size: 12px; }
+
+/* Gallery, studies, and decisions follow the same typographic system. */
+.page-heading h1 { line-height: 1.3; letter-spacing: .045em; }
+.page-heading p { line-height: 1.6; }
+.study-filters button { min-height: 38px; font-size: 13px; }
+.study-image { border-radius: 8px; }
+.study-content { padding-top: 18px; }
+.study-content .eyebrow { font-size: 12px; }
+.study-content h2 { line-height: 1.35; }
+.study-content>p:not(.eyebrow) { line-height: 1.7; }
+.study-content .button { min-height: 44px; }
+.art-card { border-radius: 9px; }
+.art-card-content { padding: 18px; }
+.art-card-actions { gap: 8px; }
+.art-card-actions button { min-height: 40px; padding-inline: 6px; font-size: 13px; }
+.empty-gallery { border-radius: 10px; }
+dialog { border-color: var(--ui-line); border-radius: 14px; background: #fafaf7; }
+dialog .modal-header .icon-button { width: 40px; height: 40px; }
+dialog h2 { line-height: 1.35; }
+.modal-actions .button { min-height: 44px; }
+.variant-card { border-radius: 9px; }
+.variant-card:focus-visible { outline-offset: 2px; }
+.insert-position button { min-height: 44px; border-radius: 7px; }
+.variant-modal .file-note { font-size: 12px !important; line-height: 1.5 !important; }
+
+@media (min-width: 901px) {
+  .studio-layout { height: auto; min-height: calc(100dvh - 135px); }
+  .material-panel { height: calc(100dvh - 135px); min-height: 650px; align-self: start; position: sticky; top: 88px; }
+  .material-grid { grid-auto-rows: 164px; }
+  .material-card { min-height: 160px; }
+  .material-card img { height: 92px; margin-bottom: 6px; }
+  .material-card small { display: -webkit-box; min-height: 1.25em; overflow: hidden; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.25; }
+  .stage-shell { align-items: center; }
+  .canvas-viewport { max-width: calc(100dvh - 350px); }
+  .stage-tools { left: max(14px, calc((100% - (100dvh - 350px)) / 2 + 14px)); }
+  .zoom-controls { right: max(8px, calc((100% - (100dvh - 350px)) / 2 - 55px)); }
+  .stage-bottom, .quick-material-bar { width: min(100%, calc(100dvh - 350px)); }
+  .workspace>.design-panel { max-height: calc(100dvh - 120px); overflow-y: auto; scrollbar-width: thin; }
+}
+
+@media (min-width: 1300px) {
+  .studio-layout { grid-template-columns: 280px minmax(0, 1fr); }
+  .material-panel { padding-inline: 24px; }
+}
+
+@media (max-width: 900px) {
+  .stage-bottom, .quick-material-bar { width: 100%; }
+  .workspace>.design-panel { max-width: 100%; }
+  .zoom-controls { gap: 2px; margin-top: 8px; }
+  .zoom-controls button { width: 42px; min-height: 40px; }
+  .zoom-controls #zoom-reset { width: 54px; }
+}
+
+@media (max-width: 600px) {
+  .masthead { background: #faf9f6; }
+  .header-actions .text-button, #save-button, #language-select { min-height: 38px; height: 38px; }
+  .header-new, #save-button { min-width: 38px; width: 38px; }
+  #language-select { min-width: 94px; width: 94px; padding: 0 22px 0 8px; font-size: 12px; }
+  .main-nav { height: 44px; }
+  .nav-button { min-height: 44px; font-size: 13px; }
+  .workspace-heading { margin-bottom: 14px; }
+  .work-title input { font-size: 21px; }
+  .work-title-edit { font-size: 11px; }
+  .work-subtitle input { font-size: 12px; }
+  .stage-tools {
+    position: relative; top: auto; left: auto; transform: none;
+    display: grid; grid-template-columns: repeat(8, minmax(0, 1fr));
+    width: 100%; max-width: 100%; min-height: 50px;
+    margin: 8px auto 0; padding: 4px; overflow: visible;
+  }
+  .stage-tools .tool-separator { display: none; }
+  .stage-tools .icon-button { width: 100%; height: 40px; min-width: 0; flex: none; }
+  .stage-tools :is(#prune-tool,#erase-tool) { padding: 2px 0; }
+  .zoom-controls { align-self: flex-end; margin: 8px 0 0; }
+  .quick-material-bar { min-height: 56px; margin-top: 5px; }
+  .quick-material-open { min-height: 44px; }
+  .quick-material-recent-item { width: 42px; height: 42px; }
+  .stage-bottom { min-height: 54px; }
+  .scene-picker { gap: 2px; font-size: 12px; }
+  .scene-dot { width: 34px; height: 34px; }
+  .scene-dot:before { inset: 8px; }
+  .scene-dot.active:after { inset: 4px; }
+  .workspace>.design-panel { padding: 18px; }
+  .workspace>.design-panel>.panel-heading { flex-direction: row; align-items: center; gap: 10px; }
+  .workspace>.design-panel>.panel-heading h2 { font-size: 19px; white-space: nowrap; }
+  .editor-tabs { width: auto; min-height: 40px; }
+  .editor-tabs button { min-width: 74px; padding-inline: 9px; font-size: 12px; }
+  .workspace>.quick-material-drawer:not([hidden]) { border-radius: 18px 18px 0 0; }
+  .quick-material-grid .material-card, .quick-material-grid .quick-material-card { min-height: 160px; }
+  dialog { width: calc(100% - 24px); padding: 18px; }
+  dialog h2 { font-size: 23px; }
+  .variant-modal .variant-card strong { font-size: 13px; }
+  .variant-modal .variant-card>span { font-size: 12px; }
+}
+
+@media (max-width: 360px) {
+  .header-new, #save-button, .header-actions .text-button { width: 36px; min-width: 36px; height: 36px; min-height: 36px; }
+  #language-select { width: 88px; min-width: 88px; height: 36px; min-height: 36px; }
+  .workspace>.design-panel>.panel-heading { flex-direction: column; align-items: stretch; }
+  .editor-tabs { width: 100%; }
+  .stage-tools .icon-button { height: 40px; }
+  .scene-dot { width: 32px; height: 32px; }
+  .stage-bottom .text-button { font-size: 12px; }
+  .quick-material-recent-item { width: 36px; height: 36px; }
+  .quick-material-filters { flex-wrap: wrap; gap: 4px; overflow: visible; }
+  .quick-material-filters button { min-height: 32px; padding-inline: 8px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  button { transition: none; }
+}
