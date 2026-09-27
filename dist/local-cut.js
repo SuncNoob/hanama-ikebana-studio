@@ -1,6 +1,6 @@
 /**
  * A finite, material-aware cut. The cutter finds the one connected piece of
- * the selected specimen under the middle of a stroke, opens a short kerf there,
+ * the selected specimen under the stroke, opens a short kerf there,
  * and separates only the part that no longer reaches its lower (root) end.
  *
  * Cut records contain two small, run-length encoded masks in the coordinate
@@ -68,13 +68,14 @@ function distanceSquared(px,py,ax,ay,bx,by){
 export function splitAlphaMask(alpha,w,h,a,b,options={}){
  if(!alpha||alpha.length!==w*h||!finitePoint(a)||!finitePoint(b)||w<1||h<1||w*h>1600000)return {ok:false,reason:'invalid'};
  const dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy);
- if(length<5)return {ok:false,reason:'short'};
+ if(length<1.5)return {ok:false,reason:'short'};
  const threshold=clamp(options.alphaThreshold??20,1,254),radius=clamp(options.kerfRadius??1.35,.75,4);
  const occupied=new Uint8Array(w*h);
  for(let i=0;i<occupied.length;i++)occupied[i]=alpha[i]>=threshold?1:0;
 
- // Sample the *finite* user stroke. If it crosses multiple leaves, use only
- // the local run nearest its middle, rather than extending a line across them.
+ // Sample the *finite* user stroke. The editor chooses the first piece touched:
+ // drawing from a fine branch toward the trunk must not cut the trunk instead.
+ // Other callers can retain the middle-run behavior by omitting preferStart.
  const steps=Math.max(1,Math.ceil(length*2)),hits=[];
  for(let step=0;step<=steps;step++){
   const t=step/steps,x=Math.round(a[0]+t*dx),y=Math.round(a[1]+t*dy),index=indexAt(x,y,w,h);
@@ -87,14 +88,19 @@ export function splitAlphaMask(alpha,w,h,a,b,options={}){
   run.push(hit);
  }
  if(run.length)runs.push(run);
- runs.sort((left,right)=>{
+ if(!options.preferStart)runs.sort((left,right)=>{
   const score=group=>Math.abs((group[0].t+group.at(-1).t)/2-.5)-Math.min(.06,(group.at(-1).t-group[0].t)*.08);
   return score(left)-score(right);
  });
  const localRun=runs[0],seed=localRun[Math.floor(localRun.length/2)].index;
- const edge=Math.min(2.5/length,.08),t0=clamp(localRun[0].t-edge,0,1),t1=clamp(localRun.at(-1).t+edge,0,1);
+ const edge=2.5/length;
+ let t0=clamp(localRun[0].t-edge,0,1),t1=clamp(localRun.at(-1).t+edge,0,1);
+ // Stop the little blade before another independent run on the same gesture.
+ for(const other of runs)if(other!==localRun){
+  if(other.at(-1).t<localRun[0].t)t0=Math.max(t0,(other.at(-1).t+localRun[0].t)/2);
+  else if(other[0].t>localRun.at(-1).t)t1=Math.min(t1,(other[0].t+localRun.at(-1).t)/2);
+ }
  const ax=a[0]+t0*dx,ay=a[1]+t0*dy,bx=a[0]+t1*dx,by=a[1]+t1*dy;
- if(Math.hypot(bx-ax,by-ay)<3)return {ok:false,reason:'short'};
 
  // Identify the original connected botanical part. Other disconnected
  // petals/stems in the same source photograph are always left untouched.
@@ -131,7 +137,9 @@ export function splitAlphaMask(alpha,w,h,a,b,options={}){
  if(components.length<2)return {ok:false,reason:'not-separated'};
  if(rootPoint)components.sort((left,right)=>left.rootDistance-right.rootDistance||right.area-left.area);
  else components.sort((left,right)=>right.bottom-left.bottom||right.area-left.area);
- const root=components[0],minArea=Math.max(7,Math.round(originalArea*.001));
+ // A twig tip is allowed to be tiny even when attached to a large specimen.
+ // The kerf-adjacency check below rejects detached background specks.
+ const root=components[0],minArea=3;
  const detached=components.filter(c=>c.id!==root.id&&c.touches&&c.area>=minArea).sort((left,right)=>right.area-left.area)[0];
  if(!detached||root.area<minArea)return {ok:false,reason:'not-separated'};
 
@@ -149,6 +157,103 @@ export function splitAlphaMask(alpha,w,h,a,b,options={}){
 }
 
 /**
+ * A woody branch can remain alpha-connected through its overlapping leaves or
+ * needles after the wood is cut. In that case use its brown branch core as a
+ * temporary structure, then give each visible pixel to the nearest core.
+ * The result is still the same two editable raster layers, with no asset-specific
+ * hand-drawn masks and no change to cuts that already separate normally.
+ */
+export function splitBotanicalMask(rgba,w,h,a,b,options={}){
+ if(!rgba||rgba.length!==w*h*4||w*h>1600000)return {ok:false,reason:'invalid'};
+ const alpha=new Uint8Array(w*h);
+ for(let p=0;p<alpha.length;p++)alpha[p]=rgba[p*4+3];
+ const direct=splitAlphaMask(alpha,w,h,a,b,options);
+ if(direct.ok||direct.reason!=='not-separated'||!options.woodyFallback)return direct;
+
+ const wood=new Uint8Array(w*h);let woodArea=0,visibleArea=0,top=h,bottom=-1,woodBottom=-1;
+ for(let p=0;p<wood.length;p++){
+  const q=p*4,opacity=rgba[q+3],y=Math.floor(p/w);
+  if(opacity>=20){visibleArea++;top=Math.min(top,y);bottom=Math.max(bottom,y)}
+  const r=rgba[q],g=rgba[q+1],blue=rgba[q+2];
+  if(opacity>=64&&r-g>=10&&r-blue>=20&&g>=blue-6&&g>=25&&r<=g*1.9){wood[p]=255;woodArea++;woodBottom=Math.max(woodBottom,y)}
+ }
+ // A usable branch core reaches the rooted end and is a meaningful fraction
+ // of this specimen. This keeps warm flower petals from becoming false stems.
+ if(woodArea<48||woodArea<visibleArea*.012||woodArea>visibleArea*.65||woodBottom<bottom-Math.max(8,(bottom-top)*.18))return direct;
+ const core=splitAlphaMask(wood,w,h,a,b,options);
+ if(!core.ok||core.stats.originalArea<Math.max(48,woodArea*.25))return direct;
+ const coreDetached=decodeCutMask(core.cut.d,w*h),kerf=decodeCutMask(core.cut.k,w*h);
+ if(!coreDetached||!kerf)return direct;
+
+ // First make a rough nearest-wood assignment. A fan of overlapping foliage
+ // may cross that boundary, so the assignment is refined at the cluster level.
+ const owner=new Uint8Array(w*h),queue=new Int32Array(w*h);let tail=0,head=0;
+ for(let p=0;p<wood.length;p++)if(wood[p]&&!kerf[p]){owner[p]=coreDetached[p]?2:1;queue[tail++]=p}
+ while(head<tail){
+  const p=queue[head++];near8(p,w,h,n=>{
+   if(!owner[n]&&alpha[n]>=20&&!kerf[n]){owner[n]=owner[p];queue[tail++]=n}
+  });
+ }
+ // Seven-pixel erosion leaves the dense centres of leaves or needle fans.
+ // Keep each centre together before restoring its fine edges. An integral
+ // image makes this linear rather than checking 49 neighbours per pixel.
+ const stride=w+1,summed=new Uint32Array(stride*(h+1)),dense=new Uint8Array(w*h);
+ for(let y=0;y<h;y++){
+  let row=0;
+  for(let x=0;x<w;x++){
+   const p=y*w+x;row+=alpha[p]>=20&&!kerf[p]?1:0;
+   summed[(y+1)*stride+x+1]=summed[y*stride+x+1]+row;
+  }
+ }
+ for(let y=3;y<h-3;y++)for(let x=3;x<w-3;x++){
+  const left=x-3,right=x+4,top=y-3,bottom=y+4;
+  if(summed[bottom*stride+right]-summed[top*stride+right]-summed[bottom*stride+left]+summed[top*stride+left]===49)dense[y*w+x]=1;
+ }
+ const clustered=new Uint8Array(w*h),seen=new Uint8Array(w*h);
+ for(let p=0;p<dense.length;p++){
+  if(!dense[p]||seen[p])continue;
+  head=0;tail=0;queue[tail++]=p;seen[p]=1;
+  let woodCount=0,offWood=0,rootVotes=0,offVotes=0;
+  while(head<tail){
+   const q=queue[head++];
+   if(wood[q]){woodCount++;if(coreDetached[q])offWood++}
+   if(owner[q]===2)offVotes++;else if(owner[q]===1)rootVotes++;
+   near8(q,w,h,n=>{if(dense[n]&&!seen[n]){seen[n]=1;queue[tail++]=n}});
+  }
+  const mixed=woodCount>0&&Math.min(offWood,woodCount-offWood)>woodCount*.12;
+  if(tail>=100&&!mixed){
+   const side=woodCount?(offWood>woodCount/2?2:1):(offVotes>rootVotes?2:1);
+   for(let i=0;i<tail;i++)clustered[queue[i]]=side;
+  }
+ }
+ owner.fill(0);head=0;tail=0;
+ for(let p=0;p<owner.length;p++)if(clustered[p]){owner[p]=clustered[p];queue[tail++]=p}
+ for(let p=0;p<wood.length;p++)if(wood[p]&&!kerf[p]&&!owner[p]){owner[p]=coreDetached[p]?2:1;queue[tail++]=p}
+ while(head<tail){
+  const p=queue[head++];near8(p,w,h,n=>{
+   if(!owner[n]&&alpha[n]>=20&&!kerf[n]){owner[n]=owner[p];queue[tail++]=n}
+  });
+ }
+ // Very faint antialiasing can extend several pixels past a needle. Give it
+ // the same owner as the visible needle instead of leaving a ghost in the root.
+ head=0;tail=0;
+ for(let p=0;p<owner.length;p++)if(owner[p]&&alpha[p]>=20)queue[tail++]=p;
+ while(head<tail){
+  const p=queue[head++];near8(p,w,h,n=>{
+   if(!owner[n]&&alpha[n]>0&&!kerf[n]){owner[n]=owner[p];queue[tail++]=n}
+  });
+ }
+ const detached=new Uint8Array(w*h),cleanKerf=kerf.slice();let detachedArea=0,rootArea=0;
+ for(let p=0;p<owner.length;p++){
+  if(owner[p]===2){detached[p]=1;detachedArea++}
+  else if(owner[p]===1)rootArea++;
+  else if(alpha[p]>0&&alpha[p]<20)cleanKerf[p]=1;
+ }
+ if(detachedArea<3||rootArea<3)return direct;
+ return {ok:true,cut:{v:1,w,h,d:encodeCutMask(detached),k:encodeCutMask(cleanKerf)},anchors:core.anchors,stats:{...core.stats,rootArea,detachedArea,method:'woody-core'}};
+}
+
+/**
  * Browser wrapper. `sprite` may be a cropped composeSpecimen canvas; its crop
  * metadata restores the uncut coordinate frame. `a`/`b` are pixel points in
  * that *full* frame, not CSS/stage coordinates.
@@ -158,15 +263,14 @@ export function analyzeLocalCut(sprite,{a,b},options={}){
  const crop=sprite.crop||{x:0,y:0,width:sprite.width,height:sprite.height,fullWidth:sprite.width,fullHeight:sprite.height};
  const fullW=crop.fullWidth,fullH=crop.fullHeight;
  if(!Number.isFinite(fullW)||!Number.isFinite(fullH)||fullW<1||fullH<1)return {ok:false,reason:'invalid'};
- const maxSide=clamp(options.maxSide??704,160,1024),scale=Math.min(1,maxSide/Math.max(fullW,fullH),Math.sqrt(600000/(fullW*fullH)));
+ const maxSide=clamp(options.maxSide??1024,160,1024),scale=Math.min(1,maxSide/Math.max(fullW,fullH),Math.sqrt(800000/(fullW*fullH)));
  const w=Math.max(1,Math.round(fullW*scale)),h=Math.max(1,Math.round(fullH*scale)),canvas=createCanvas(w,h),ctx=canvas.getContext('2d',{willReadFrequently:true});
  if(!ctx)return {ok:false,reason:'canvas'};
  try{
   ctx.drawImage(sprite,crop.x*w/fullW,crop.y*h/fullH,crop.width*w/fullW,crop.height*h/fullH);
-  const rgba=ctx.getImageData(0,0,w,h).data,alpha=new Uint8Array(w*h);
-  for(let p=0;p<alpha.length;p++)alpha[p]=rgba[p*4+3];
+  const rgba=ctx.getImageData(0,0,w,h).data;
   const rootPoint=finitePoint(options.rootPoint)?[options.rootPoint[0]*w/fullW,options.rootPoint[1]*h/fullH]:null;
-  return splitAlphaMask(alpha,w,h,[a[0]*w/fullW,a[1]*h/fullH],[b[0]*w/fullW,b[1]*h/fullH],rootPoint?{...options,rootPoint}:options);
+  return splitBotanicalMask(rgba,w,h,[a[0]*w/fullW,a[1]*h/fullH],[b[0]*w/fullW,b[1]*h/fullH],rootPoint?{...options,rootPoint}:options);
  }finally{canvas.width=canvas.height=0}
 }
 

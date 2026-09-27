@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {decodeCutMask,encodeCutMask,splitAlphaMask} from '../dist/local-cut.js';
+import {decodeCutMask,encodeCutMask,splitAlphaMask,splitBotanicalMask} from '../dist/local-cut.js';
 
 const specimen=(w,h)=>{
  const alpha=new Uint8Array(w*h);
@@ -58,4 +58,69 @@ test('a second cut keeps the proximal side of an already detached branch',()=>{
  const distal=decodeCutMask(second.cut.d,w*h);
  assert.equal(distal[at(65,28)],1);
  assert.equal(distal[at(35,28)],0);
+});
+
+test('a fine side twig can be separated from a much larger trunk',()=>{
+ for(const thickness of [1,2]){
+  const w=300,h=200,{alpha,rect,at}=specimen(w,h);
+  rect(25,15,125,180);
+  rect(126,70,145,70+thickness-1);
+  rect(225,50,236,72); // Another specimen must remain untouched.
+  const result=splitAlphaMask(alpha,w,h,[136,65],[136,76]);
+  assert.equal(result.ok,true,`thickness ${thickness}: ${result.reason}`);
+  const detached=decodeCutMask(result.cut.d,w*h),kerf=decodeCutMask(result.cut.k,w*h);
+  assert.equal(detached[at(143,70)],1);
+  assert.equal(detached[at(70,70)],0);
+  assert.equal(detached[at(230,60)],0);
+  assert.equal(kerf[at(230,60)],0);
+ }
+});
+
+test('a short deliberate stroke across a thin twig is enough to split its tip',()=>{
+ const w=80,h=80,{alpha,rect,at}=specimen(w,h);
+ rect(10,10,13,70);rect(14,30,43,30);
+ const result=splitAlphaMask(alpha,w,h,[25,27],[25,33]);
+ assert.equal(result.ok,true,result.reason);
+ const detached=decodeCutMask(result.cut.d,w*h),kerf=decodeCutMask(result.cut.k,w*h);
+ assert.equal(detached[at(38,30)],1);
+ assert.equal(detached[at(11,50)],0);
+ assert.equal(kerf[at(25,30)],1);
+});
+
+test('preferStart cuts the first crossed twig instead of a later main trunk',()=>{
+ const w=120,h=110,{alpha,rect,at}=specimen(w,h);
+ rect(20,10,24,100);rect(25,40,80,42);rect(25,74,55,76);
+ const result=splitAlphaMask(alpha,w,h,[60,35],[0,70],{preferStart:true});
+ assert.equal(result.ok,true,result.reason);
+ const detached=decodeCutMask(result.cut.d,w*h),kerf=decodeCutMask(result.cut.k,w*h);
+ assert.equal(detached[at(70,41)],1);
+ assert.equal(detached[at(22,20)],0);
+ assert.equal(detached[at(45,75)],0);
+ assert.equal(kerf[at(22,56)],0);
+});
+
+test('a woody branch can be cut when fine green needles bridge around the cut',()=>{
+ const w=110,h=100,rgba=new Uint8ClampedArray(w*h*4),at=(x,y)=>y*w+x;
+ const paint=(x0,y0,x1,y1,[red,green,blue])=>{
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)rgba.set([red,green,blue,255],at(x,y)*4);
+ };
+ const wood=[96,63,38],needle=[58,114,69];
+ paint(25,10,28,90,wood); // Rooted main stem.
+ paint(29,30,78,32,wood); // Branch to be detached.
+ paint(29,69,59,71,wood); // Unrelated lower branch.
+ paint(34,22,35,30,needle);
+ paint(34,22,52,23,needle);
+ paint(51,22,52,30,needle); // Green bridge bypasses the intended woody cut.
+ for(let x=54;x<=86;x+=2)paint(x,12,x,29,needle); // A small spray of thin green needles.
+ const alpha=Uint8Array.from({length:w*h},(_,p)=>rgba[p*4+3]);
+ const a=[40,39],b=[40,18];
+ assert.equal(splitAlphaMask(alpha,w,h,a,b,{preferStart:true}).reason,'not-separated');
+
+ const result=splitBotanicalMask(rgba,w,h,a,b,{preferStart:true,woodyFallback:true});
+ assert.equal(result.ok,true,result.reason);
+ const detached=decodeCutMask(result.cut.d,w*h),kerf=decodeCutMask(result.cut.k,w*h);
+ assert.equal(detached[at(70,31)],1);
+ assert.equal(detached[at(26,75)],0);
+ assert.equal(detached[at(55,70)],0);
+ assert.equal(kerf[at(55,70)],0);
 });

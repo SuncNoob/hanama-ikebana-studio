@@ -1,4 +1,4 @@
-import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture} from './compositor.js?v=25';
+import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture} from './compositor.js?v=27';
 import {buildPrompt} from './prompt.js?v=26';
 import {newSpecimens} from './catalog.js?v=25';
 import {photoSpecimens} from './photo-catalog.js?v=25';
@@ -10,7 +10,7 @@ import {botanicalNotes,vesselNote} from './floristry.js?v=25';
 import {studies,studySeasons} from './studies.js?v=25';
 import {applyRealScale,sizeBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,tipPoint,reach,MAX_STEM_CM,stemUnit,stemTrimmed,spriteScale,stageCanvasSize} from './scale.js?v=25';
 import {dimensions, vesselGeometry, warpY, sourceToStage, stageToSource, simplifyPoints} from './geometry.js?v=25';
-import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=25';
+import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=27';
 const $ = (s,root=document) => root.querySelector(s);
 const $$ = (s,root=document) => [...root.querySelectorAll(s)];
 const LANGUAGE_STORE='hanama-language';
@@ -75,6 +75,8 @@ const legacyFlowers=[
  {id:'pampas',family:'pampas',name:'蒲苇',en:'Pampas grass',group:'branch',color:'麦白',pose:'自然穗形',swatch:'#d4c5ae',height:58,width:223,heightPx:501,anchor:.404,split:.6}
 ];
 const specimens=[...photoSpecimens,...bookSpecimens,...legacyFlowers,...newSpecimens,...foliageSpecimens];
+const woodyCutFamilies=new Set(['pine','sakura','quince','willow','eucalyptus']);
+const woodyCutIds=new Set(['photo-magnolia','photo-pussy-willow','maple-green-summer']);
 applyRealScale(specimens);
 const browseSpecimens=specimens.filter(a=>!bookSpecimens.includes(a));
 const familyOrder=[...new Set(browseSpecimens.map(a=>a.family))];
@@ -147,8 +149,8 @@ function validate(v){
   if(i.localCuts?.length>8)throw Error(L('剪枝信息过多','The draft contains too much pruning detail'));
   const localCuts=(i.localCuts||[]).map(entry=>{
    const cut=entry?.cut,w=cut?.w,h=cut?.h;
-   if(!['main','detached'].includes(entry?.part)||cut?.v!==1||!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w*h>600000||typeof cut.d!=='string'||typeof cut.k!=='string')throw Error(L('剪枝信息不完整','Cut data is incomplete'));
-   totalMaskChars+=cut.d.length+cut.k.length;totalMaskPixels+=w*h;if(totalMaskChars>400000||totalMaskPixels>60000000||!decodeCutMask(cut.d,w*h)||!decodeCutMask(cut.k,w*h))throw Error(L('剪枝信息不完整','Cut data is incomplete'));
+   if(!['main','detached'].includes(entry?.part)||cut?.v!==1||!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w*h>850000||typeof cut.d!=='string'||typeof cut.k!=='string')throw Error(L('剪枝信息不完整','Cut data is incomplete'));
+   totalMaskChars+=cut.d.length+cut.k.length;totalMaskPixels+=w*h;if(totalMaskChars>400000||totalMaskPixels>80000000||!decodeCutMask(cut.d,w*h)||!decodeCutMask(cut.k,w*h))throw Error(L('剪枝信息不完整','Cut data is incomplete'));
    const anchor=Array.isArray(entry.anchor)&&entry.anchor.length===2&&entry.anchor.every(n=>Number.isFinite(n)&&n>=0&&n<=1)?entry.anchor:null;
    return {cut:{v:1,w,h,d:cut.d,k:cut.k},part:entry.part,...(anchor?{anchor}:{})};
   });
@@ -448,7 +450,7 @@ function setEditMode(mode){
  editMode=mode;if(mode!=='move'){setEditorTab('shape');$('#stem-details').open=true}stroke=null;$('#stage').dataset.tool=mode;
  $('#move-tool').setAttribute('aria-pressed',String(mode==='move'));$('#prune-tool').setAttribute('aria-pressed',String(mode==='split'));
  $$('[data-prune]').forEach(b=>b.classList.toggle('active',b.dataset.prune===mode));$('#brush-setting').hidden=mode!=='brush';
- $('#stage-hint').textContent=mode==='split'?L('在想剪的连接处横划一下 · 松手后选一段删除','Draw across the attachment you want to cut','切りたい付け根を横切るように線を引きます'):mode==='brush'?L('涂抹剪掉细节 · Esc 退出','Brush over details to remove · Esc to exit','なぞって細部を消します · Escで終了'):L('拖动移动 · 双指旋转缩放 · 右键调层次','Drag to move · Pinch to rotate and scale · Right-click for layers','ドラッグで移動 · 2本指で回転・拡大縮小 · 右クリックでレイヤー');
+ $('#stage-hint').textContent=mode==='split'?L('从目标枝一侧起笔，横划过连接处','Start beside the target twig; draw across its attachment','切りたい枝の側から付け根を横切ってください'):mode==='brush'?L('涂抹剪掉细节 · Esc 退出','Brush over details to remove · Esc to exit','なぞって細部を消します · Escで終了'):L('拖动移动 · 双指旋转缩放 · 右键调层次','Drag to move · Pinch to rotate and scale · Right-click for layers','ドラッグで移動 · 2本指で回転・拡大縮小 · 右クリックでレイヤー');
  $('#prune-help').textContent=mode==='split'?L('只在剪线接触的局部剪开。剪下部分会成为独立图层，可以移动或删除。','The cut opens only where your stroke touches. The detached part becomes its own movable layer.','線が触れた部分だけを切ります。切り離した部分は移動・削除できるレイヤーになります。'):mode==='move'?L('先选中一枝，再剪开局部连接或修掉细节。','Select a material, then cut a local attachment or refine details.','花材を選んで、付け根を切るか細部を整えます。'):L('在枝叶上涂抹去除细节。只修剪当前选中的一枝。','Brush over foliage details. Only the selected stem will be pruned.','選択中の花材をなぞって細部を消します。');drawPruneOverlay();
 }
 $('#move-tool').onclick=()=>setEditMode('move');$('#prune-tool').onclick=()=>setEditMode(editMode==='split'?'move':'split');$$('[data-prune]').forEach(b=>b.onclick=()=>setEditMode(editMode===b.dataset.prune?'move':b.dataset.prune));
@@ -463,13 +465,15 @@ function splitSelected(cut){
  const item=current(),asset=item&&assetById[item.type],img=item&&images[item.type];if(!item||!img)return false;
  if(state.items.length>=24){toast(L('画布最多放置 24 段花材。','The canvas can hold up to 24 pieces.','キャンバスには24点まで配置できます。'));return false}
  const p0=cut.points[0],p1=cut.points.at(-1),stage0=sourceToStage(p0,item,asset),stage1=sourceToStage(p1,item,asset);
- if(Math.hypot(stage1[0]-stage0[0],stage1[1]-stage0[1])*$('#stage').clientWidth<14){toast(L('划一道更长的剪线，穿过花材。','Draw a longer cut across the material.','花材を横切るように、もう少し長く線を引いてください。'));return false}
+ if(Math.hypot(stage1[0]-stage0[0],stage1[1]-stage0[1])*$('#stage').getBoundingClientRect().width<6){toast(L('横划过要剪的细枝，划过连接处即可。','Draw across the twig at its attachment.','切りたい小枝の付け根を横切ってください。'));return false}
  let result;try{
   const sprite=specimenCanvas(item),g=dimensions(item,asset),w=sprite?.crop?.fullWidth||sprite?.width,h=sprite?.crop?.fullHeight||sprite?.height;
   if(!sprite||!w||!h)return false;
   const point=p=>[p[0]*w,warpY(p[1],g.split,g.length)*h/g.height];
   const anchor=item.localCuts?.at(-1)?.anchor;
-  result=analyzeLocalCut(sprite,{a:point(p0),b:point(p1)},anchor?{rootPoint:[anchor[0]*w,anchor[1]*h]}:{});
+  const cutOptions={preferStart:true,woodyFallback:asset.group==='branch'&&(woodyCutFamilies.has(asset.family)||woodyCutIds.has(asset.id))};
+  if(anchor)cutOptions.rootPoint=[anchor[0]*w,anchor[1]*h];
+  result=analyzeLocalCut(sprite,{a:point(p0),b:point(p1)},cutOptions);
  }catch(err){canvasTrouble(err);return false}
  if(!result.ok){toast(result.reason==='short'?L('请横划过想剪开的连接处。','Draw across the attachment to cut it.','切りたい付け根を横切ってください。'):L('这一剪还没把局部剪开，请靠近枝叶连接处再试。','That stroke did not separate a local piece. Try near its attachment.','まだ切り離されていません。枝葉の付け根で試してください。'));return false}
  const root=item.originId||item.id,prefix=item.pieceLabel||'',makePiece=(part,label)=>({...clone(item),id:uid(),originId:root,pieceLabel:label,localCuts:[...(item.localCuts||[]),{cut:result.cut,part,anchor:result.anchors[part]}]});

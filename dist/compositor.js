@@ -1,5 +1,5 @@
 import {dimensions,vesselGeometry,warpY} from './geometry.js?v=13';
-import {applyLocalCut} from './local-cut.js?v=25';
+import {applyLocalCut} from './local-cut.js?v=27';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}

@@ -191,3 +191,11 @@ select{font:inherit}
 .zoom-controls button{width:37px;min-height:37px;border-radius:7px;font-size:22px;line-height:1;color:var(--ink)}.zoom-controls button:hover:not(:disabled){background:#e9ede4}.zoom-controls #zoom-reset{font-size:10px;font-variant-numeric:tabular-nums}.zoom-controls button:disabled{opacity:.35}
 .prune-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.prune-modes button{min-width:0;min-height:42px;padding:7px 8px;white-space:normal;line-height:1.2}.prune-modes button span:last-child{min-width:0;overflow-wrap:anywhere}
 @media(max-width:900px){.canvas-viewport{max-width:100%}.zoom-controls{position:static;transform:none;flex-direction:row;align-self:flex-end;margin:8px 0 -2px}.zoom-controls button{width:38px;min-height:36px}.zoom-controls #zoom-reset{width:48px}}
+
+/* A compact, named scissors control remains visible beside the canvas on touch screens. */
+#prune-tool{display:inline-flex;flex-direction:column;gap:1px;padding:2px 0;border:1px solid #c5cdbf;background:#edf0e8;color:#53604f;line-height:1}
+#prune-tool [data-icon] svg{width:14px;height:14px;stroke-width:1.8}
+#prune-tool .prune-tool-label{display:block;font-size:9px;font-weight:600;letter-spacing:0;white-space:nowrap}
+#prune-tool:hover{border-color:#9cae94;background:#e6ebdf}
+#prune-tool[aria-pressed=true],#prune-tool[aria-pressed=true]:hover{border-color:#a5533e;background:#a5533e;color:#fff;box-shadow:0 2px 8px #7b3d2c36}
+@media(max-width:600px){.stage-tools .icon-button{flex-basis:39px;width:39px}#prune-tool [data-icon] svg{width:16px;height:16px}#prune-tool .prune-tool-label{font-size:10px}}
