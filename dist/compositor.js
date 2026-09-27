@@ -5,6 +5,18 @@ const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
 const context2d=canvas=>{const ctx=canvas.getContext('2d');if(!ctx)throw new CanvasUnavailableError(canvas.width,canvas.height);return ctx};
 const release=canvas=>{try{canvas.width=canvas.height=0}catch{}};
+/** Inspired by Compositor's staged downsampling: avoid collapsing fine leaves by >2× in one canvas draw. */
+function drawReducedImage(ctx,img,width,height,createCanvas){
+ let previous=img,owned=null,sourceWidth=img.naturalWidth||img.width,sourceHeight=img.naturalHeight||img.height;
+ try{
+  while(sourceWidth>width*2||sourceHeight>height*2){
+   const nextWidth=Math.max(width,Math.ceil(sourceWidth/2)),nextHeight=Math.max(height,Math.ceil(sourceHeight/2));
+   const next=createCanvas(nextWidth,nextHeight),step=context2d(next);step.imageSmoothingEnabled=true;step.imageSmoothingQuality='high';step.drawImage(previous,0,0,nextWidth,nextHeight);
+   if(owned)release(owned);owned=next;previous=next;sourceWidth=nextWidth;sourceHeight=nextHeight;
+  }
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(previous,0,0,width,height);
+ }finally{if(owned)release(owned)}
+}
 /** Clip a rectangle to one side of a straight cut; a narrow kerf separates the two pieces. */
 export function cutHalfPlane(width,height,a,b,side,gap=0){
  const dx=b[0]-a[0],dy=b[1]-a[1],span=Math.hypot(dx,dy);
@@ -46,7 +58,7 @@ function eraseDetails(ctx,out,item,g,sourceHeight,extraCut){
 export function composeSpecimen(img,item,asset,extraCut=null,createCanvas=browserCanvas,k=1){
  const scale=Number.isFinite(k)&&k>0?Math.min(1,k):1,sw=Math.max(1,Math.round((img.naturalWidth||img.width)*scale)),sh=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
  const src=createCanvas(sw,sh),ctx=context2d(src);
- if(scale<1){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,sw,sh)}else ctx.drawImage(img,0,0);
+ if(scale<1)drawReducedImage(ctx,img,sw,sh,createCanvas);else ctx.drawImage(img,0,0);
  const g=dimensions(item,asset),out=createCanvas(src.width,Math.max(1,Math.round(src.height*g.height)));let dest;try{dest=context2d(out)}catch(err){release(src);release(out);throw err}
  const top=Math.min(g.split,g.end)*src.height;
  const drawnStem=asset.stems&&g.length>1&&g.end>g.split;
@@ -161,17 +173,32 @@ export function paintFixture(ctx,size,asset,{guide=false,night=false}={}){
  }
  ctx.restore();
 }
-export function paintArrangement(ctx,size,s,assets,scenes,getSprite,images){
+/** These shared passes keep a layered export pixel-for-pixel aligned with the editor draft. */
+export function paintSceneBackground(ctx,size,s,scenes){
  const colors=scenes[s.scene],night=s.scene==='night';
  const wall=ctx.createLinearGradient(0,0,size,size);wall.addColorStop(0,colors[0]);wall.addColorStop(.56,colors[0]);wall.addColorStop(1,colors[1]);ctx.fillStyle=wall;ctx.fillRect(0,0,size,size);
  const light=ctx.createRadialGradient(size*.18,size*.12,0,size*.23,size*.18,size*.72);light.addColorStop(0,night?'#dfe9dc18':'#ffffff78');light.addColorStop(.48,night?'#b6c8b512':'#ffffff24');light.addColorStop(1,'#ffffff00');ctx.fillStyle=light;ctx.fillRect(0,0,size,size);
  const horizon=size*.795,floor=ctx.createLinearGradient(0,horizon,0,size);floor.addColorStop(0,night?'#202b25':'#d8d8cf');floor.addColorStop(1,night?'#141c18':'#bfc1b7');ctx.fillStyle=floor;ctx.fillRect(0,horizon,size,size-horizon);ctx.fillStyle=night?'#0d130f22':'#72796d16';ctx.fillRect(0,horizon,size,Math.max(1,size*.002));
- for(const item of s.items.filter(i=>!i.aboveVessel))drawBotanical(ctx,size,item,assets[item.type],getSprite,{alpha:.97,night});
+}
+export function paintBotanicalLayer(ctx,size,s,item,assets,getSprite){
+ drawBotanical(ctx,size,item,assets[item.type],getSprite,{alpha:.97,night:s.scene==='night'});
+}
+export function paintVesselLayer(ctx,size,s,assets,images){
+ const night=s.scene==='night';
  const v=images[s.vessel],g=vesselGeometry(assets[s.vessel]);ctx.save();ctx.filter=`blur(${size*.013}px)`;ctx.fillStyle=night?'#07100b88':'#4a4e4638';ctx.beginPath();ctx.ellipse(size*.515,size*.867,size*g.width/180,size*.021,-.03,0,Math.PI*2);ctx.fill();ctx.restore();
  ctx.save();ctx.shadowColor=night?'#07100b88':'#34382f35';ctx.shadowBlur=size*.016;ctx.shadowOffsetX=size*.014;ctx.shadowOffsetY=size*.013;ctx.drawImage(v,g.left/100*size,g.top/100*size,g.width/100*size,g.height/100*size);ctx.restore();
  paintFixture(ctx,size,assets[s.vessel],{night});
- for(const item of s.items.filter(i=>i.aboveVessel))drawBotanical(ctx,size,item,assets[item.type],getSprite,{alpha:.97,night});
+}
+export function paintSceneFinish(ctx,size,s){
+ const night=s.scene==='night';
  const vignette=ctx.createRadialGradient(size*.5,size*.45,size*.42,size*.5,size*.48,size*.78);vignette.addColorStop(.55,'#00000000');vignette.addColorStop(1,night?'#05090628':'#26302410');ctx.fillStyle=vignette;ctx.fillRect(0,0,size,size);
+}
+export function paintArrangement(ctx,size,s,assets,scenes,getSprite,images){
+ paintSceneBackground(ctx,size,s,scenes);
+ for(const item of s.items.filter(i=>!i.aboveVessel))paintBotanicalLayer(ctx,size,s,item,assets,getSprite);
+ paintVesselLayer(ctx,size,s,assets,images);
+ for(const item of s.items.filter(i=>i.aboveVessel))paintBotanicalLayer(ctx,size,s,item,assets,getSprite);
+ paintSceneFinish(ctx,size,s);
 }
 
 /** Exact silhouette and layer map; it never invents a direction or endpoint. */
