@@ -385,11 +385,22 @@ $$('[data-cut-piece]').forEach(button=>button.onclick=()=>{const id=cutSession?.
 $('#cut-keep').onclick=()=>{cutSession=null;renderCutChoice();toast(L('两段已保留，可分别移动。','Both pieces kept; each can be moved separately.','両方の部分を残しました。それぞれ動かせます。'))};
 function renderLayerList(){
  const list=$('#layer-list');if(!list)return;
+ renderLayerQuickActions();
  const front=[...state.items].filter(i=>i.aboveVessel).reverse(),back=[...state.items].filter(i=>!i.aboveVessel).reverse(),visual=[...front,...back];
  const row=(item,index,side)=>{const a=assetById[item.type],name=assetName(a)+(item.pieceLabel?` · ${item.pieceLabel}`:''),layer=side==='front'?(lang==='ja'?`花器の前 · ${front.indexOf(item)+1}層目`:lang==='en'?`Vessel front · Layer ${front.indexOf(item)+1}`:`花器前 · 第 ${front.indexOf(item)+1} 层`):(lang==='ja'?`花器の後ろ · ${back.indexOf(item)+1}層目`:lang==='en'?`Vessel back · Layer ${back.indexOf(item)+1}`:`花器后 · 第 ${back.indexOf(item)+1} 层`),frontDisabled=item.aboveVessel&&front.indexOf(item)===0,backDisabled=!item.aboveVessel&&back.indexOf(item)===back.length-1;return `<div class="layer-row ${item.id===selected?'active':''}" data-layer-id="${item.id}" draggable="true"><span class="layer-grip" aria-hidden="true">⠿</span><button class="layer-select" data-layer-select="${item.id}" aria-label="${esc(lang==='ja'?`${name}を選択`:L(`选择${name}`,`Select ${name}`))}"><img src="${assetPath(item.type)}" alt=""><span><strong>${esc(name)}</strong><small>${layer}</small></span></button><span class="layer-step"><button data-layer-shift="front" aria-label="${esc(lang==='ja'?`${name}を花器の前へ移動`:L(`将${name}移向花器前`,`Move ${name} toward the front of the vase`))}" ${frontDisabled?'disabled':''}>↑</button><button data-layer-shift="back" aria-label="${esc(lang==='ja'?`${name}を花器の後ろへ移動`:L(`将${name}移向花器后`,`Move ${name} toward the back of the vase`))}" ${backDisabled?'disabled':''}>↓</button></span></div>`};
  list.innerHTML=visual.length?[...front.map((item,index)=>row(item,index,'front')),'<div class="layer-vessel-divider">'+L('花器','Vessel')+'</div>',...back.map((item,index)=>row(item,front.length+index,'back'))].join(''):`<div class="layer-empty">${L('先添入花材，再安排层次。','Add a material, then arrange its layer.')}</div>`;
 }
-function closeLayerMenu(){const menu=$('#layer-menu');if(menu.hidden)return;menu.hidden=true;$('.design-panel').hidden=false;$('#layers-tool').setAttribute('aria-expanded','false');layerDragId=null}
+let focusOtherLayers=false;
+function renderLayerQuickActions(){
+ const item=current(),back=state.items.filter(i=>!i.aboveVessel),front=state.items.filter(i=>i.aboveVessel);
+ $('#layer-quick-front').disabled=!item||(item.aboveVessel&&front.at(-1)===item);
+ $('#layer-quick-back').disabled=!item||(!item.aboveVessel&&back[0]===item);
+ $('#layer-quick-middle').disabled=!item||state.items.length<2||(state.items.length===2&&[...back,null,...front].indexOf(item)===1);
+ $('#layer-quick-focus').disabled=!item;
+ $('#layer-quick-focus').setAttribute('aria-pressed',String(focusOtherLayers&&!!item));
+ $('#stage').classList.toggle('focus-other-layers',focusOtherLayers&&!!item);
+}
+function closeLayerMenu(){const menu=$('#layer-menu');if(menu.hidden)return;menu.hidden=true;$('.design-panel').hidden=false;$('#layers-tool').setAttribute('aria-expanded','false');layerDragId=null;focusOtherLayers=false;renderLayerQuickActions()}
 function mountLayerDock(){
  const menu=$('#layer-menu'),host=$('.workspace'),after=$('.design-panel');
  if(menu.parentElement!==host||menu.nextElementSibling!==after)host.insertBefore(menu,after);
@@ -417,6 +428,10 @@ $('#layer-list').addEventListener('drop',e=>{const row=e.target.closest('[data-l
 $('#layer-list').addEventListener('dragend',()=>{layerDragId=null;$$('.layer-row').forEach(n=>n.classList.remove('dragging','drop-before','drop-after'))});
 $('#stage').addEventListener('contextmenu',e=>{e.preventDefault();if(stroke||gesture||movePointers.size||performance.now()<suppressLayerContextUntil)return;const stem=e.target.closest('.stem');if(stem)selectItem(stem.dataset.id);openLayerMenu(e.clientX,e.clientY)});
 $('#layers-tool').onclick=()=>$('#layer-menu').hidden?openLayerMenu():closeLayerMenu();$('#close-layers').onclick=closeLayerMenu;
+$('#layer-quick-front').onclick=moveSelectedToFront;
+$('#layer-quick-back').onclick=moveSelectedToBack;
+$('#layer-quick-middle').onclick=moveSelectedToRandomMiddle;
+$('#layer-quick-focus').onclick=()=>{focusOtherLayers=!focusOtherLayers;renderLayerQuickActions()};
 
 const stage=$('#stage');
 function applyCanvasZoom(){
@@ -503,6 +518,13 @@ function removeSelected(){if(!current())return;checkpoint();state.items=state.it
 function duplicateSelected(){const item=current();if(!item)return;if(state.items.length>=24)return toast(L('画布最多放置 24 组花材。','The canvas can hold up to 24 material layers.'));checkpoint();const duplicate={...clone(item),id:uid(),x:clamp(item.x+2.5,5,95),y:clamp(item.y-2,15,95),cuts:clone(item.cuts||[]),localCuts:clone(item.localCuts||[])};duplicate.originId=duplicate.id;const index=state.items.findIndex(i=>i.id===item.id);state.items.splice(index+1,0,duplicate);selected=duplicate.id;renderStage();persist();toast(L('已复制花材，剪口与长度也已保留。','Duplicated the material with its cuts and stem length.'))}
 function moveSelectedToFront(){const item=current();if(!item)return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=true;state.items.push(item);selected=item.id;renderStage();persist();toast(L('已移到最前层','Moved to the front layer'))}
 function moveSelectedToBack(){const item=current();if(!item)return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=false;state.items.unshift(item);selected=item.id;renderStage();persist();toast(L('已移到最后层','Moved to the back layer'))}
+function moveSelectedToRandomMiddle(){
+ const item=current();if(!item||state.items.length<2)return;
+ const stack=[...state.items.filter(i=>!i.aboveVessel),null,...state.items.filter(i=>i.aboveVessel)],originalIndex=stack.indexOf(item),others=stack.filter(entry=>entry!==item);
+ const positions=Array.from({length:others.length-1},(_,index)=>index+1),alternatives=positions.filter(index=>index!==originalIndex),choices=alternatives.length?alternatives:positions;
+ const position=choices[Math.floor(Math.random()*choices.length)];if(position===originalIndex)return;
+ checkpoint();others.splice(position,0,item);const vesselIndex=others.indexOf(null);others.forEach((entry,index)=>{if(entry)entry.aboveVessel=index>vesselIndex});state.items=others.filter(Boolean);selected=item.id;renderStage();persist();toast(L('已随机放入中间层','Placed in a middle layer','中間のレイヤーへ配置しました'));
+}
 $('#delete-button').onclick=removeSelected;$('#reseat-button').onclick=reseatSelected;$('#scale-reset').onclick=resetRealSize;$('#flip-button').onclick=()=>{if(!current())return;checkpoint();current().flip=!current().flip;renderStage();persist()};$('#duplicate-button').onclick=duplicateSelected;$('#layer-button').onclick=moveSelectedToFront;$('#layer-back-button').onclick=moveSelectedToBack;
 $('#undo-button').onclick=()=>{finishMoveInteraction(true);if(!undoStack.length)return;redoStack.push({state:clone(state),selected});const previous=undoStack.pop();state=previous.state;selected=previous.selected;cutSession=null;setEditMode('move');renderAll()};$('#redo-button').onclick=()=>{finishMoveInteraction(true);if(!redoStack.length)return;undoStack.push({state:clone(state),selected});const next=redoStack.pop();state=next.state;selected=next.selected;cutSession=null;setEditMode('move');renderAll()};
 $('#guide-button').onclick=()=>{const on=$('#guide').hidden;$('#guide').hidden=!on;$('#guide-button').setAttribute('aria-pressed',String(on))};$('#reset-button').onclick=()=>{checkpoint();state.items=[];selected=null;cutSession=null;setEditMode('move');renderStage();persist();toast(L('花器已留空，随时可以撤销。','The vessel is empty. You can undo this action.'))};

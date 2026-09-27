@@ -114,6 +114,13 @@ select{font:inherit}
 .stem.fresh-cut.selected:after{border-color:#a5533eaa;border-style:solid}.stage[data-tool=split]{cursor:crosshair}.stage[data-tool=split] .stem{cursor:crosshair}
 @media(min-width:901px){.studio-layout{grid-template-columns:minmax(202px,250px) minmax(0,1fr)}.workspace{display:grid;grid-template-columns:minmax(320px,1fr) minmax(260px,320px);grid-template-rows:64px auto;column-gap:18px;justify-items:stretch;align-items:start;padding-bottom:22px}.workspace-heading{grid-column:1;grid-row:1;max-width:none}.stage-shell{grid-column:1;grid-row:2;max-width:none}.workspace>.design-panel,.workspace>.layer-menu{grid-column:2;grid-row:1/3;position:sticky;top:16px;max-width:none;margin:0}.stage{max-width:calc(100dvh - 266px)}.workspace>.design-panel .botanical-note{display:none}}
 @media(max-width:900px){.workspace>.layer-menu{order:2;margin:10px 0 18px}.workspace>.design-panel{display:block;order:3}.workspace>.design-panel>.panel-heading{display:flex}.workspace>.design-panel #selection-controls{display:block}}
+.layer-quick-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:11px 10px 10px;border-bottom:1px solid var(--line)}
+.layer-quick-actions button{min-width:0;min-height:38px;padding:7px 5px;border:1px solid #d7dbd0;border-radius:6px;background:#fbfbf7;color:#4d5a4c;font-size:12px;white-space:nowrap;transition:background .18s,border-color .18s}
+.layer-quick-actions button:hover:not(:disabled){background:#ebefe7;border-color:#a5b19b}
+.layer-quick-actions button[aria-pressed=true]{background:#e7ece2;border-color:#8e9f87;color:#354734}
+.layer-quick-actions button:disabled{opacity:.38}
+.stage.focus-other-layers .stem:not(.selected) .specimen-image{filter:blur(2.5px);opacity:.27}
+.stage.focus-other-layers .vessel,.stage.focus-other-layers #fixture-layer{filter:blur(2px);opacity:.4}
 @media(max-width:600px){.workspace>.design-panel{margin:0 0 18px;padding:16px}.workspace>.design-panel .selected-material{margin-bottom:8px}.workspace>.design-panel .range-control{margin-bottom:10px}.cut-choice{width:100%;display:grid;grid-template-columns:1fr auto;padding:11px 12px}.cut-choice-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.cut-choice-actions button{min-height:38px}}
 .adjust-actions button{min-width:0;min-height:38px;padding:8px 4px;gap:4px;font-size:12px}
 .adjust-actions button svg{flex:none}
