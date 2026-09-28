@@ -60,6 +60,24 @@ button { transition: background-color .16s ease, border-color .16s ease, color .
   line-height: 1.25;
 }
 .material-filters button:hover:not(.active) { background: #ebeee7; }
+.color-filter-bar { display: flex; align-items: center; gap: 5px; min-width: 0; width: 100%; min-height: 38px; margin: -5px 0 9px; padding: 1px 0 6px; overflow-x: auto; scrollbar-width: none; }
+.color-filter-bar::-webkit-scrollbar { display: none; }
+.color-filter-bar[hidden] { display: none !important; }
+.color-filter-bar button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex: none; min-height: 30px; padding: 5px 9px; border: 1px solid transparent; border-radius: 999px; color: #536354; font-size: 12px; line-height: 1.25; white-space: nowrap; }
+.color-filter-bar button:hover:not(.active):not([aria-pressed=true]) { background: #ebeee7; }
+.color-filter-bar button.active, .color-filter-bar button[aria-pressed=true] { border-color: #a8b6a1; background: #e4eadf; color: #304232; }
+.color-dot { display: inline-block; flex: none; width: 11px; height: 11px; border: 1px solid #4b564229; border-radius: 50%; background: #eee9dc; }
+[data-color-group=white] .color-dot, [data-quick-color-group=white] .color-dot { background: #f3f0e7; border-color: #aab0a3; }
+[data-color-group=pink] .color-dot, [data-quick-color-group=pink] .color-dot { background: #d7a4aa; }
+[data-color-group=red] .color-dot, [data-quick-color-group=red] .color-dot { background: #a95155; }
+[data-color-group=warm] .color-dot, [data-quick-color-group=warm] .color-dot { background: #d4a45f; }
+[data-color-group=purple] .color-dot, [data-quick-color-group=purple] .color-dot { background: #947b9d; }
+[data-color-group=blue] .color-dot, [data-quick-color-group=blue] .color-dot { background: #7895a9; }
+[data-color-group=green] .color-dot, [data-quick-color-group=green] .color-dot { background: #77917a; }
+[data-color-group=silver] .color-dot, [data-quick-color-group=silver] .color-dot { background: #a7a9a4; }
+.material-grid-empty { grid-column: 1 / -1; margin: 28px 5px; color: var(--ui-muted); font-size: 13px; line-height: 1.6; text-align: center; }
+.quick-color-filters { flex: none; min-height: 34px; margin: -7px 0 -2px; }
+.quick-color-filters button { min-height: 32px; }
 .material-search { min-height: 44px; margin-bottom: 14px; padding-block: 10px; color: var(--ui-strong); font-size: 13px; }
 .material-search::placeholder { color: #758074; opacity: 1; }
 .material-grid { gap: 10px; }

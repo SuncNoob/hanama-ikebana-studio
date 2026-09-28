@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>花间 HANAMA · 日式插花工房</title>
-<meta name="description" content="在花间亲手挑选花材、舒展枝条，创作日式插花。保存草稿和 GPT Image 提示词，让一份灵感成为作品。">
+<title>花间 HANAMA · 氛围插花</title>
+<meta name="description" content="在花间挑选花材、修剪枝叶，亲手创作有氛围的插花作品。保存草稿与 GPT Image 提示词，让灵感自然成形。">
 <meta name="theme-color" content="#efeee8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/style.css?v=33">
 <link rel="stylesheet" href="/material-drawer.css?v=33">
-<link rel="stylesheet" href="/ui-polish.css?v=37">
-<script type="module" src="/app.js?v=34">
+<link rel="stylesheet" href="/ui-polish.css?v=38">
+<script type="module" src="/app.js?v=35">
 </script>
 </head>
 <body>
 <header class="masthead">
 <a class="brand" href="/" aria-label="花间首页" data-aria-zh="花间首页" data-aria-en="Hanama home">
 <span class="seal" aria-hidden="true">花</span>
-<span class="brand-name"><span class="brand-word" data-zh="间" data-en="HANAMA">间</span><small data-zh="HANAMA" data-en="IKEBANA ATELIER">HANAMA</small>
+<span class="brand-name"><span class="brand-word" data-zh="间" data-en="HANAMA" data-ja="HANAMA">间</span><small data-zh="HANAMA" data-en="FLORAL ATELIER" data-ja="花のアトリエ">HANAMA</small>
 </span>
 </a>
 <nav class="main-nav" aria-label="主导航" data-aria-zh="主导航" data-aria-en="Main navigation">
@@ -75,6 +75,17 @@
 <button data-family-group="bloom" data-zh="花朵" data-en="Blooms">花朵</button>
 <button data-family-group="foliage" data-zh="叶材" data-en="Foliage">叶材</button>
 <button data-family-group="branch" data-zh="枝叶" data-en="Branches">枝叶</button>
+</div>
+<div class="color-filter-bar" id="material-color-filters" role="group" aria-label="按花色筛选" data-aria-zh="按花色筛选" data-aria-en="Filter by color" data-aria-ja="色で絞り込む">
+<button type="button" data-color-group="all" class="active" aria-pressed="true" data-zh="全部颜色" data-en="All colors" data-ja="すべての色">全部颜色</button>
+<button type="button" data-color-group="white" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="白" data-en="White" data-ja="白">白</span></button>
+<button type="button" data-color-group="pink" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="粉" data-en="Pink" data-ja="ピンク">粉</span></button>
+<button type="button" data-color-group="red" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="红" data-en="Red" data-ja="赤">红</span></button>
+<button type="button" data-color-group="warm" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="橙黄" data-en="Gold" data-ja="黄・橙">橙黄</span></button>
+<button type="button" data-color-group="purple" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="紫" data-en="Purple" data-ja="紫">紫</span></button>
+<button type="button" data-color-group="blue" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="蓝" data-en="Blue" data-ja="青">蓝</span></button>
+<button type="button" data-color-group="green" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="绿" data-en="Green" data-ja="緑">绿</span></button>
+<button type="button" data-color-group="silver" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="银灰" data-en="Silver" data-ja="銀・灰">银灰</span></button>
 </div>
 <div class="material-filters" id="vessel-filters" role="group" aria-label="花器风格" data-aria-zh="花器风格" data-aria-en="Vessel style" hidden>
 <button data-vessel-style="all" class="active" aria-pressed="true" data-zh="全部" data-en="All">全部</button>
@@ -255,6 +266,17 @@
 <button type="button" data-quick-family-group="bloom" aria-pressed="false" data-zh="花朵" data-en="Blooms" data-ja="花">花朵</button>
 <button type="button" data-quick-family-group="foliage" aria-pressed="false" data-zh="叶材" data-en="Foliage" data-ja="葉もの">叶材</button>
 <button type="button" data-quick-family-group="branch" aria-pressed="false" data-zh="枝叶" data-en="Branches" data-ja="枝葉">枝叶</button>
+</div>
+<div class="color-filter-bar quick-color-filters" id="quick-material-color-filters" role="group" aria-label="按花色筛选" data-aria-zh="按花色筛选" data-aria-en="Filter by color" data-aria-ja="色で絞り込む">
+<button type="button" data-quick-color-group="all" aria-pressed="true" data-zh="全部颜色" data-en="All colors" data-ja="すべての色">全部颜色</button>
+<button type="button" data-quick-color-group="white" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="白" data-en="White" data-ja="白">白</span></button>
+<button type="button" data-quick-color-group="pink" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="粉" data-en="Pink" data-ja="ピンク">粉</span></button>
+<button type="button" data-quick-color-group="red" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="红" data-en="Red" data-ja="赤">红</span></button>
+<button type="button" data-quick-color-group="warm" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="橙黄" data-en="Gold" data-ja="黄・橙">橙黄</span></button>
+<button type="button" data-quick-color-group="purple" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="紫" data-en="Purple" data-ja="紫">紫</span></button>
+<button type="button" data-quick-color-group="blue" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="蓝" data-en="Blue" data-ja="青">蓝</span></button>
+<button type="button" data-quick-color-group="green" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="绿" data-en="Green" data-ja="緑">绿</span></button>
+<button type="button" data-quick-color-group="silver" aria-pressed="false"><i class="color-dot" aria-hidden="true"></i><span data-zh="银灰" data-en="Silver" data-ja="銀・灰">银灰</span></button>
 </div>
 <div class="quick-material-status"><span id="quick-material-count" aria-live="polite"></span><span data-zh="选择后再挑姿态与花色" data-en="Choose a pose and color next" data-ja="次に姿と色を選びます">选择后再挑姿态与花色</span></div>
 <div id="quick-material-grid" class="quick-material-grid"></div>
