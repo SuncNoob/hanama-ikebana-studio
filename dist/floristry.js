@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Original editorial interpretations; source notes are in docs/flower-book-study.md.
 export const botanicalNotes={
  anemone:['主花','Focal flower','单一种类也很出彩，花面周围留一点空隙。','A single variety can shine; leave space around its flower faces.'],

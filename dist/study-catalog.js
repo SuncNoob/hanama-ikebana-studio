@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Separate transparent botanical studies, each generated as its own asset.
 // These supplement, rather than replace, the original Flower Book photographs.
 export const studySpecimens = [

@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Adapted from the user-supplied The Flower Book; see docs/flower-book-study.md.
 export const bookSpecimens = [
   {

@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** A specimen's original pixels are its editing coordinates. Only its lower stem stretches. */
 export const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 const vesselBounds=asset=>{

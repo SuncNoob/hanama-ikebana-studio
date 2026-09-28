@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Real-world botanical scale. The stage is 100 cm square: 1 stage percent = 1 cm.
 // cm = true height of the full source image; tip = flower/branch focus in source UV;
 // stems (book photographs only) = [x, start cm, end cm, colour] for drawn stem extensions.

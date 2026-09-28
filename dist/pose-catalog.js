@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // New photographic poses were composed from the original Flower Book specimen photographs.
 // Their transparent silhouettes are separate flowers, not rotated copies of the same cutout.
 export const poseSpecimens=[

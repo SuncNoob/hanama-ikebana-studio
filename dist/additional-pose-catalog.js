@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Distinct AI-assisted photographic poses, reviewed against each original specimen.
 export const additionalPoseSpecimens = [
   {

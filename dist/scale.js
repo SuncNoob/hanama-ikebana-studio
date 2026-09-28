@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** True-to-life sizing. The square stage is 100 cm tall, so one stage percent equals one centimetre. */
 import {realScale} from './real-scale.js?v=13';
 import {dimensions, vesselGeometry, warpY} from './geometry.js?v=13';

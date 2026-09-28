@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 import {dimensions,vesselGeometry,warpY} from './geometry.js?v=28';
 import {applyLocalCut} from './local-cut.js?v=31';
 import {naturalStemRoutes} from './natural-stems.js?v=1';

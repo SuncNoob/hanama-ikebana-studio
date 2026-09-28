@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Editable inspiration studies. Each item names a material and where its flower or branch focus should sit:
 // `to` = [cm right, cm up] from the vessel's insertion point; stems are solved to enter the vessel mouth.
 // `s` scales within natural variation (0.8–1.25 of real size); `front` places a stem before the vessel.

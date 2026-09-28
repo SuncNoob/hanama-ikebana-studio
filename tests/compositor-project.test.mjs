@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {compositorLayerPlan,compositorManifest} from '../dist/compositor-project.js';

@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Transparent botanical studies made for HANAMA. These are rendered cutouts, not book photographs.
 const originalFoliage = [
   {id:'leaf-alpine-fern',family:'alpine-fern',name:'高山羊齿',en:'Alpine fern',ja:'高山シダ',color:'自然绿',colorEn:'natural green',colorJa:'自然な緑',pose:'舒展叶枝',poseEn:'Open frond',poseJa:'広がる葉',swatch:'#61764f',height:42},

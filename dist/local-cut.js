@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /**
  * A finite, material-aware cut. The cutter finds the one connected piece of
  * the selected specimen under the stroke, opens a short kerf there,

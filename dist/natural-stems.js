@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** Plan restrained extensions from visible cut ends. Endpoints keep their order, so nearby stems never cross. */
 export function naturalStemRoutes(asset,roots,width,sourceHeight,bottom){
  const ordered=[...roots].sort((a,b)=>a.x-b.x),anchor=(asset.anchor??.5)*width;

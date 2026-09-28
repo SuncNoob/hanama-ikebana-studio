@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish} from './compositor.js?v=33';
 import {compositorLayerPlan,compositorManifest} from './compositor-project.js?v=1';
 import {buildPrompt} from './prompt.js?v=26';

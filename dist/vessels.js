@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Original GPT Image vessel cutouts. Coordinates are normalized to each PNG.
 // `mouth` remains the legacy insertion anchor. `openings` and `fixture` add
 // physical construction without changing the saved composition schema.

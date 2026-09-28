@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 export const materialColorGroups = [
   {id:'white', zh:'白', en:'White', ja:'白', pattern:/白|象牙|奶|乳|麦|white|cream|ivory/i},
   {id:'pink', zh:'粉', en:'Pink', ja:'ピンク', pattern:/粉|玫|珊瑚|pink|rose|blush|coral/i},

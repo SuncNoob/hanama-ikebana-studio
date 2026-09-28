@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Vessel forms from the supplied Flower Book, extracted and reconstructed with GPT Image.
 export const bookVessels = [
   {

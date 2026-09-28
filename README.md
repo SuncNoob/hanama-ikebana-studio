@@ -35,8 +35,12 @@ node --test tests/*.test.mjs
 
 生图包包含 `draft.png`、可选的 `composition-guide.png`、`prompt.txt`、`composition.json` 和使用说明。Prompt 保留用花、主要结构、花器与整体光感，允许小幅修正枝条和插入关系，使结果更自然。网页本身不调用图片生成 API，也不包含 API 密钥。
 
+## 著作权与许可
+
+原创代码、页面与项目文档 © 2026 Marko Sun，保留所有权利。代码文件标有 `LicenseRef-Hanama-Proprietary`，完整条款见 [LICENSE](LICENSE)。正常访问网站不代表取得复制、修改或再分发源代码的许可。图片与第三方材料不适用这份代码许可。
+
 ## 素材与权利
 
-素材包括原创生成图、用户提供的 *The Flower Book* 改编图，以及另行标注来源的第三方图片。书图改编素材不是独立原创摄影；公开仓库不授予第三方图片新的再使用许可。来源与处理说明见[素材记录](docs/asset-sources.md)、[书图提取记录](docs/book-photo-extraction.md)及[三语素材说明](docs/ASSET-NOTICE.md)。
+素材包括原创生成图、用户提供的 *The Flower Book* 改编图，以及另行标注来源的第三方图片。书图改编素材不是独立原创摄影；网站发布与代码授权均不授予第三方图片新的再使用许可。来源与处理说明见[素材记录](docs/asset-sources.md)、[书图提取记录](docs/book-photo-extraction.md)及[三语素材说明](docs/ASSET-NOTICE.md)。
 
 花道流派与《花之书》为创作参考，网页中的提示不是正式流派教学或植物鉴定依据。

@@ -1,0 +1,20 @@
+HANAMA source code — proprietary notice
+
+Copyright (c) 2026 Marko Sun. All rights reserved.
+
+This notice applies to the original HANAMA software source code, page markup,
+styles, tests, and original project documentation in this repository. You may
+access and use the publicly hosted HANAMA website as offered. No permission is
+granted to reproduce, modify, distribute, sublicense, or sell the original
+source code or documentation without the copyright holder's prior written
+permission, except where applicable law permits.
+
+This notice does not claim ownership of third-party material and does not
+license photographs, book-derived images, generated botanical and vessel art,
+or arrangement previews. Those assets have separate provenance and rights
+described in docs/ASSET-NOTICE.md. Third-party software notices, including
+dist/third-party/Compositor-LICENSE.txt, remain in force for their respective
+material.
+
+For permission requests, contact the repository owner through
+https://github.com/SuncNoob/hanama-ikebana-studio.

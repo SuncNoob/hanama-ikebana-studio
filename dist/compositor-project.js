@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Marko Sun
+// SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 // Compositor's documented .comp package has PNG layers in bottom-to-top order.
 // Format reference: https://github.com/robbietilton/Compositor/blob/main/docs/writing-comp-files.md
 export function compositorLayerPlan(state,nameOf){

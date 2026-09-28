@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Marko Sun
+   SPDX-License-Identifier: LicenseRef-Hanama-Proprietary */
 /* A small, canvas-adjacent entry keeps the full library out of the way until needed. */
 .quick-material-bar{display:flex;align-items:center;gap:15px;width:min(100%,calc(100dvh - 315px));min-height:58px;margin:7px auto 0;padding:9px 0 4px;border-bottom:1px solid #d9ddd1}
 .quick-material-open{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:none;min-height:40px;padding:8px 14px;border-radius:8px;background:#344335;color:#fff;font-size:13px;font-weight:500;white-space:nowrap;transition:background .16s ease,transform .16s ease}

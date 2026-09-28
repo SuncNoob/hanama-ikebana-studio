@@ -35,8 +35,12 @@ The current draft is stored in browser localStorage, while the gallery uses Inde
 
 The generation pack includes `draft.png`, an optional `composition-guide.png`, `prompt.txt`, `composition.json`, and instructions. Its short prompt preserves the materials, main structure, vessel, and overall light while allowing small physical corrections. The site does not call an image-generation API or contain API keys.
 
+## Copyright and license
+
+Original code, pages, and project documentation © 2026 Marko Sun. All rights reserved. Code files carry `LicenseRef-Hanama-Proprietary`; see [LICENSE](LICENSE) for the full terms. Ordinary use of the hosted site does not grant permission to copy, modify, or redistribute its source. Images and third-party materials are outside this code license.
+
 ## Assets and rights
 
-The library combines original generated artwork, adaptations from the user-supplied *The Flower Book*, and separately credited third-party images. Book-derived assets are not independent original photography. Making this repository public does not grant a new reuse license for third-party images. See the [asset record](docs/asset-sources.md), [book extraction record](docs/book-photo-extraction.md), and [trilingual asset notice](docs/ASSET-NOTICE.md).
+The library combines original generated artwork, adaptations from the user-supplied *The Flower Book*, and separately credited third-party images. Book-derived assets are not independent original photography. Publishing the site or licensing its code does not grant new reuse rights for third-party images. See the [asset record](docs/asset-sources.md), [book extraction record](docs/book-photo-extraction.md), and [trilingual asset notice](docs/ASSET-NOTICE.md).
 
 Ikebana schools and *The Flower Book* are creative references. The on-screen guidance is not formal school instruction or botanical identification advice.
