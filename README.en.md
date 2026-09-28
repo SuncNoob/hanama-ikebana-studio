@@ -11,7 +11,7 @@ A hands-on flower-arranging studio for placing botanicals, pruning stems, choosi
 3. Cut a stem into two independently movable layers, or refine a detail with the eraser. Adjust stem length separately from the size of the flower or foliage.
 4. Name the work, choose its light and setting, then export a generation pack. Use its draft and short prompt in your own image-generation tool; import the result into your gallery afterward.
 
-The canvas supports up to 24 material layers. The current library has **78 botanical families, 171 poses, and 31 vessels**. The inspiration book contains **50 editable studies**. The interface supports Chinese, English, and Japanese.
+The canvas supports up to 24 material layers. The current library has **78 botanical families, 171 poses, and 31 vessels**. The inspiration book contains **50 editable studies**, browsable by arrangement scale, season, and school influence; each one opens directly in the atelier. The interface supports Chinese, English, and Japanese.
 
 ## Run locally
 

@@ -12,7 +12,7 @@ import {matchesMaterialColor} from './material-colors.js?v=1';
 import {bookVessels} from './book-vessels.js?v=25';
 import {newVessels} from './vessels.js?v=25';
 import {botanicalNotes,vesselNote} from './floristry.js?v=25';
-import {studies,studySeasons} from './studies.js?v=25';
+import {studies,studySeasons} from './studies.js?v=26';
 import {applyRealScale,sizeBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,tipPoint,reach,MAX_STEM_CM,stemUnit,stemTrimmed,spriteScale,stageCanvasSize} from './scale.js?v=25';
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints} from './geometry.js?v=28';
 import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=31';
@@ -171,8 +171,7 @@ function validate(v){
  })};
 }
 let state=initial(),selected=null,category='flowers',familyFilter='all',colorFilter='all',vesselFilter='all',undoStack=[],redoStack=[],toastTimer,images={},galleryUrls=[],importArtFor=null,drag=null,gesture=null,canvasPan=null,zoomLevel=1,zoomPanX=0,zoomPanY=0,editMode='move',stroke=null,cutSession=null,layerDragId=null,suppressLayerContextUntil=0,touchHintShown=false;
-let studyFilter='all',seasonFilter='all',studyObserver=null;
-const studyPreviews=new Map();
+let studyFilter='all',seasonFilter='all',studyDensity='all',studyLimit=9;
 const movePointers=new Map();
 const spriteCache=new Map();
 try{const v=localStorage.getItem(STORE);if(v)state=validate(JSON.parse(v))}catch{}
@@ -671,58 +670,44 @@ function studyState(study){
  });
  return {...initial(),title:study.title[localeIndex(lang)],intention:'',vessel:study.vessel,scene:study.scene,mood:study.mood,items};
 }
-/** Stage-percent corners of a specimen as drawn, used to frame previews around the arrangement. */
-function spriteCorners(item,sprite){
- const a=assetById[item.type],g=dimensions(item,a),crop=sprite.crop,fullH=item.h*g.height,fullW=item.h*g.ratio;
- const left=-fullW*g.anchor+fullW*crop.x/crop.fullWidth,top=fullH*(crop.y/crop.fullHeight-(item.cropAnchorY??1)),w=fullW*crop.width/crop.fullWidth,h=fullH*crop.height/crop.fullHeight;
- const r=item.angle*Math.PI/180,f=item.flip?-1:1;
- return [[left,top],[left+w,top],[left,top+h],[left+w,top+h]].map(([x,y])=>[item.x+x*f*Math.cos(r)-y*Math.sin(r),item.y+x*f*Math.sin(r)+y*Math.cos(r)]);
-}
-let previewQueue=Promise.resolve();
-function studyPreview(study){
- if(!studyPreviews.has(study.id)){
-  const task=previewQueue.then(()=>renderStudyPreview(study));previewQueue=task.catch(()=>{});
-  studyPreviews.set(study.id,task.catch(err=>{studyPreviews.delete(study.id);throw err}));
- }
- return studyPreviews.get(study.id);
-}
-async function renderStudyPreview(study,size=720){
- const s=studyState(study);await Promise.all([...new Set([...s.items.map(i=>i.type),s.vessel])].map(ensureAsset));
- const sprites=new Map(),getSprite=item=>{if(!sprites.has(item.id))sprites.set(item.id,composeSpecimen(images[item.type],item,assetById[item.type]));return sprites.get(item.id)};
- const g=vesselGeometry(assetById[s.vessel]);let [x0,y0,x1,y1]=[g.left,g.top,g.left+g.width,88];
- for(const item of s.items)for(const [x,y] of spriteCorners(item,getSprite(item))){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)}
- const side=clamp(Math.max(x1-x0,y1-y0)*1.16+4,62,100),cx=(x0+x1)/2,bottom=clamp(Math.max(y1+side*.06,93),side,100);
- const sx=clamp(cx-side/2,0,100-side),sy=bottom-side,full=Math.round(size*100/side);
- const c=document.createElement('canvas');c.width=c.height=full;paintArrangement(c.getContext('2d'),full,s,assetById,scenes,getSprite,images);
- const out=document.createElement('canvas');out.width=out.height=size;out.getContext('2d').drawImage(c,sx/100*full,sy/100*full,side/100*full,side/100*full,0,0,size,size);
- return canvasBlob(out,'image/webp',.9).then(blob=>URL.createObjectURL(blob));
-}
 function renderInspiration(){
  const index=localeIndex(lang),root=$('#inspiration-view');
  const schoolNames={ikenobo:['池坊','Ikenobo','池坊'],ohara:['小原流','Ohara','小原流'],sogetsu:['草月流','Sogetsu','草月流'],free:['自由花','Free style','自由花']};
  const schoolNotes={ikenobo:['池坊取意','Inspired by Ikenobo','池坊の発想'],ohara:['小原流取意','Inspired by Ohara','小原流の発想'],sogetsu:['草月流取意','Inspired by Sogetsu','草月流の発想'],free:['西式花园取意','Garden-style free arrangement','庭の花の自由花']};
  const seasonNames={spring:['春','Spring','春'],summer:['夏','Summer','夏'],autumn:['秋','Autumn','秋'],winter:['冬','Winter','冬']};
- const visible=studies.filter(study=>(studyFilter==='all'||study.school===studyFilter)&&(seasonFilter==='all'||study.season===seasonFilter));
- const filterLabel=key=>key==='all'?L('全部流派','All schools'):schoolNames[key][index];
- const seasonLabel=key=>key==='all'?L('四季','All seasons'):seasonNames[key][index];
+ const densityNames={all:['所有疏密','All scales','すべての量感'],spare:['留白 · 1–4 枝','Spare · 1–4 stems','余白 · 1〜4 本'],balanced:['轻盈 · 5–6 枝','Balanced · 5–6 stems','軽やか · 5〜6 本'],lush:['丰盛 · 7 枝以上','Lush · 7+ stems','豊か · 7 本以上']};
+ const densityOf=study=>study.items.length<=4?'spare':study.items.length<=6?'balanced':'lush';
+ const highlights=['cherry','iris','abundant','cosmos-wind','peony-first','white-winter'];
+ const rank=study=>{const i=highlights.indexOf(study.id);return i<0?highlights.length+studies.indexOf(study):i};
+ const visible=studies.filter(study=>(studyFilter==='all'||study.school===studyFilter)&&(seasonFilter==='all'||study.season===seasonFilter)&&(studyDensity==='all'||densityOf(study)===studyDensity)).sort((a,b)=>rank(a)-rank(b));
+ const featured=studyFilter==='all'&&seasonFilter==='all'&&studyDensity==='all';
+ const hero=featured?visible[0]:null,shown=visible.slice(hero?1:0,studyLimit+(hero?1:0)),displayed=hero?[hero,...shown]:shown;
+ const filterLabel=key=>key==='all'?['全部流派','All schools','すべての流派'][index]:schoolNames[key][index];
+ const seasonLabel=key=>key==='all'?['四季','All seasons','四季'][index]:seasonNames[key][index];
  const count=studies.length;
  const sourceNote=[
-  `${count} 组可编辑草稿借鉴《The Flower Book》的花材与器形，并参考三所流派的公开介绍。所有花材按真实大小比例摆放；派系标签代表创作方向，不是正式流派范式。`,
-  `${count} editable studies draw on The Flower Book and public introductions from three ikebana schools. Every material is placed at true-to-life scale. School labels show creative influences, not formal school arrangements.`,
-  `編集できる${count}の下書きは『The Flower Book』の花材・器から着想し、三つの流派の公式紹介を参考にしています。花材はすべて実寸比で配置しています。流派名は発想の手がかりで、正式な型を示すものではありません。`
+  `${count} 组可编辑草稿借鉴《The Flower Book》的花材与器形，并参考三所流派的公开介绍。花材按真实大小比例摆放；派系标签代表创作方向，不是正式流派范式。`,
+  `${count} editable studies draw on The Flower Book and public introductions from three ikebana schools. Materials are placed at true-to-life scale. School labels show creative influences, not formal arrangements.`,
+  `編集できる${count}の下書きは『The Flower Book』の花材・器から着想し、三つの流派の公式紹介を参考にしています。花材は実寸比で配置。流派名は発想の手がかりで、正式な型ではありません。`
  ][index];
- root.innerHTML=`<div class="page-heading"><div><p class="eyebrow">${['花之书 · 灵感手帖','THE FLOWER BOOK · FIELD NOTES','花の本 · 創作ノート'][index]}</p><h1>${L('先看一枝，再想一器。','A stem first. Then a vessel.')}</h1><p>${lang==='ja'?`花材、器、余白から考える${count}の組み合わせ。花はすべて実寸比で、自由に描き直せます。`:L(`从花材、器形与留白出发。${count} 组搭配都按真实比例摆放，可以亲手改写。`,`${count} editable studies in materials, vessels and space, all at true-to-life scale.`)}</p></div><button class="text-button" id="inspiration-sources">${L('阅读与素材来源 ↗','Reading & sources ↗')}</button></div><div class="study-filter-bar"><div class="study-filters" role="group" aria-label="${esc(L('派系灵感','School inspirations'))}">${['all','ikenobo','ohara','sogetsu','free'].map(key=>`<button type="button" data-study-school="${key}" aria-pressed="${studyFilter===key}">${esc(filterLabel(key))}</button>`).join('')}</div><div class="study-filters" role="group" aria-label="${esc(L('季节','Seasons'))}">${['all',...studySeasons].map(key=>`<button type="button" data-study-season="${key}" aria-pressed="${seasonFilter===key}">${esc(seasonLabel(key))}</button>`).join('')}</div><span class="study-total">${lang==='ja'?`${visible.length} 件`:L(`${visible.length} 组`,`${visible.length} studies`)}</span></div><div class="study-grid">${visible.map(study=>`<article class="study-card"><div class="study-image"><img id="study-preview-${study.id}" alt="${esc(study.title[index])}" hidden><span class="study-number">${String(studies.indexOf(study)+1).padStart(2,'0')}</span><span class="study-season">${esc(seasonNames[study.season][index])}</span><span class="study-loading">${L('正在铺开花枝…','Preparing the stems…')}</span></div><div class="study-content"><span class="study-school">${esc(schoolNotes[study.school][index])}</span><p class="eyebrow">${esc(study.caption[index])}</p><h2>${esc(study.title[index])}</h2><p>${esc(study.note[index])}</p><button class="button outline" data-study="${study.id}">${L('以此开始','Start with this')} <span>↗</span></button></div></article>`).join('')}</div><p class="study-source">${esc(sourceNote)} <a href="https://www.ikenobo.jp/english/about/style.html" target="_blank" rel="noopener noreferrer">${esc(schoolNames.ikenobo[index])} ↗</a> · <a href="https://ohararyu.or.jp/beginners/" target="_blank" rel="noopener noreferrer">${esc(schoolNames.ohara[index])} ↗</a> · <a href="https://www.sogetsu.or.jp/e/about/" target="_blank" rel="noopener noreferrer">${esc(schoolNames.sogetsu[index])} ↗</a></p>`;
+ const stemLabel=study=>index===2?`${study.items.length} 本`:index===1?`${study.items.length} stems`:`${study.items.length} 枝`;
+ const cardHTML=(study,isHero=false)=>`<article class="study-card ${isHero?'study-card--featured':''}" data-study-card="${study.id}"><div class="study-image"><img src="/previews/${study.id}.webp" width="600" height="600" loading="${isHero?'eager':'lazy'}" ${isHero?'fetchpriority="high"':''} alt="${esc(study.title[index])}"><span class="study-number">${String(studies.indexOf(study)+1).padStart(2,'0')}</span><span class="study-season">${esc(seasonNames[study.season][index])}</span></div><div class="study-content"><span class="study-school">${esc(schoolNotes[study.school][index])} · ${stemLabel(study)}</span><p class="eyebrow">${esc(study.caption[index])}</p><h2>${esc(study.title[index])}</h2><p>${esc(study.note[index])}</p><button class="button outline" data-study="${study.id}">${['打开，继续创作','Open and make it yours','開いて、自分らしく生ける'][index]} <span>↗</span></button></div></article>`;
+ root.innerHTML=`<div class="page-heading study-heading"><div><p class="eyebrow">HANAMA / STUDY NOTES</p><h1>${['从一种感觉，开始插花。','Begin with a feeling.','ひとつの気配から、花を生ける。'][index]}</h1><p>${[`从一枝的留白到一束花的丰盛。${count} 组可改写的搭配，换花、修剪、重排，慢慢变成你的作品。`,`From a single stem to a generous gathering. Explore ${count} editable arrangements, then make one your own.`,`一枝の余白から、花束の豊かさまで。${count}の組み合わせを、花材や枝ぶりを変えながら自分の作品に。`][index]}</p></div><button class="text-button" id="inspiration-sources">${['阅读与素材来源 ↗','Reading & sources ↗','参考資料と素材 ↗'][index]}</button></div>
+ <div class="study-intro"><span class="study-intro-line"></span><p>${['先看一枝，再慢慢找到自己的疏密与季节。','Begin with a stem. Follow your own sense of season and scale.','まず一枝から。自分らしい季節と量感を見つけてください。'][index]}</p><span>${String(count).padStart(2,'0')} / HANAMA</span></div>
+ ${hero?`<div class="study-featured">${cardHTML(hero,true)}</div>`:''}
+ <div class="study-filter-bar"><div class="study-filter-group"><span class="study-filter-label">${['疏密','Scale','量感'][index]}</span><div class="study-filters" role="group" aria-label="${['搭配疏密','Arrangement scale','花の量感'][index]}">${['all','spare','balanced','lush'].map(key=>`<button type="button" data-study-density="${key}" aria-pressed="${studyDensity===key}">${esc(densityNames[key][index])}</button>`).join('')}</div></div><div class="study-filter-group"><span class="study-filter-label">${['季节','Season','季節'][index]}</span><div class="study-filters" role="group" aria-label="${['季节','Seasons','季節'][index]}">${['all',...studySeasons].map(key=>`<button type="button" data-study-season="${key}" aria-pressed="${seasonFilter===key}">${esc(seasonLabel(key))}</button>`).join('')}</div></div><div class="study-filter-group"><span class="study-filter-label">${['流派取意','Inspired by','流派の発想'][index]}</span><div class="study-filters" role="group" aria-label="${['派系灵感','School inspirations','流派の発想'][index]}">${['all','ikenobo','ohara','sogetsu','free'].map(key=>`<button type="button" data-study-school="${key}" aria-pressed="${studyFilter===key}">${esc(filterLabel(key))}</button>`).join('')}</div></div></div>
+ <div class="study-results-heading"><h2>${featured?['继续翻阅','More ways to begin','次の花を探す'][index]:['找到的搭配','Arrangements','見つかった組み合わせ'][index]}</h2><span class="study-total">${index===2?`${visible.length} 件`:index===1?`${visible.length} studies`:`${visible.length} 组`}</span></div>
+ ${visible.length?`<div class="study-grid">${shown.map(study=>cardHTML(study)).join('')}</div>${displayed.length<visible.length?`<div class="study-more-wrap"><button type="button" class="button outline study-more" id="study-more">${['继续翻阅','See more studies','続きを見る'][index]} <span>↓</span></button><span>${displayed.length} / ${visible.length}</span></div>`:''}`:`<div class="study-empty"><p>${['这一组还没有搭配，换个季节或疏密看看。','No arrangements in this combination. Try another season or scale.','この組み合わせにはまだ作品がありません。季節か量感を変えてみてください。'][index]}</p><button type="button" class="button outline" id="study-reset">${['查看全部搭配','See all studies','すべてを見る'][index]}</button></div>`}
+ <p class="study-source">${esc(sourceNote)} <a href="https://www.ikenobo.jp/english/about/style.html" target="_blank" rel="noopener noreferrer">${esc(schoolNames.ikenobo[index])} ↗</a> · <a href="https://ohararyu.or.jp/beginners/" target="_blank" rel="noopener noreferrer">${esc(schoolNames.ohara[index])} ↗</a> · <a href="https://www.sogetsu.or.jp/e/about/" target="_blank" rel="noopener noreferrer">${esc(schoolNames.sogetsu[index])} ↗</a></p>`;
  $('#inspiration-sources').onclick=()=>lang==='ja'?sourcesJapanese():sources();
- $$('[data-study-school]',root).forEach(button=>button.onclick=()=>{studyFilter=button.dataset.studySchool;renderInspiration()});
- $$('[data-study-season]',root).forEach(button=>button.onclick=()=>{seasonFilter=button.dataset.studySeason;renderInspiration()});
- const show=study=>{
-  const image=$(`#study-preview-${study.id}`);if(!image)return;const loading=image.parentElement.querySelector('.study-loading');
-  studyPreview(study).then(url=>{if(!image.isConnected)return;image.src=url;image.hidden=false;loading?.remove()}).catch(()=>{if(loading?.isConnected)loading.textContent=L('预览暂时无法载入，可点击重试。','Preview unavailable. Select the study to retry.')});
- };
- studyObserver?.disconnect();
- if('IntersectionObserver' in window){studyObserver=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){studyObserver.unobserve(entry.target);show(studies.find(study=>study.id===entry.target.dataset.studyCard))}},{rootMargin:'400px 0px'});$$('.study-card',root).forEach((card,k)=>{card.dataset.studyCard=visible[k].id;studyObserver.observe(card)})}
- else visible.forEach(show);
- $$('[data-study]',root).forEach(button=>button.onclick=async()=>{button.disabled=true;try{await activateCanvas(studyState(studies.find(study=>study.id===button.dataset.study)),{message:L('搭配已打开，原草稿已保存在「我的作品」。','Study opened. Your previous draft is in My Works.')})}catch(err){toast(err.message)}finally{button.disabled=false}});
+ const choose=(key,value)=>{if(key==='school')studyFilter=value;else if(key==='season')seasonFilter=value;else studyDensity=value;studyLimit=9;renderInspiration()};
+ $$('[data-study-school]',root).forEach(button=>button.onclick=()=>choose('school',button.dataset.studySchool));
+ $$('[data-study-season]',root).forEach(button=>button.onclick=()=>choose('season',button.dataset.studySeason));
+ $$('[data-study-density]',root).forEach(button=>button.onclick=()=>choose('density',button.dataset.studyDensity));
+ $('#study-reset')?.addEventListener('click',()=>{studyFilter=seasonFilter=studyDensity='all';studyLimit=9;renderInspiration()});
+ $('#study-more')?.addEventListener('click',()=>{studyLimit+=12;renderInspiration()});
+ const byId=new Map(displayed.map(study=>[study.id,study]));
+ $$('[data-study]',root).forEach(button=>button.onclick=async()=>{button.disabled=true;try{await activateCanvas(studyState(byId.get(button.dataset.study)),{message:['搭配已打开，原草稿已保存在「我的作品」。','Study opened. Your previous draft is in My Works.','作品を開きました。前の下書きは「マイ作品」に保存しました。'][index]})}catch(err){toast(err.message)}finally{button.disabled=false}});
 }
 async function renderGallery(){
  const works=(await listWorks()).sort((a,b)=>b.updated-a.updated);galleryUrls.forEach(URL.revokeObjectURL);galleryUrls=[];
