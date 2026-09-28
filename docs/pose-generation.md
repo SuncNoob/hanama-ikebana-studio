@@ -1,0 +1,7 @@
+# Second botanical poses
+
+The editor retains the original specimen for every family. Families that previously had only one visible choice receive a separate transparent WebP cutout in `dist/assets/pose-*-alternate.webp`. They are listed in `dist/additional-pose-catalog.js` and can be selected, trimmed, layered, copied, and exported like the originals. The new images are AI-assisted interpretations of the supplied specimen references, not additional photographs from *The Flower Book*.
+
+The built-in image generator was given each original cutout separately as its reference. The prompts requested a clearly different, botanically plausible side or nodding posture for single flowers, an asymmetrical spread while keeping roughly the same flowers for groups, or a different connected branch silhouette for foliage and woody materials. All prompts asked for the same species and restrained color, a continuous natural stem to the lower edge, real photographic texture, and genuine transparency; they excluded vases, labels, shadows, and unrelated species. They explicitly rejected simple mirroring or rotation.
+
+`qa/prepare-pose-assets.mjs` takes a local JSON map from family to generated PNG, checks alpha and root pixels, encodes the final WebPs, and writes the catalogue geometry. It leaves original assets untouched. The local PNG input map is deliberately outside the published site; the final WebPs and catalogue are the shipped assets.
