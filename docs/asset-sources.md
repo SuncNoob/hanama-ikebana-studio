@@ -26,12 +26,12 @@ v2 共提供 **13 类、33 款**透明位图花材：三张新图集拆分为 27
 
 - v2 图集生成提示词：[图集 1](atlas-1-prompt-v2.txt)、[图集 2](atlas-2-prompt-v2.txt)、[图集 3](atlas-3-prompt-v2.txt)。
 - v2 逐款元数据：[asset-metadata-v2.json](asset-metadata-v2.json)，记录素材 ID、花色、姿态、尺寸、透明度、图集单元、裁切范围和枝梗锚点。
-- 网页文件：`dist/assets/<素材 ID>.png`；v2 原始素材与拆分文件保留在相邻的 `ikebana-assets-v2` 目录。
+- 网页文件：`dist/assets/<素材 ID>.png`；v2 原始素材与拆分文件另存于本地素材归档，不是网站运行依赖，也不随仓库发布。
 - 生成工具：内置 `image_gen`，非 API/CLI 模式。
 
 旧版六款素材及原始文件继续保留：
 
-| 素材 | 游戏文件 | 尺寸 |
+| 素材 | 网页文件 | 尺寸 |
 |---|---|---|
 | 樱花 | `dist/assets/sakura.png` | 350×493 |
 | 马蹄莲 | `dist/assets/calla.png` | 201×470 |
@@ -40,7 +40,7 @@ v2 共提供 **13 类、33 款**透明位图花材：三张新图集拆分为 27
 | 红枫 | `dist/assets/maple.png` | 432×472 |
 | 蒲苇 | `dist/assets/pampas.png` | 223×501 |
 
-旧版完整提交提示词见 [prompts.json](prompts.json)。其中花器图集和摄影示例两次请求因连接问题失败，未作为游戏素材使用；花器与灵感参考采用下列有许可说明的网络素材。
+旧版完整提交提示词见 [prompts.json](prompts.json)。其中花器图集和摄影示例两次请求因连接问题失败，未作为网页素材使用；花器与灵感参考采用下列有许可说明的网络素材。
 
 ## 剪枝、长度与草稿保存
 
@@ -66,7 +66,7 @@ v2 共提供 **13 类、33 款**透明位图花材：三张新图集拆分为 27
 - 原始图片：[透明花器照片](https://purepng.com/public/uploads/large/purepng.com-vasevaseopen-containerceramics-vaseflower-vase-1701527704569hqfbv.png)
 - 许可：来源页标注 CC0、可商用且不要求署名。工房仍保留来源链接。
 - 更改：分离两个花器，裁去透明边缘；未改变花器颜色、形状。
-- 游戏文件：`dist/assets/bottle.png`、`dist/assets/round.png`。
+- 网页文件：`dist/assets/bottle.png`、`dist/assets/round.png`。
 
 ## 灵感摄影
 
