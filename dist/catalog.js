@@ -14,7 +14,8 @@ export const newSpecimens = [
     "width": 134,
     "heightPx": 472,
     "anchor": 0.3405454666097133,
-    "split": 0.48
+    "split": 0.48,
+    "thumbnail": true
   },
   {
     "id": "calla-ivory-side",
@@ -29,7 +30,8 @@ export const newSpecimens = [
     "width": 204,
     "heightPx": 456,
     "anchor": 0.24260209530018778,
-    "split": 0.48
+    "split": 0.48,
+    "thumbnail": true
   },
   {
     "id": "calla-blush-oblique",
@@ -44,7 +46,8 @@ export const newSpecimens = [
     "width": 119,
     "heightPx": 472,
     "anchor": 0.28881495516508426,
-    "split": 0.48
+    "split": 0.48,
+    "thumbnail": true
   },
   {
     "id": "chrysanthemum-white-front",
@@ -59,7 +62,8 @@ export const newSpecimens = [
     "width": 169,
     "heightPx": 477,
     "anchor": 0.4718092607422731,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "chrysanthemum-apricot-side",
@@ -74,7 +78,8 @@ export const newSpecimens = [
     "width": 186,
     "heightPx": 477,
     "anchor": 0.3974620902569691,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "chrysanthemum-burgundy-oblique",
@@ -89,7 +94,8 @@ export const newSpecimens = [
     "width": 214,
     "heightPx": 478,
     "anchor": 0.3580684946950012,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "sakura-pink-upright",
@@ -104,7 +110,8 @@ export const newSpecimens = [
     "width": 122,
     "heightPx": 476,
     "anchor": 0.4963444815903832,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "sakura-white-sweeping",
@@ -119,7 +126,8 @@ export const newSpecimens = [
     "width": 240,
     "heightPx": 464,
     "anchor": 0.4098720898754737,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "sakura-pink-arch",
@@ -134,7 +142,8 @@ export const newSpecimens = [
     "width": 234,
     "heightPx": 468,
     "anchor": 0.5425894053923886,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "lisianthus-ivory-front",
@@ -149,7 +158,8 @@ export const newSpecimens = [
     "width": 180,
     "heightPx": 469,
     "anchor": 0.44216449603624014,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "lisianthus-lavender-side",
@@ -164,7 +174,8 @@ export const newSpecimens = [
     "width": 189,
     "heightPx": 483,
     "anchor": 0.501927002937808,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "lisianthus-blush-oblique",
@@ -179,7 +190,8 @@ export const newSpecimens = [
     "width": 157,
     "heightPx": 482,
     "anchor": 0.35369836475651345,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "iris-purple-front",
@@ -194,7 +206,8 @@ export const newSpecimens = [
     "width": 219,
     "heightPx": 482,
     "anchor": 0.4591591950904122,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "iris-white-side",
@@ -209,7 +222,8 @@ export const newSpecimens = [
     "width": 193,
     "heightPx": 475,
     "anchor": 0.37189592817804984,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "iris-blue-oblique",
@@ -224,7 +238,8 @@ export const newSpecimens = [
     "width": 185,
     "heightPx": 474,
     "anchor": 0.1811765484299874,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "camellia-red-front",
@@ -239,7 +254,8 @@ export const newSpecimens = [
     "width": 248,
     "heightPx": 479,
     "anchor": 0.41772532145626146,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "camellia-ivory-side",
@@ -254,7 +270,8 @@ export const newSpecimens = [
     "width": 198,
     "heightPx": 479,
     "anchor": 0.4230041724104205,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "camellia-blush-oblique",
@@ -269,7 +286,8 @@ export const newSpecimens = [
     "width": 171,
     "heightPx": 483,
     "anchor": 0.41789872934902533,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "quince-red-upright",
@@ -284,7 +302,8 @@ export const newSpecimens = [
     "width": 199,
     "heightPx": 468,
     "anchor": 0.36717973455184144,
-    "split": 0.66
+    "split": 0.66,
+    "thumbnail": true
   },
   {
     "id": "quince-blush-sweeping",
@@ -299,7 +318,8 @@ export const newSpecimens = [
     "width": 313,
     "heightPx": 448,
     "anchor": 0.5060001366235077,
-    "split": 0.66
+    "split": 0.66,
+    "thumbnail": true
   },
   {
     "id": "quince-white-arch",
@@ -314,7 +334,8 @@ export const newSpecimens = [
     "width": 283,
     "heightPx": 465,
     "anchor": 0.26025760730822545,
-    "split": 0.66
+    "split": 0.66,
+    "thumbnail": true
   },
   {
     "id": "willow-green-arch",
@@ -329,7 +350,8 @@ export const newSpecimens = [
     "width": 323,
     "heightPx": 463,
     "anchor": 0.1844063689120443,
-    "split": 0.58
+    "split": 0.58,
+    "thumbnail": true
   },
   {
     "id": "eucalyptus-silver-oblique",
@@ -344,7 +366,8 @@ export const newSpecimens = [
     "width": 332,
     "heightPx": 458,
     "anchor": 0.5281856789258347,
-    "split": 0.66
+    "split": 0.66,
+    "thumbnail": true
   },
   {
     "id": "fern-green-arch",
@@ -359,7 +382,8 @@ export const newSpecimens = [
     "width": 301,
     "heightPx": 463,
     "anchor": 0.31037464775463497,
-    "split": 0.66
+    "split": 0.66,
+    "thumbnail": true
   },
   {
     "id": "pine-green-sparse",
@@ -374,7 +398,8 @@ export const newSpecimens = [
     "width": 329,
     "heightPx": 494,
     "anchor": 0.4302359943351491,
-    "split": 0.66
+    "split": 0.66,
+    "thumbnail": true
   },
   {
     "id": "maple-red-autumn",
@@ -389,7 +414,8 @@ export const newSpecimens = [
     "width": 332,
     "heightPx": 494,
     "anchor": 0.5843598604386356,
-    "split": 0.66
+    "split": 0.66,
+    "thumbnail": true
   },
   {
     "id": "maple-green-summer",
@@ -404,6 +430,7 @@ export const newSpecimens = [
     "width": 335,
     "heightPx": 494,
     "anchor": 0.47194961899363935,
-    "split": 0.66
+    "split": 0.66,
+    "thumbnail": true
   }
 ];

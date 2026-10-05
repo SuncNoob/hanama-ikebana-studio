@@ -1,23 +1,28 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
-import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish} from './compositor.js?v=33';
-import {compositorLayerPlan,compositorManifest} from './compositor-project.js?v=1';
+import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow} from './compositor.js?v=hn2';
+import {compositorLayerPlan,compositorManifest} from './compositor-project.js?v=hn2';
 import {buildPrompt} from './prompt.js?v=26';
-import {newSpecimens} from './catalog.js?v=25';
+import {newSpecimens} from './catalog.js?v=hn2';
 import {photoSpecimens} from './photo-catalog.js?v=25';
 import {bookSpecimens} from './book-catalog.js?v=25';
-import {foliageSpecimens} from './foliage-catalog.js?v=31';
-import {studySpecimens} from './study-catalog.js?v=31';
-import {poseSpecimens} from './pose-catalog.js?v=1';
-import {additionalPoseSpecimens} from './additional-pose-catalog.js?v=1';
+import {foliageSpecimens} from './foliage-catalog.js?v=hn2';
+import {studySpecimens} from './study-catalog.js?v=hn2';
+import {poseSpecimens} from './pose-catalog.js?v=hn2';
+import {additionalPoseSpecimens} from './additional-pose-catalog.js?v=hn2';
 import {matchesMaterialColor} from './material-colors.js?v=1';
 import {bookVessels} from './book-vessels.js?v=25';
-import {newVessels} from './vessels.js?v=25';
+import {newVessels} from './vessels.js?v=hn2';
 import {botanicalNotes,vesselNote} from './floristry.js?v=25';
-import {studies,studySeasons} from './studies.js?v=26';
-import {applyRealScale,sizeBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,tipPoint,reach,MAX_STEM_CM,stemUnit,stemTrimmed,spriteScale,stageCanvasSize} from './scale.js?v=25';
+import {studies,studySeasons} from './studies.js?v=hn2';
+import {applyRealScale,sizeBounds,sizeRatioBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,tipPoint,reach,MAX_STEM_CM,stemUnit,stemTrimmed,spriteScale,stageCanvasSize,isKenzan,seatState,seatPoint,solveTo,slideBase,remapSeated,isDetachedPiece,cutEndSource,anchorAt,pieceHead,reseatPiece,companionFit} from './scale.js?v=hn2';
+import {stemMaxCm} from './botany.js?v=hn2';
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints} from './geometry.js?v=28';
 import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=31';
+import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=hn2';
+import {createItem,stemVersion,buildStudyState,buildDemoItems} from './study-state.js?v=hn2';
+import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-pick.js?v=hn2';
+import {keyAction,needsCheckpoint,tolerant,repairDraftShell,canvasSignature,readStash,addToStash} from './editor-state.js?v=hn2';
 const $ = (s,root=document) => root.querySelector(s);
 const $$ = (s,root=document) => [...root.querySelectorAll(s)];
 const LANGUAGE_STORE='hanama-language';
@@ -73,35 +78,24 @@ function applyLanguage(){
 }
 const paths={plus:'M12 5v14 M5 12h14',scissors:'M6 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M6 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M5 8l16 13 M5 16 21 3',eraser:'m4 14 9-10a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-9 10H8l-4-4a3 3 0 0 1 0-4 M9 9l9 9 M12 22h10',help:'M12 17h.01 M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',bookmark:'M5 3h14v18l-7-4-7 4V3',pencil:'m16 3 5 5-12 12-6 1 1-6L16 3 M14 5l5 5',undo:'M3 10h11a7 7 0 0 1 0 14 M3 10l5-5 M3 10l5 5',redo:'M21 10H10a7 7 0 0 0 0 14 M21 10l-5-5 M21 10l-5 5',grid:'M4 4h16v16H4V4 M4 9h16 M4 15h16 M9 4v16 M15 4v16',refresh:'M20 8a9 9 0 1 0 1 8 M20 3v5h-5',download:'M12 3v12 M7 10l5 5 5-5 M4 16v5h16v-5',move:'M12 2v20 M2 12h20 M8 6l4-4 4 4 M8 18l4 4 4-4 M6 8l-4 4 4 4 M18 8l4 4-4 4',sliders:'M5 3v8 M5 15v6 M12 3v2 M12 9v12 M19 3v11 M19 18v3 M2 11h6v4H2v-4 M9 5h6v4H9V5 M16 14h6v4h-6v-4',trash:'M3 6h18 M9 6V3h6v3 M5 6l1 15h12l1-15 M10 10v7 M14 10v7',flip:'M12 3v18 M9 5 3 18h6V5 M15 5l6 13h-6V5',layers:'m3 8 9-5 9 5-9 5-9-5 M3 12l9 5 9-5 M3 16l9 5 9-5',sparkles:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3 M20 2v4 M18 4h4',close:'m6 6 12 12 M6 18 18 6',hand:'M8 13V5a2 2 0 0 1 4 0v7 M12 10a2 2 0 0 1 4 0v3 M16 11a2 2 0 0 1 4 0v5c0 4-2 6-6 6h-2c-2 0-3-1-4-3l-4-6a2 2 0 0 1 3-2l3 3',copy:'M8 8h13v13H8V8 M16 5V2H2v14h3',upload:'M12 16V3 M7 8l5-5 5 5 M3 16v5h18v-5',share:'M12 16V2 M7 7l5-5 5 5 M5 11H3v10h18V11h-2'};
 function icons(root=document){$$('[data-icon]',root).forEach(el=>el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[el.dataset.icon]||paths.sparkles}"/></svg>`)}
-const legacyFlowers=[
- {id:'sakura',family:'sakura',name:'樱花',en:'Cherry blossom',group:'branch',color:'淡粉',pose:'原版花枝',swatch:'#dfb7bc',height:53,width:350,heightPx:493,anchor:.469,split:.56},
- {id:'calla',family:'calla',name:'马蹄莲',en:'Calla lily',group:'bloom',color:'象牙白',pose:'原版正面',swatch:'#ebe7d3',height:49,width:201,heightPx:470,anchor:.259,split:.4},
- {id:'chrysanthemum',family:'chrysanthemum',name:'秋菊',en:'Chrysanthemum',group:'bloom',color:'赭橙',pose:'原版正面',swatch:'#bc692f',height:35,width:269,heightPx:486,anchor:.531,split:.58},
- {id:'pine',family:'pine',name:'松枝',en:'Pine branch',group:'branch',color:'松绿',pose:'原版虬枝',swatch:'#596a45',height:57,width:394,heightPx:495,anchor:.443,split:.6},
- {id:'maple',family:'maple',name:'枫枝',en:'Japanese maple',group:'branch',color:'秋红',pose:'原版舒展',swatch:'#98483e',height:45,width:432,heightPx:472,anchor:.534,split:.65},
- {id:'pampas',family:'pampas',name:'蒲苇',en:'Pampas grass',group:'branch',color:'麦白',pose:'自然穗形',swatch:'#d4c5ae',height:58,width:223,heightPx:501,anchor:.404,split:.6}
-];
 const specimens=[...photoSpecimens,...bookSpecimens,...legacyFlowers,...newSpecimens,...foliageSpecimens,...studySpecimens,...poseSpecimens,...additionalPoseSpecimens];
 applyRealScale(specimens);
 // Modest color correction is shared by the canvas and exported artwork; original files remain intact.
-const saturation={ 'photo-poppy':.78,'photo-ranunculus':.82,'photo-anemone':.88,'photo-cosmos':.88,'photo-dahlia':.86,'photo-zinnia':.86,'photo-celosia':.86,'photo-sunflower':.9,'photo-aster':.9,'photo-peony':.89,'photo-cornflower':.9,'photo-chrysanthemum':.9 };
-for(const asset of specimens)if(saturation[asset.id])asset.saturation=saturation[asset.id];
+applyTone(specimens);
 const browseSpecimens=specimens.filter(a=>!bookSpecimens.includes(a));
 const familyOrder=[...new Set(browseSpecimens.map(a=>a.family))];
 const flowers=familyOrder.map(family=>{const list=browseSpecimens.filter(a=>a.family===family);return {...list[0],id:family,variants:list.length}});
-const vessels=[...bookVessels,...newVessels,
- {id:'round',name:'窑变圆瓶',shortName:'窑变圆瓶',en:'Bronze and blue glazed round ceramic vase',color:'窑变釉',colorEn:'variegated bronze-blue glaze',height:23,width:748,heightPx:734,group:'low',style:'japanese',mouth:[.5,.05],insertion:[50,66],openings:[{shape:'ellipse',center:[.5,.05],radius:[.12,.025],frontRimY:.09}],fixture:{kind:'neck',visibility:'hidden',name:'瓶口支撑',en:'Concealed neck support',prompt:'The small glazed neck itself supports the stems below the rim; no separate support is visible.'}},
- {id:'bottle',name:'褐釉长颈瓶',shortName:'褐釉长颈瓶',en:'Dark brown glazed bottle vase',color:'褐釉',colorEn:'dark brown glaze',height:29,width:818,heightPx:978,group:'tall',style:'japanese',mouth:[.5,.04],insertion:[50,60],openings:[{shape:'ellipse',center:[.5,.04],radius:[.13,.024],frontRimY:.075}],fixture:{kind:'neck',visibility:'hidden',name:'瓶口支撑',en:'Concealed neck support',prompt:'The narrow glazed neck itself supports the stems below the rim; no separate support is visible.'}}
-];
+const vessels=[...bookVessels,...newVessels,...legacyVessels];
 const allAssets=[...specimens,...vessels];
 const assetById=Object.fromEntries(allAssets.map(a=>[a.id,a]));
 const specimenFor=family=>photoSpecimens.find(a=>a.family===family)||bookSpecimens.find(a=>a.family===family)||newSpecimens.find(a=>a.family===family)||foliageSpecimens.find(a=>a.family===family)||legacyFlowers.find(a=>a.family===family);
 const familyHasColor=(family,color)=>color==='all'||browseSpecimens.some(a=>a.family===family&&matchesMaterialColor(a,color));
 const specimenForColor=(family,color)=>browseSpecimens.find(a=>a.family===family&&matchesMaterialColor(a,color))||specimenFor(family);
 const assetPath=id=>`/assets/${id}.${assetById[id]?.format||(assetById[id]?.source==='flower-book'?'webp':'png')}`;
+/** Card image for a specimen: its library thumbnail when it has one (see qa/make-thumbs.mjs), else the full asset. */
+const cardImage=a=>(a.thumbnail||a.source==='flower-book')?`/assets/thumbs/${a.id}.webp`:assetPath(a.id);
 function toneMaterialImages(root){for(const img of root.querySelectorAll('img[src*="/assets/"]')){const id=img.getAttribute('src').match(/\/assets\/(?:thumbs\/)?([^/.]+)/)?.[1],tone=assetById[id]?.saturation;if(tone)img.style.filter=`saturate(${tone})`}}
 
-const scenes={paper:['#f5f4ef','#dedfd7','温暖的米灰色石灰墙与浅色石台','warm greige limewash wall and pale stone surface'],stone:['#e2e6e2','#aeb9b2','青灰色墙面与自然石台','blue-gray wall and natural stone surface'],night:['#566259','#27312b','深墨绿色背景与沉静的暗调光影','deep ink-green backdrop with subdued dark tones']};
 const labelEN={
  '淡粉':'soft pink','象牙白':'ivory','赭橙':'ochre orange','松绿':'pine green','秋红':'autumn red','麦白':'wheat white','柔粉':'blush pink','暖白':'warm white','浅杏':'pale apricot','酒红':'burgundy','浅粉':'pale pink','白色':'white','淡紫':'pale lavender','紫色':'purple','浅蓝':'pale blue','自然红':'natural red','红色':'red','嫩绿':'fresh green','银绿':'silver green','自然绿':'natural green','深绿':'deep green','夏绿':'summer green','哑黑':'matte black','墨黑':'ink black','炭黑':'charcoal','浅青釉':'pale celadon','深蓝釉':'deep indigo glaze','暖沙色':'warm sand','铁锈深釉':'dark rust glaze','浅灰釉':'light gray glaze','深绿釉':'deep green glaze','窑变釉':'variegated glaze','褐釉':'brown glaze',
  '原版花枝':'original flowering branch','原版正面':'original front view','原版虬枝':'original gnarled branch','原版舒展':'original spreading branch','自然穗形':'natural plume','正面':'front view','侧面':'side view','斜侧面':'three-quarter view','直立枝':'upright branch','横逸枝':'lateral branch','自然弧枝':'natural arched branch','垂弧枝':'drooping arch','斜生枝':'oblique branch','弧形叶':'arched frond','疏枝':'sparse branch','自然斜枝':'natural oblique branch','舒展枝':'spreading branch'
@@ -128,8 +122,8 @@ const shortVesselEN={
  'matte-black-long-neck':'Matte black long-neck','ivory-tall-cylinder':'Ivory tall cylinder','white-squat-round':'White squat vase','ink-black-low-bowl':'Ink black bowl','white-square-column':'White square column','charcoal-square-basin':'Charcoal square basin','celadon-shallow-suiban':'Celadon suiban','indigo-oval-suiban':'Indigo oval suiban','sand-wide-pottery-bowl':'Sand pottery bowl','rust-dark-cylinder':'Rust stoneware cylinder','gray-flat-round':'Gray flattened vase','forest-green-shoulder':'Green shoulder vase','english-cream-pitcher':'Creamware pitcher','english-pewter-compote':'Pewter compote','english-stone-garden-urn':'Stone garden urn','french-medicis-urn':'Ivory Medici urn','french-charcoal-compote':'Charcoal compote','french-blue-cachepot':'Mist-blue cachepot','modern-smoked-glass-column':'Smoked-glass column','modern-steel-loop-vessel':'Steel loop vessel','modern-travertine-trough':'Travertine trough','round':'Bronze-blue round vase','bottle':'Brown long-neck vase'
 };
 const STORE='hanama-draft-v1';const uid=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
-function makeItem(type,options={}){const a=assetById[type];return {id:uid(),type,x:50,y:65,h:a.height||48,angle:0,trim:0,flip:false,length:a.stemLength||1,cuts:[],segments:[],localCuts:[],pieceLabel:'',aboveVessel:false,cropAnchorY:1,cropAnchorSourceY:null,...options};}
-const initial=()=>({version:2,id:uid(),title:L('风经过的地方','Where the Wind Passed'),subtitle:'',vessel:'round',scene:'paper',mood:'静寂',generation:'natural',intention:L('像清晨的风掠过庭院，安静、自然，留一点不完美。','Like a morning breeze through the garden: quiet, natural, and gently imperfect.'),items:[makeItem(specimenFor('pine').id,{h:49,angle:-20}),makeItem(specimenFor('calla').id,{h:45,angle:9}),makeItem(specimenFor('chrysanthemum').id,{h:16,angle:28})]});
+function makeItem(type,options={}){return createItem(assetById[type],type,uid(),options)}
+const initial=()=>({version:2,id:uid(),title:L('风经过的地方','Where the Wind Passed'),subtitle:'',vessel:'round',scene:'paper',mood:'静寂',generation:'natural',intention:L('像清晨的风掠过庭院，安静、自然，留一点不完美。','Like a morning breeze through the garden: quiet, natural, and gently imperfect.'),items:buildDemoItems({assetById,makeItem,specimenFor})});
 const localeIndex=locale=>locale==='zh'?0:locale==='en'?1:2;
 const untitledTitles=['未命名作品','Untitled Arrangement','タイトルなしの作品'];
 const titlePresets=[['风经过的地方','Where the Wind Passed','風が通り過ぎた場所'],untitledTitles,...studies.map(study=>study.title)];
@@ -140,22 +134,26 @@ function relocalizePresetFields(draft,locale){
  if(intentionPresets.includes(draft.intention))draft.intention=intentionPresets[localeIndex(locale)];
 }
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));const clone=o=>JSON.parse(JSON.stringify(o));const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function validate(v){
+/** Rebuild a draft field by field. Strict for share links and imported files. `lenient` (drafts read back from this device:
+ localStorage and My Works) drops unknown items and malformed cuts instead of throwing, maps an unknown vessel to round and
+ an unknown scene to paper, and counts what it skipped in report.skipped. */
+function validate(v,{lenient=false,report=null}={}){
+ if(lenient)v=repairDraftShell(v,{hasVessel:id=>vessels.some(a=>a.id===id),hasScene:id=>Object.hasOwn(scenes,id),report});
  if(!v||![1,2].includes(v.version)||!Array.isArray(v.items)||v.items.length>24||!vessels.some(a=>a.id===v.vessel)||!Object.hasOwn(scenes,v.scene))throw Error(L('这不是有效的花间草稿','This is not a valid Hanama draft'));
  let totalPoints=0,totalMaskChars=0,totalMaskPixels=0;const seenIds=new Set();
- return {version:2,id:typeof v.id==='string'&&/^[A-Za-z0-9_-]{1,80}$/.test(v.id)?v.id:uid(),title:String(v.title||L('未命名作品','Untitled Arrangement')).slice(0,40),subtitle:String(v.subtitle||'').slice(0,90),vessel:v.vessel,scene:v.scene,mood:['静寂','侘寂','春意','野趣'].includes(v.mood)?v.mood:'静寂',generation:['natural','creative','faithful'].includes(v.generation)?v.generation:'natural',intention:String(v.intention||'').slice(0,600),items:v.items.map(i=>{
+ return {version:2,id:typeof v.id==='string'&&/^[A-Za-z0-9_-]{1,80}$/.test(v.id)?v.id:uid(),title:String(v.title||L('未命名作品','Untitled Arrangement')).slice(0,40),subtitle:String(v.subtitle||'').slice(0,90),vessel:v.vessel,scene:v.scene,mood:['静寂','侘寂','春意','野趣'].includes(v.mood)?v.mood:'静寂',generation:['natural','creative','faithful'].includes(v.generation)?v.generation:'natural',intention:String(v.intention||'').slice(0,600),items:tolerant(v.items,i=>{
   if(!specimens.some(a=>a.id===i.type)||!['x','y','h','angle','trim'].every(k=>Number.isFinite(i[k])))throw Error(L('花材信息不完整','Material data is incomplete'));
-  const cuts=(Array.isArray(i.cuts)?i.cuts:[]).slice(0,24).map(c=>{
+  const cuts=tolerant((Array.isArray(i.cuts)?i.cuts:[]).slice(0,24),c=>{
    if(!['lasso','brush'].includes(c.kind)||!Array.isArray(c.points)||c.points.length>128)throw Error(L('剪枝信息不完整','Pruning data is incomplete'));
    totalPoints+=c.points.length;if(totalPoints>8000)throw Error(L('剪枝信息过多','The draft contains too much pruning detail'));
    const points=c.points.map(p=>{if(!Array.isArray(p)||p.length!==2||!p.every(Number.isFinite))throw Error(L('剪枝坐标无效','Pruning coordinates are invalid'));return p.map(n=>clamp(n,-3,4));});
    return {kind:c.kind,points,radius:clamp(Number.isFinite(c.radius)?c.radius:.025,.002,.3)};
-  });
+  },{lenient,report});
   let itemId=typeof i.id==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(i.id)&&!seenIds.has(i.id)?i.id:uid();seenIds.add(itemId);
-  const segments=(Array.isArray(i.segments)?i.segments:[]).slice(0,8).map(segment=>{
+  const segments=tolerant((Array.isArray(i.segments)?i.segments:[]).slice(0,8),segment=>{
    if(!Array.isArray(segment.line)||segment.line.length!==2||![-1,1].includes(segment.side)||!segment.line.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)))throw Error(L('剪枝信息不完整','Cut data is incomplete'));
    return {line:segment.line.map(p=>p.map(n=>clamp(n,-3,4))),side:segment.side};
-  });
+  },{lenient,report});
   if(i.localCuts&&!Array.isArray(i.localCuts))throw Error(L('剪枝信息不完整','Cut data is incomplete'));
   if(i.localCuts?.length>8)throw Error(L('剪枝信息过多','The draft contains too much pruning detail'));
   const localCuts=(i.localCuts||[]).map(entry=>{
@@ -169,22 +167,48 @@ function validate(v){
   });
   const originId=typeof i.originId==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(i.originId)?i.originId:null;
   const pieceLabel=typeof i.pieceLabel==='string'&&/^[AB12]{1,8}$/.test(i.pieceLabel)?i.pieceLabel:'';
-  return makeItem(i.type,{id:itemId,x:clamp(i.x,5,95),y:clamp(i.y,15,95),h:clamp(i.h,2,95),angle:clamp(i.angle,-180,180),trim:clamp(i.trim,0,60),flip:!!i.flip,length:clamp(Number.isFinite(i.length)?i.length:1,...lengthBounds(assetById[i.type],clamp(i.h,2,95),clamp(i.trim,0,60))),cuts,segments,localCuts,originId,pieceLabel,aboveVessel:!!i.aboveVessel,cropAnchorY:clamp(Number.isFinite(i.cropAnchorY)?i.cropAnchorY:1,0,1),cropAnchorSourceY:Number.isFinite(i.cropAnchorSourceY)?clamp(i.cropAnchorSourceY,0,1):null});
- })};
+  return makeItem(i.type,{id:itemId,x:clamp(i.x,5,95),y:clamp(i.y,15,95),h:clamp(i.h,2,95),angle:clamp(i.angle,-180,180),trim:clamp(i.trim,0,60),flip:!!i.flip,length:clamp(Number.isFinite(i.length)?i.length:1,...lengthBounds(assetById[i.type],clamp(i.h,2,95),clamp(i.trim,0,60))),cuts,segments,localCuts,originId,pieceLabel,aboveVessel:!!i.aboveVessel,cropAnchorY:clamp(Number.isFinite(i.cropAnchorY)?i.cropAnchorY:1,0,1),cropAnchorSourceY:Number.isFinite(i.cropAnchorSourceY)?clamp(i.cropAnchorSourceY,0,1):null,sv:stemVersion({sv:i.sv,cuts,segments,localCuts})});
+ },{lenient,report})};
 }
 let state=initial(),selected=null,category='flowers',familyFilter='all',colorFilter='all',vesselFilter='all',undoStack=[],redoStack=[],toastTimer,images={},galleryUrls=[],importArtFor=null,drag=null,gesture=null,canvasPan=null,zoomLevel=1,zoomPanX=0,zoomPanY=0,editMode='move',stroke=null,cutSession=null,layerDragId=null,suppressLayerContextUntil=0,touchHintShown=false;
+/** Picking and keyboard state: the last tap on a stem (repeat taps walk down the stack), a press on empty paper (a tap
+ deselects), the last pointer type (for the context menu), a focus restore in progress, and the last arrow or bracket step. */
+let lastTap=null,blankPress=null,lastPointerType='mouse',restoringStemFocus=false,lastKeyStep=null;
+/** Seat cues and gestures (A11): the floating stems the seat banner was closed for (it shows again when that set changes), the
+ side the next duplicate's base takes, and whether the arrow-key hint for photographed stems has been shown. */
+let seatBannerClosed='',duplicateSide=1,photoArrowHint=false;
 let studyFilter='all',seasonFilter='all',studyDensity='all',studyLimit=9;
 const movePointers=new Map();
 const spriteCache=new Map();
-try{const v=localStorage.getItem(STORE);if(v)state=validate(JSON.parse(v))}catch{}
+let fromInitial=true;
+/** Beside the draft: the raw draft when it could not be read back whole (kept before anything overwrites it), raw local
+ drafts that a share link replaced (filed into My Works once assets load; see fileDisplacedDrafts) and the signature of the
+ canvas as last opened or saved, which tells an untouched study or work from an edited one (markClean, isCleanCanvas). */
+const UNREADABLE_STORE='hanama-draft-v1-unreadable',DISPLACED_STORE='hanama-draft-v1-displaced',CLEAN_STORE='hanama-draft-clean-v1';
+let bootRaw=null,bootUnreadable=false;const bootReport={skipped:0};
+try{bootRaw=localStorage.getItem(STORE)}catch{}
+if(bootRaw){try{state=validate(JSON.parse(bootRaw),{lenient:true,report:bootReport});fromInitial=false}catch{bootUnreadable=true}if(bootUnreadable||bootReport.skipped)try{localStorage.setItem(UNREADABLE_STORE,bootRaw)}catch{}}
 relocalizePresetFields(state,lang);
+/** The canvas's content signature (canvasSignature in editor-state.js), or '' when it does not validate. */
+function canvasSig(s){try{return canvasSignature(validate(clone(s)),{titleGroups:titlePresets,intentionPresets})}catch{return ''}}
+/** Remember `s` as untouched: a study, template or saved work as opened, or the canvas as just saved to My Works. */
+function markClean(s=state){const sig=canvasSig(s);try{if(sig)localStorage.setItem(CLEAN_STORE,sig);else localStorage.removeItem(CLEAN_STORE)}catch{}}
+/** Unchanged since markClean()? Without a stored signature every canvas counts as edited, as before. */
+function isCleanCanvas(s=state){let clean=null;try{clean=localStorage.getItem(CLEAN_STORE)}catch{}return !!clean&&clean===canvasSig(s)}
+/** Any content worth filing into My Works. */
+function hasMeaningfulCanvas(s){return s.items.length>0||String(s.intention||'').trim()||String(s.subtitle||'').trim()||!['',...untitledTitles].includes(String(s.title||'').trim())||s.vessel!=='round'||s.scene!=='paper'||s.mood!=='静寂'||s.generation!=='natural'}
 function bytesToBase64(bytes){let str='';for(let i=0;i<bytes.length;i+=8192)str+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(str)}
 async function readLimited(stream,max=500000){const reader=stream.getReader(),parts=[];let size=0;try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>max)throw Error(L('草稿过大','The draft is too large'));parts.push(value)}}finally{reader.releaseLock()}const out=new Uint8Array(size);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length}return out}
 async function encodeShare(s){const bytes=new TextEncoder().encode(JSON.stringify(s));if(globalThis.CompressionStream){const encoded=await readLimited(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip')));return '#draft2='+bytesToBase64(encoded).replaceAll('+','-').replaceAll('/','_').replaceAll('=','')}return '#draft='+bytesToBase64(bytes)}
 async function decodeShare(hash){const compressed=hash.startsWith('#draft2=');let data=hash.slice(compressed?8:7);if(data.length>30000)throw Error(L('草稿链接过长','The draft link is too long'));if(compressed)data=data.replaceAll('-','+').replaceAll('_','/');let bytes=Uint8Array.from(atob(data),c=>c.charCodeAt(0));if(compressed){if(!globalThis.DecompressionStream)throw Error(L('请通过草稿文件导入','Import the draft file instead'));bytes=await readLimited(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')))}return validate(JSON.parse(new TextDecoder().decode(bytes)))}
 let sharedLoaded=false;
-try{if(location.hash.startsWith('#draft=')||location.hash.startsWith('#draft2=')){state=await decodeShare(location.hash);relocalizePresetFields(state,lang);state.id=uid();sharedLoaded=true;history.replaceState(null,'',location.pathname+location.search)}}catch{setTimeout(()=>toast(L('草稿链接无法打开，请用导出的 JSON 文件恢复。','The draft link could not be opened. Restore it from an exported JSON file.')),500)}
-selected=state.items.at(-1)?.id||null;
+try{if(location.hash.startsWith('#draft=')||location.hash.startsWith('#draft2=')){const local=fromInitial?null:state;state=await decodeShare(location.hash);relocalizePresetFields(state,lang);state.id=uid();sharedLoaded=true;fromInitial=false;history.replaceState(null,'',location.pathname+location.search);
+ // The local draft this link replaces is stashed now, before renderAll() persists the shared one over it.
+ if(local&&hasMeaningfulCanvas(local)&&!isCleanCanvas(local))try{localStorage.setItem(DISPLACED_STORE,JSON.stringify(addToStash(localStorage.getItem(DISPLACED_STORE),bootRaw)))}catch{}}}catch{setTimeout(()=>toast(L('草稿链接无法打开，请用导出的 JSON 文件恢复。','The draft link could not be opened. Restore it from an exported JSON file.')),500)}
+// The first-run demo opens with nothing selected, so the arrangement is seen whole before any handles appear.
+selected=fromInitial?null:state.items.at(-1)?.id||null;
+/** The first-run demo counts as untouched once its sprites have settled it (see assetsReady), so opening a study does not file it. */
+const demoAtBoot=fromInitial?[state.title,state.subtitle,state.intention].join('\n'):null;
 
 /** Show a status message. `opts.action` adds an inline button (label `opts.label`, default 撤销/Undo/元に戻す) that runs the action and hides the toast; such toasts stay 6 s instead of 3.5 s. */
 function toast(msg,opts={}){
@@ -204,8 +228,14 @@ function toast(msg,opts={}){
 let persistTimer=0;
 function schedulePersist(delay=300){clearTimeout(persistTimer);persistTimer=setTimeout(persist,delay)}
 function flushPersist(){if(persistTimer)persist()}
+addEventListener('pagehide',flushPersist);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushPersist()});
 function persist(){clearTimeout(persistTimer);persistTimer=0;try{localStorage.setItem(STORE,JSON.stringify(state));$('#save-state').textContent=L('已自动保存到本机','Auto-saved on this device')}catch{$('#save-state').textContent=L('本机保存不可用，请导出草稿','Local saving is unavailable; please export your draft')}}
 function checkpoint(){undoStack.push({state:clone(state),selected});if(undoStack.length>60)undoStack.shift();redoStack=[];renderHistory()}
+/** A toast with an Undo button for the step just checkpointed: call it right after checkpoint(). The button undoes only while
+ that entry is still the newest one (entries are compared, not counts: the stack stays at 60 once full). */
+function undoToast(msg){const mark=undoStack.at(-1);toast(msg,{action:()=>{if(mark&&undoStack.at(-1)===mark)$('#undo-button').click()}})}
+/** Name of a stem as the layer list shows it (with its piece label). */
+const itemName=item=>assetName(assetById[item.type])+(item.pieceLabel?` ${item.pieceLabel}`:'');
 function renderHistory(){$('#undo-button').disabled=!undoStack.length;$('#redo-button').disabled=!redoStack.length}
 function current(){return state.items.find(i=>i.id===selected)}
 function setEditorTab(tab){const panel=$('.design-panel');if(!panel)return;panel.dataset.editorTab=tab;$$('[data-editor-tab]',panel).forEach(b=>b.setAttribute('aria-selected',String(b.dataset.editorTab===tab)));panel.querySelector('.panel-heading h2').textContent=tab==='shape'?L('调整花枝','Adjust Stem','枝を整える'):L('让意境成画','Image Prep','画像準備')}
@@ -225,7 +255,7 @@ function dropSprite(id){const entry=spriteCache.get(id);if(!entry)return;spriteC
 /** Cached, resolution-budgeted sprite for one stem (LRU, about 40 entries; evicted canvases are zeroed so iOS frees them). */
 function specimenCanvas(item){
  const img=images[item.type],a=assetById[item.type];if(!img||!a)return null;
- const k=spriteScale(item,a,img.naturalWidth||img.width,img.naturalHeight||img.height),key=`${item.type}|${item.length}|${item.trim}|${k}|${cutsKey(item.cuts)}|${cutsKey(item.segments)}|${cutsKey(item.localCuts)}`;
+ const k=spriteScale(item,a,img.naturalWidth||img.width,img.naturalHeight||img.height),key=`${item.type}|${item.length}|${item.trim}|${k}|${item.sv}|${cutsKey(item.cuts)}|${cutsKey(item.segments)}|${cutsKey(item.localCuts)}`;
  const cached=spriteCache.get(item.id);
  if(cached?.key===key){spriteCache.delete(item.id);spriteCache.set(item.id,cached);return cached.canvas}
  let canvas=null;try{canvas=composeSpecimen(img,item,a,null,undefined,k)}catch(err){canvasTrouble(err)}
@@ -262,30 +292,77 @@ function drawStemCanvas(el,item,{stageW=stageWidth(),previewCut=null}={}){
  ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
  if(preview&&crop)ctx.drawImage(preview,crop.x,crop.y,crop.width,crop.height,0,0,w,h);
  else ctx.drawImage(src,0,0,w,h);
- if(preview){preview.width=preview.height=0;drawnStems.delete(canvas)}else drawnStems.set(canvas,src);
+ if(preview){preview.width=preview.height=0;drawnStems.delete(canvas)}else{if(drawnStems.get(canvas)!==src)scheduleVesselLayers();drawnStems.set(canvas,src)}
 }
 function redrawStemCanvases(){const w=stageWidth();for(const i of state.items)drawStemCanvas($(`.stem[data-id="${i.id}"]`),i,{stageW:w})}
 /** Restyle one stem without rebuilding the stage; its canvas is redrawn only when its sprite or display size changed. */
 function updateStem(item){
  const el=$(`.stem[data-id="${item.id}"]`);if(!el){renderStage();return}
- el.style.cssText=stemStyle(item);drawStemCanvas(el,item);
+ el.style.cssText=stemStyle(item);drawStemCanvas(el,item);scheduleVesselLayers();
  if(item.id===selected)syncSelectionReadouts(item);
+ renderSeatCues();
 }
 const pendingStems=new Set();let stemFrame=0;
-function queueStemUpdate(item){pendingStems.add(item.id);if(!stemFrame)stemFrame=requestAnimationFrame(()=>{stemFrame=0;const ids=[...pendingStems];pendingStems.clear();for(const id of ids){const item=state.items.find(i=>i.id===id);if(item)updateStem(item)}})}
-function renderFixture(){const canvas=$('#fixture-layer');if(!canvas)return;const cssSize=Math.max(1,Math.round($('#stage').getBoundingClientRect().width)),density=Math.min(2,window.devicePixelRatio||1),size=Math.max(1,Math.round(cssSize*density));if(canvas.width!==size||canvas.height!==size){canvas.width=size;canvas.height=size}const ctx=canvas.getContext('2d');ctx.clearRect(0,0,size,size);paintFixture(ctx,size,assetById[state.vessel],{night:state.scene==='night'})}
+function queueStemUpdate(item){pendingStems.add(item.id);if(!stemFrame)stemFrame=requestAnimationFrame(()=>{stemFrame=0;const ids=[...pendingStems];pendingStems.clear();for(const id of ids){const item=state.items.find(i=>i.id===id);if(item)updateStem(item)}if(vesselLayersFrame)renderVesselLayers()})}
+/** Largest backing size of the stage's canvas layers (zoomed in at 2× DPR they would otherwise grow without bound); the
+ smooth scene layer needs less. */
+const LAYER_MAX=3072,SCENE_MAX=1200;
+let vesselLayersFrame=0,sceneLayerKey='',fixtureLayerKey='';
+/** Size a layer canvas (0 releases its memory); returns its 2D context, or null when it holds nothing. */
+function layerContext(canvas,size){if(!canvas)return null;if(canvas.width!==size||canvas.height!==size){canvas.width=size;canvas.height=size}if(!size)return null;const ctx=canvas.getContext('2d');if(ctx)ctx.clearRect(0,0,size,size);return ctx}
+/**
+ * The stage's canvas layers, painted by the export's own passes so the editor shows what draft.png will: the scene
+ * (background, the vessel's ground shadows, finish) under everything, repainted only when vessel, scene or size change;
+ * the inserted ends of stems behind the vessel (#interior-layer), the support (#fixture-layer) and the front rim over
+ * stems in front (#rim-layer). Also sets the stem layers' CSS shadow from the same LIGHT. Use scheduleVesselLayers()
+ * during drags: it coalesces to one redraw per frame.
+ */
+function renderVesselLayers(){
+ if(vesselLayersFrame){cancelAnimationFrame(vesselLayersFrame);vesselLayersFrame=0}
+ const stageEl=$('#stage');if(!stageEl)return;
+ const cssSize=Math.max(1,Math.round(stageEl.getBoundingClientRect().width)),density=Math.min(2,window.devicePixelRatio||1),size=Math.max(1,Math.min(LAYER_MAX,Math.round(cssSize*density)));
+ const vessel=assetById[state.vessel],night=state.scene==='night',vesselReady=!!images[state.vessel];
+ if(!vessel)return;
+ if(!vesselReady)ensureAsset(state.vessel).then(scheduleVesselLayers).catch(()=>{});
+ const scene=$('#scene-layer'),sceneSize=Math.min(SCENE_MAX,size),sceneKey=`${sceneSize}|${state.vessel}|${state.scene}|${vesselReady}`;
+ if(scene&&sceneKey!==sceneLayerKey){const ctx=layerContext(scene,sceneSize);if(ctx){paintSceneBackground(ctx,sceneSize,state,scenes);paintGroundPass(ctx,sceneSize,state,assetById,images);paintSceneFinish(ctx,sceneSize,state);sceneLayerKey=sceneKey;stageEl.classList.add('scene-painted')}else{sceneLayerKey='';stageEl.classList.remove('scene-painted')}}
+ const fixture=$('#fixture-layer'),fixtureKey=`${size}|${state.vessel}|${state.scene}`;
+ if(fixture&&fixtureKey!==fixtureLayerKey){const ctx=layerContext(fixture,size);if(ctx){paintFixture(ctx,size,vessel,{night});fixtureLayerKey=fixtureKey}}
+ // On a kenzan the holder lies under the stems standing on it (CSS lifts #fixture-layer under #interior-layer); the pins
+ // and water in front of their bases are painted over them: behind the vessel in the interior layer, in front in the rim layer.
+ stageEl.classList.toggle('support-under',isKenzan(vessel));
+ const clips=seatedClips(state,assetById,specimenCanvas),seats=kenzanSeats(state,assetById,specimenCanvas);
+ const interior=layerContext($('#interior-layer'),clips.interior.length||seats.back.length?size:0);
+ if(interior){paintInteriorPass(interior,size,state,assetById,specimenCanvas,{clips:clips.interior});paintKenzanPass(interior,size,state,assetById,images,{seats,side:'back',getSprite:specimenCanvas})}
+ const rim=layerContext($('#rim-layer'),(clips.rim.length||seats.front.length)&&vesselReady?size:0);
+ if(rim){paintKenzanPass(rim,size,state,assetById,images,{seats,side:'front',getSprite:specimenCanvas});paintRimPass(rim,size,state,assetById,images,specimenCanvas,{clips:clips.rim})}
+ setStemShadows(stageEl);
+}
+function scheduleVesselLayers(){if(!vesselLayersFrame)vesselLayersFrame=requestAnimationFrame(()=>{vesselLayersFrame=0;renderVesselLayers()})}
+/** CSS drop-shadows on the unrotated stem containers, from the export's LIGHT (lighter on touch screens, where the
+ layer behind the vessel goes without, to keep drags smooth). */
+function setStemShadows(stageEl){
+ const width=stageEl.offsetWidth||stageWidth(),coarse=matchMedia?.('(pointer:coarse)').matches;
+ for(const [selector,kind] of [['#composition','back'],['#composition-front','front']]){
+  const el=$(selector);if(!el)continue;
+  if(coarse&&kind==='back'){for(const v of ['--sx','--sy','--sb','--sc'])el.style.removeProperty(v);continue}
+  const shadow=lightShadow(kind,width,state.scene),px=n=>`${Math.round(n*100)/100}px`;
+  el.style.setProperty('--sx',px(shadow.x));el.style.setProperty('--sy',px(shadow.y));el.style.setProperty('--sb',px(shadow.blur*(coarse?.75:1)));el.style.setProperty('--sc',shadow.color);
+ }
+}
 function renderStage(){
  const focusedStemId=document.activeElement?.classList?.contains('stem')?document.activeElement.dataset.id:null;
- const markup=i=>{const name=assetName(assetById[i.type]),piece=i.pieceLabel?` ${i.pieceLabel}`:'',instructions=lang==='ja'?`${name}${piece}。ドラッグで移動、2本指で回転・拡大縮小`:L(`${name}${piece}，拖动移动，双指旋转缩放`,`${name}${piece}; drag to move, use two fingers to rotate and scale`);return `<div class="stem ${i.id===selected?'selected':''} ${cutSession?.ids.includes(i.id)?'fresh-cut':''}" data-id="${i.id}" data-piece="${esc(i.pieceLabel||'')}" style="${stemStyle(i)}" role="button" tabindex="0" aria-label="${esc(instructions)}" aria-pressed="${i.id===selected}"><canvas class="specimen-image" aria-hidden="true"></canvas></div>`};
+ const markup=i=>{const name=assetName(assetById[i.type]),piece=i.pieceLabel?` ${i.pieceLabel}`:'',instructions=L(`${name}${piece}，拖动花头转向，拖根部圆点移动，双指旋转缩放`,`${name}${piece}; drag the flower to swing it, drag the base dot to move, use two fingers to rotate and scale`,`${name}${piece}。花を引いて向きを変え、根元の点で移動、2本指で回転・拡大縮小`);return `<div class="stem ${i.id===selected?'selected':''} ${cutSession?.ids.includes(i.id)?'fresh-cut':''}" data-id="${i.id}" data-piece="${esc(i.pieceLabel||'')}" style="${stemStyle(i)}" role="button" tabindex="0" aria-label="${esc(instructions)}" aria-pressed="${i.id===selected}"><canvas class="specimen-image" aria-hidden="true"></canvas></div>`};
  $('#composition').innerHTML=state.items.filter(i=>!i.aboveVessel).map(markup).join('');$('#composition-front').innerHTML=state.items.filter(i=>i.aboveVessel).map(markup).join('');
  const stageW=stageWidth();for(const i of state.items){drawStemCanvas($(`.stem[data-id="${i.id}"]`),i,{stageW})}
  for(const id of [...spriteCache.keys()]){if(!state.items.some(i=>i.id===id))dropSprite(id)}
- $('#vessel').src=assetPath(state.vessel);$('#vessel').alt=assetName(assetById[state.vessel]);const vg=vesselGeometry(assetById[state.vessel]);$('#vessel').style.height=vg.height+'%';$('#vessel').style.width=vg.width+'%';$('#stage').dataset.scene=state.scene;renderFixture();
- $$('[data-scene]').forEach(b=>b.classList.toggle('active',b.dataset.scene===state.scene));$('#study-count').textContent=String(new Set(state.items.map(i=>i.originId||i.id)).size).padStart(3,'0');renderSelection();renderHistory();renderLayerList();renderCutChoice();drawPruneOverlay();
- if(focusedStemId)$(`.stem[data-id="${focusedStemId}"]`)?.focus({preventScroll:true});
+ $('#vessel').src=assetPath(state.vessel);$('#vessel').alt=assetName(assetById[state.vessel]);const vg=vesselGeometry(assetById[state.vessel]);$('#vessel').style.height=vg.height+'%';$('#vessel').style.width=vg.width+'%';$('#stage').dataset.scene=state.scene;renderVesselLayers();
+ $$('[data-scene]').forEach(b=>b.classList.toggle('active',b.dataset.scene===state.scene));$('#study-count').textContent=String(new Set(state.items.map(i=>i.originId||i.id)).size).padStart(3,'0');renderSelection();renderHistory();renderLayerList();renderCutChoice();drawPruneOverlay();renderSeatCues();
+ if(focusedStemId){restoringStemFocus=true;try{$(`.stem[data-id="${focusedStemId}"]`)?.focus({preventScroll:true})}finally{restoringStemFocus=false}}
 }
 function renderSelection(){
  let i=current();$('#selected-empty').hidden=!!i;$('#selection-controls').hidden=!i;if(!i){setEditMode('move');return;}
+ renderModePill();
  const a=assetById[i.type];$('#selected-thumb').src=assetPath(i.type);$('#selected-thumb').style.filter=a.saturation?`saturate(${a.saturation})`:'';$('#selected-thumb').alt=assetName(a);$('#selected-name').textContent=assetName(a);$('#variant-label').textContent=`${assetColor(a)} · ${assetPose(a)}`;$('#botanical-note').textContent=botanicalDescription(a.family);
  const stemDrawn=drawsStem(a),label=$('#stem-details-label');$('#trim').closest('.range-control').hidden=stemDrawn;
  if(label){label.dataset.zh=stemDrawn?'修剪枝叶':'修剪枝叶与根部';label.dataset.en=stemDrawn?'Prune foliage':'Pruning';label.textContent=L(label.dataset.zh,label.dataset.en)}
@@ -308,24 +385,90 @@ function renderSizeControls(i,a=assetById[i.type]){
 }
 const generationDescriptions={zh:{natural:'保留用花、主次和整体光感，小幅整理枝条、花面与瓶口连接，让作品更真实。',creative:'保持原设计，在花面朝向、枝条节奏和前后空间上多做一点整理，不减花。',faithful:'尽量贴近原稿，仍修正悬空、穿插和不合理连接。'},en:{natural:'Keep the flowers, hierarchy and light; refine local curves, facing and insertion for realism.',creative:'Refine facing, stem rhythm and depth a little further within the same design, without fewer flowers.',faithful:'Stay closest to the draft while correcting floating stems, intersections and implausible connections.'},ja:{natural:jaUI['保留用花、主次和整体光感，小幅整理枝条、花面与瓶口连接，让作品更真实。'],creative:jaUI['保持原设计，在花面朝向、枝条节奏和前后空间上多做一点整理，不减花。'],faithful:jaUI['尽量贴近原稿，仍修正悬空、穿插和不合理连接。']}};
 function renderAll(){applyLanguage();applyCanvasZoom();setEditorTab($('.design-panel').dataset.editorTab||'shape');renderStage();renderMaterials();renderQuickMaterials();setEditMode(editMode);$('#work-title').value=untitledTitles.includes(state.title)?'':state.title;$('#work-subtitle').value=state.subtitle||'';$('#intention').value=state.intention;$$('[data-mood]').forEach(b=>b.classList.toggle('active',b.dataset.mood===state.mood));$('#generation-mode').value=state.generation||'natural';$('#generation-mode-help').textContent=generationDescriptions[lang][state.generation||'natural'];persist()}
-function addSpecimen(type,placement='front'){if(state.items.length>=24)return toast(L('先让这 24 组花材找到自己的位置，再添加。','Arrange these 24 materials before adding another.'));checkpoint();const insertion=vesselGeometry(assetById[state.vessel]).insertion,item=makeItem(type,{x:insertion[0],y:insertion[1],angle:0,aboveVessel:placement==='front'});Object.assign(item,naturalPlacement(item));if(placement==='back')state.items.unshift(item);else state.items.push(item);selected=item.id;rememberMaterial(assetById[type].family);closeQuickMaterialDrawer();setEditMode('move');renderStage();ensureAsset(type).then(()=>{if(state.items.some(i=>i.id===item.id))renderStage()}).catch(()=>toast(L('这枝花材暂时无法载入。','This material could not be loaded.')));persist();const name=assetName(assetById[type]);toast(lang==='ja'?`${name}を${placement==='back'?'最後面':'最前面'}に追加しました。`:L(`添入${assetById[type].bundle?"一组":"一枝"}${name}，放在${placement==='back'?'最后层':'最前层'}`,`Added ${name} to the ${placement==='back'?'back':'front'} layer`))}
+function addSpecimen(type,placement='front'){if(state.items.length>=24)return toast(L('先让这 24 组花材找到自己的位置，再添加。','Arrange these 24 materials before adding another.'));checkpoint();const insertion=vesselGeometry(assetById[state.vessel]).insertion,item=makeItem(type,{x:insertion[0],y:insertion[1],angle:0,aboveVessel:placement==='front'});Object.assign(item,naturalPlacement(item));if(placement==='back')state.items.unshift(item);else state.items.push(item);selected=item.id;rememberMaterial(assetById[type].family);closeQuickMaterialDrawer();setEditMode('move');renderStage();ensureAsset(type).then(()=>{if(state.items.some(i=>i.id===item.id))renderStage()}).catch(()=>toast(L('这枝花材暂时无法载入。','This material could not be loaded.')));persist();const name=assetName(assetById[type]);undoToast(lang==='ja'?`${name}を${placement==='back'?'最後面':'最前面'}に追加しました。`:L(`添入${assetById[type].bundle?"一组":"一枝"}${name}，放在${placement==='back'?'最后层':'最前层'}`,`Added ${name} to the ${placement==='back'?'back':'front'} layer`))}
 /** New material enters the vessel mouth at its real size; flower heads get a stem long enough to rise above the rim. */
 function naturalPlacement(item){
  const a=assetById[item.type],vessel=assetById[state.vessel],g=vesselGeometry(vessel),lean=[0,-1,1,-.55,.55,-1.3,1.3][state.items.length%7];
- const base=mouthBase(vessel,g.insertion[0]+lean*2);
+ const base=mouthBase(vessel,g.insertion[0]+lean*2,.55,{front:item.aboveVessel});
  if(!drawsStem(a))return {x:base[0],y:base[1],angle:Math.round(lean*14)};
  const rise=clamp(g.height*.85+a.height*.35,14,48);
  return reach(item,a,base,[base[0]+lean*rise*.4,base[1]-rise]);
 }
-function reseatSelected(){
- const item=current();if(!item)return;const a=assetById[item.type];checkpoint();
- Object.assign(item,reach(item,a,mouthBase(assetById[state.vessel],item.x),tipPoint(item,a)));
- renderStage();persist();toast(L('枝梗已插回花器口，花头位置尽量保持不变。','The stem now enters the vessel; the flower stays where it was as far as possible.'));
+/** Whether a stem stands in the current vessel (a detached piece: by its cut end); see seatState in scale.js. */
+const isSeated=item=>{const a=assetById[item.type],vessel=assetById[state.vessel];return !!a&&!!vessel&&seatState(item,a,vessel).seated};
+/** Stems the seat banner offers to put back: out of the vessel, and not a detached cut piece (pieces lie where they were dropped). */
+const floatingItems=()=>state.items.filter(item=>!isDetachedPiece(item)&&assetById[item.type]&&!isSeated(item));
+const stageDistance=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]);
+/** Apply `change` to a stem. A detached piece keeps its cut end where it is, so it turns, scales and mirrors about the point it was cut at. */
+function aboutCutEnd(item,change){
+ const a=assetById[item.type],uv=cutEndSource(item,a),at=uv&&seatPoint(item,a);
+ change(item);
+ if(uv){const p=anchorAt(item,a,uv,at);item.x=clamp(p.x,5,95);item.y=clamp(p.y,15,95)}
+}
+/**
+ * Into the vessel for one stem. One that already stands in it is left alone (no undo step). Otherwise its base goes to the
+ * mouth and it is re-aimed at its old focus: solveTo (photographs are cut, drawn stems grow), or reach for a stem with cuts so
+ * the cuts keep their place; a detached piece turns about its real cut end (reseatPiece). When the focus lands more than 3 cm
+ * from where it was, the toast says so. `quiet` (Seat all) skips the checkpoint, render and toast. Returns {miss} in cm.
+ */
+function reseatItem(item,{quiet=false}={}){
+ const a=assetById[item.type],vessel=assetById[state.vessel];if(!a||!vessel)return null;
+ if(seatState(item,a,vessel).seated){if(!quiet)toast(L('已在花器中','Already in the vessel','すでに花器に入っています'));return {already:true,miss:0}}
+ if(!quiet)checkpoint();
+ let miss=0;
+ if(cutEndSource(item,a)){const fit=reseatPiece(item,a,vessel,pieceHead(item,a,specimenCanvas(item)?.mask));item.x=fit.x;item.y=fit.y;item.angle=fit.angle;miss=fit.miss}
+ else{
+  const target=tipPoint(item,a),base=mouthBase(vessel,item.x,.55,{front:!!item.aboveVessel});
+  if(item.cuts?.length||item.segments?.length||item.localCuts?.length)Object.assign(item,reach(item,a,base,target),{cropAnchorSourceY:null});
+  else{const {miss:_,...fit}=solveTo(item,a,base,target);Object.assign(item,fit)}
+  miss=stageDistance(tipPoint(item,a),target);
+ }
+ if(!quiet){renderStage();persist();undoToast(miss>3?L('够不到原来的位置，已插回并保持方向','Too short to reach that spot — inserted, direction kept','届かないため、向きを保って挿し直しました'):L('枝梗已插回花器口，花头位置尽量保持不变。','The stem now enters the vessel; the flower stays where it was as far as possible.','茎を花器の口に挿し直しました。花の位置はできるだけ保っています。'))}
+ return {miss};
+}
+function reseatSelected(){const item=current();if(item)reseatItem(item)}
+/**
+ * Change the vessel in one undo step. Every stem moves with the insertion point; those that stood in the old vessel are
+ * re-seated at the same place in the new mouth and re-aimed at their focus (remapSeated in scale.js). The toast counts them,
+ * and warns when a re-seated bundle meets a mouth under 8 cm (its drawn stems spread wider than that).
+ */
+function switchVessel(type){
+ const from=assetById[state.vessel],to=assetById[type];if(!to||state.vessel===type)return;
+ checkpoint();
+ const moved=new Set(from?state.items.filter(i=>!isDetachedPiece(i)&&assetById[i.type]&&seatState(i,assetById[i.type],from).seated).map(i=>i.id):[]);
+ state.items=from?remapSeated(state.items,from,to,assetById):state.items;state.vessel=type;
+ renderStage();renderMaterials();persist();
+ const name=assetName(to),support=fixtureName(to),n=moved.size,g=vesselGeometry(to),mouth=g.openings.find(o=>o.primary)||g.openings[0];
+ const narrow=!!mouth&&mouth.radius[0]*2<8&&state.items.some(i=>moved.has(i.id)&&assetById[i.type]?.bundle);
+ undoToast((lang==='ja'?`${name}に変更しました · 花留め：${support}`:L(`已换成${name} · 自动固定：${support}`,`Changed to ${name} · Auto support: ${support}`))+(n?L(` · ${n} 枝已插回瓶口`,` · ${n} stem${n>1?'s':''} re-seated`,` · ${n}本を口に挿し直しました`):'')+(narrow?L(' · 成组花材底部较宽，窄口瓶里可能露在瓶外',' · Grouped stems spread wider than this neck',' · 束の根元が口より広がります'):''));
+}
+/** Seat all (the banner): one undo step for every stem the banner counts. */
+function seatAll(){
+ const list=floatingItems();if(!list.length)return;
+ checkpoint();let short=0;for(const item of list)if((reseatItem(item,{quiet:true})?.miss||0)>3)short++;
+ renderStage();persist();const n=list.length;
+ undoToast(short?L(`已插回 ${n} 枝；其中 ${short} 枝够不到原来的位置，已保持方向`,`Seated ${n} stem${n>1?'s':''}; ${short} could not reach ${short>1?'their':'its'} spot, direction kept`,`${n}本を挿し直しました。${short}本は届かないため、向きを保っています`):L(`已插回 ${n} 枝`,`Seated ${n} stem${n>1?'s':''}`,`${n}本を挿し直しました`));
+}
+const baseMark=(item,kind)=>{const p=seatPoint(item,assetById[item.type]);return `<i class="base-dot ${kind}" style="left:${Math.round(p[0]*100)/100}%;top:${Math.round(p[1]*100)/100}%"></i>`};
+/**
+ * Seat cues, DOM only (exports never include them), in move mode: the selected stem's base dot (a detached piece: its cut
+ * end), a terracotta ring on every stem out of the vessel (.stem.floating), and the #seat-banner with Seat all. Cheap enough
+ * for every drag frame.
+ */
+function renderSeatCues(){
+ const move=editMode==='move',floating=move?floatingItems():[],ids=new Set(floating.map(i=>i.id));
+ $$('#stage .stem').forEach(n=>n.classList.toggle('floating',ids.has(n.dataset.id)));
+ const marks=$('#seat-marks');
+ if(marks){const item=move?current():null,html=floating.filter(i=>i!==item).map(i=>baseMark(i,'floating'));if(item)html.push(baseMark(item,ids.has(item.id)?'selected floating':'selected'));marks.innerHTML=html.join('')}
+ const banner=$('#seat-banner');if(!banner)return;
+ const key=[...ids].sort().join(','),show=floating.length>0&&key!==seatBannerClosed&&!drag?.started;
+ banner.hidden=!show;if(!show)return;
+ const n=floating.length;$('#seat-banner-text').textContent=L(`${n} 枝没有插进花器`,`${n} stem${n>1?'s':''} not in the vessel`,`${n}本が花器に入っていません`);
 }
 function resetRealSize(){
  const item=current();if(!item)return;const a=assetById[item.type];checkpoint();
  const cm=drawsStem(a)?stemCm(item,a):null;item.h=a.height;if(cm!==null)item.length=lengthForStem(item,a,cm);
- renderStage();persist();toast(L('已恢复真实比例。','Restored to true-to-life size.'));
+ renderStage();persist();undoToast(L('已恢复真实比例。','Restored to true-to-life size.','実寸に戻しました。'));
 }
 function variantPicker(family,replaceId=null,preferredColor='all'){
  const allOptions=specimens.filter(a=>a.family===family&&(!bookSpecimens.includes(a)||a.id===current()?.type)).sort((a,b)=>Number(b.source==='flower-book')-Number(a.source==='flower-book')||Number(legacyFlowers.includes(a))-Number(legacyFlowers.includes(b)));
@@ -334,22 +477,22 @@ function variantPicker(family,replaceId=null,preferredColor='all'){
  const selectedType=state.items.find(i=>i.id===replaceId)?.type;
  let placement='front';
  const placementChoice=replaceId?'':`<fieldset class="insert-position"><legend>${L('加入画布的位置','Place on canvas')}</legend><button type="button" class="active" data-insert-position="front" aria-pressed="true"><strong>${L('最前层','Front layer')}</strong><small>${L('盖在现有花材前','In front of existing materials')}</small></button><button type="button" data-insert-position="back" aria-pressed="false"><strong>${L('最后层','Back layer')}</strong><small>${L('放在现有花材后','Behind existing materials')}</small></button></fieldset>`;
- openModal(`<h2>${esc(L(`${assetName(options[0])}，选一种喜欢的姿态。`,`Choose a pose for ${assetName(options[0])}.`))}</h2><p>${esc(botanicalNotes[family]?.[lang==='en'?3:2]||L('保留自然姿态，也可以整组入画。','Choose a pose you like.'))}</p>${options.some(a=>a.source==='flower-book-photo')?`<p class="file-note">${lang==='ja'?'原書の花びら・色・複数の枝を保った写真です。ひとつのレイヤーとして配置し、付け根を局所的に切れます。':L('原书实拍：保留花瓣、色彩和多枝组合。成组花材可局部剪开。','Original Flower Book photographs retain their petals, colors and groupings. Cut locally at an attachment to separate a piece.')}</p>`:''}${options.some(a=>a.source==='generated-foliage')?`<p class="file-note">${lang==='ja'?'透明の葉もの素材は制作した画像です。実物写真ではありません。':L('透明叶材为创作用图像，不是实物摄影。','These transparent foliage cutouts are rendered artwork, not photographs.')}</p>`:''}${placementChoice}<div class="variant-grid">${options.map(a=>`<button class="variant-card ${a.id===selectedType?'active':''}" data-variant="${a.id}"><img src="${(a.thumbnail||a.source==='flower-book')?`/assets/thumbs/${a.id}.webp`:assetPath(a.id)}" alt="${esc(assetColor(a)+' '+assetPose(a))}"><strong><i style="background:${a.swatch}"></i>${esc(assetColor(a))}</strong><span>${esc(assetPose(a))}${a.source==='flower-book'?L(' · 书图整理',' · Book adaptation'):''}</span></button>`).join('')}</div>${replaceId&&(current()?.cuts.length||current()?.localCuts?.length)?`<p class="file-note">${L('换姿态会恢复这枝的剪口，便于重新修剪；可以撤销恢复。','Changing pose restores this stem before pruning so you can trim it again; Undo remains available.')}</p>`:''}`,'BOTANICAL VARIATIONS');
+ openModal(`<h2>${esc(L(`${assetName(options[0])}，选一种喜欢的姿态。`,`Choose a pose for ${assetName(options[0])}.`))}</h2><p>${esc(botanicalNotes[family]?.[lang==='en'?3:2]||L('保留自然姿态，也可以整组入画。','Choose a pose you like.'))}</p>${options.some(a=>a.source==='flower-book-photo')?`<p class="file-note">${lang==='ja'?'原書の花びら・色・複数の枝を保った写真です。ひとつのレイヤーとして配置し、付け根を局所的に切れます。':L('原书实拍：保留花瓣、色彩和多枝组合。成组花材可局部剪开。','Original Flower Book photographs retain their petals, colors and groupings. Cut locally at an attachment to separate a piece.')}</p>`:''}${options.some(a=>a.source==='generated-foliage')?`<p class="file-note">${lang==='ja'?'透明の葉もの素材は制作した画像です。実物写真ではありません。':L('透明叶材为创作用图像，不是实物摄影。','These transparent foliage cutouts are rendered artwork, not photographs.')}</p>`:''}${placementChoice}<div class="variant-grid">${options.map(a=>`<button class="variant-card ${a.id===selectedType?'active':''}" data-variant="${a.id}"><img src="${cardImage(a)}" alt="${esc(assetColor(a)+' '+assetPose(a))}" decoding="async"><strong><i style="background:${a.swatch}"></i>${esc(assetColor(a))}</strong><span>${esc(assetPose(a))}${a.source==='flower-book'?L(' · 书图整理',' · Book adaptation'):''}</span></button>`).join('')}</div>${replaceId&&(current()?.cuts.length||current()?.localCuts?.length)?`<p class="file-note">${L('换姿态会恢复这枝的剪口，便于重新修剪；可以撤销恢复。','Changing pose restores this stem before pruning so you can trim it again; Undo remains available.')}</p>`:''}`,'BOTANICAL VARIATIONS');
  if(options.some(a=>a.source==='generated-pose')){const note=document.createElement('p');note.className='file-note';note.textContent=L('新增姿态参考原素材辅助制作，保留原姿态供选择。','New poses were made with AI assistance from the original specimens; the originals remain available.','新しい姿は元の花材を参考にAIの補助で制作しました。元の姿も選べます。');$('#modal-content .variant-grid').before(note)}
  $('#modal-content .variant-grid').after(...$$('#modal-content .file-note'));
  toneMaterialImages($('#modal'));
  if(lang==='ja'){$('#modal-content h2').textContent=`${assetName(options[0])}の姿を選ぶ`;$('#modal-content > p').textContent=botanicalDescription(family)}
  $$('[data-insert-position]').forEach(b=>b.onclick=()=>{placement=b.dataset.insertPosition;$$('[data-insert-position]').forEach(t=>{const on=t===b;t.classList.toggle('active',on);t.setAttribute('aria-pressed',String(on))})});
- $$('[data-variant]').forEach(b=>b.onclick=()=>{if(replaceId){const i=state.items.find(i=>i.id===replaceId);if(!i)return;if(i.type!==b.dataset.variant){checkpoint();const before=assetById[i.type],tip=tipPoint(i,before),ratio=clamp(i.h/before.height,.8,1.25);i.type=b.dataset.variant;i.cuts=[];i.localCuts=[];i.segments=[];i.pieceLabel='';const after=assetById[i.type];i.h=Math.round(after.height*ratio*10)/10;i.trim=0;i.length=1;Object.assign(i,reach(i,after,[i.x,i.y],tip));spriteCache.delete(i.id);selected=i.id;renderStage();ensureAsset(i.type).then(()=>{if(state.items.some(item=>item.id===i.id&&item.type===i.type))renderStage()}).catch(()=>toast(L('这枝花材暂时无法载入。','This material could not be loaded.')));persist()}}else addSpecimen(b.dataset.variant,placement);$('#modal').close();document.querySelector('.stem.selected')?.focus({preventScroll:true})});
+ $$('[data-variant]').forEach(b=>b.onclick=()=>{if(replaceId){const i=state.items.find(i=>i.id===replaceId);if(!i)return;if(i.type!==b.dataset.variant){const hadCuts=!!(i.cuts?.length||i.localCuts?.length||i.segments?.length);checkpoint();const before=assetById[i.type],tip=tipPoint(i,before),after=assetById[b.dataset.variant],ratio=clamp(i.h/before.height,...sizeRatioBounds(after));i.type=b.dataset.variant;i.cuts=[];i.localCuts=[];i.segments=[];i.pieceLabel='';i.sv=2;i.h=Math.round(after.height*ratio*10)/10;i.trim=0;i.length=1;Object.assign(i,reach(i,after,[i.x,i.y],tip));spriteCache.delete(i.id);selected=i.id;renderStage();ensureAsset(i.type).then(()=>{if(state.items.some(item=>item.id===i.id&&item.type===i.type))renderStage()}).catch(()=>toast(L('这枝花材暂时无法载入。','This material could not be loaded.')));persist();if(hadCuts)undoToast(L('剪口已重置','Cuts reset','剪定をリセット'))}}else addSpecimen(b.dataset.variant,placement);$('#modal').close();document.querySelector('.stem.selected')?.focus({preventScroll:true})});
 }
 $('#change-variant').onclick=()=>{const i=current();if(i)variantPicker(assetById[i.type].family,i.id)};
 function renderMaterials(){
  const query=$('#material-search').value.trim().toLocaleLowerCase();
  const materials=(category==='flowers'?flowers.filter(a=>(familyFilter==='all'||(familyFilter==='book'?photoSpecimens.some(s=>s.family===a.family):familyFilter==='bundle'?a.bundle:a.group===familyFilter))&&familyHasColor(a.family,colorFilter)):vessels.filter(a=>vesselFilter==='all'||(vesselFilter==='book'?a.source==='flower-book-vessel':(a.style||'japanese')===vesselFilter))).filter(a=>!query||`${a.name} ${a.en} ${assetName(a)}`.toLocaleLowerCase().includes(query));
  $('#material-filters').hidden=category!=='flowers';$('#material-color-filters').hidden=category!=='flowers';$('#vessel-filters').hidden=category!=='vessels';$('#material-heading').textContent=category==='flowers'?L('一枝一叶','Botanicals'):L('一器一境','Vessels');$('#material-count').textContent=category==='flowers'?(familyFilter!=='all'||colorFilter!=='all'||query?L(`${materials.length} 种`,`${materials.length} types`,`${materials.length}種類`):L(`${flowers.length} 种 · ${browseSpecimens.length} 款`,`${flowers.length} types · ${browseSpecimens.length} variants`,`${flowers.length}種 · ${browseSpecimens.length}タイプ`)):L(`${vessels.length} 款花器`,`${vessels.length} vessels`,`${vessels.length}点の花器`);
- $('#material-grid').innerHTML=materials.map(a=>{const isFlower=category==='flowers',sample=isFlower?specimenForColor(a.id,colorFilter):a,name=assetName(a),image=isFlower?((sample.thumbnail||sample.source==='flower-book')?`/assets/thumbs/${sample.id}.webp`:assetPath(sample.id)):`/assets/thumbs/${a.id}.webp`,cardName=isFlower?(lang==='zh'?(a.shortName||a.name):assetName(a)):(lang==='zh'?(a.shortName||a.name):assetName(a)),meta=isFlower?`${a.group==='foliage'?L('叶材','Leaf','葉もの'):a.group==='branch'?L('枝材','Branch','枝もの'):a.bundle?L('成组','Group','花束'):L('花朵','Flower','花')} · ${a.variants}${lang==='ja'?'姿':''}`:(a.source==='flower-book-vessel'?L('书中器形 · '+a.color,'Book form · '+a.colorEn):vesselNote(a,lang==='zh'?'zh':'en')),pressed=isFlower?'':` aria-pressed="${a.id===state.vessel}"`;return `<button class="material-card ${!isFlower&&a.id===state.vessel?'active':''}" data-material="${a.id}" aria-label="${esc(L(`${isFlower?'挑选':'选择'}${name}`,`${isFlower?'Choose':'Select'} ${name}`))}"${pressed}><span class="add-mark">${isFlower?'+':''}</span><img src="${image}" alt="${esc(name)}" draggable="false" loading="lazy"><strong>${esc(cardName)}</strong><small class="${isFlower?'':'vessel-meta'}">${esc(meta)}</small></button>`}).join('');
+ $('#material-grid').innerHTML=materials.map(a=>{const isFlower=category==='flowers',sample=isFlower?specimenForColor(a.id,colorFilter):a,name=assetName(a),image=isFlower?cardImage(sample):`/assets/thumbs/${a.id}.webp`,cardName=isFlower?(lang==='zh'?(a.shortName||a.name):assetName(a)):(lang==='zh'?(a.shortName||a.name):assetName(a)),meta=isFlower?`${a.group==='foliage'?L('叶材','Leaf','葉もの'):a.group==='branch'?L('枝材','Branch','枝もの'):a.bundle?L('成组','Group','花束'):L('花朵','Flower','花')} · ${a.variants}${lang==='ja'?'姿':''}`:(a.source==='flower-book-vessel'?L('书中器形 · '+a.color,'Book form · '+a.colorEn):vesselNote(a,lang==='zh'?'zh':'en')),pressed=isFlower?'':` aria-pressed="${a.id===state.vessel}"`;return `<button class="material-card ${!isFlower&&a.id===state.vessel?'active':''}" data-material="${a.id}" aria-label="${esc(L(`${isFlower?'挑选':'选择'}${name}`,`${isFlower?'Choose':'Select'} ${name}`))}"${pressed}><span class="add-mark">${isFlower?'+':''}</span><img src="${image}" alt="${esc(name)}" draggable="false" loading="lazy" decoding="async"><strong>${esc(cardName)}</strong><small class="${isFlower?'':'vessel-meta'}">${esc(meta)}</small></button>`}).join('');
  if(!materials.length)$('#material-grid').innerHTML=`<p class="material-grid-empty">${L('没有找到花材，试试其他颜色或名称。','No materials found. Try another color or name.','花材が見つかりません。色や名前を変えてください。')}</p>`;
- $('#material-grid').onclick=e=>{const b=e.target.closest('[data-material]');if(!b)return;const type=b.dataset.material;if(category==='vessels'){if(state.vessel===type)return;checkpoint();const from=vesselGeometry(assetById[state.vessel]).insertion,to=vesselGeometry(assetById[type]).insertion;state.items.forEach(i=>{i.x=clamp(i.x+to[0]-from[0],5,95);i.y=clamp(i.y+to[1]-from[1],15,95)});state.vessel=type;renderStage();renderMaterials();persist();const vessel=assetById[type],name=assetName(vessel),support=fixtureName(vessel);toast(lang==='ja'?`${name}に変更しました · 花留め：${support}`:L(`已换成${name} · 自动固定：${support}`,`Changed to ${name} · Auto support: ${support}`))}else variantPicker(type,null,colorFilter)};
+ $('#material-grid').onclick=e=>{const b=e.target.closest('[data-material]');if(!b)return;const type=b.dataset.material;if(category==='vessels')switchVessel(type);else variantPicker(type,null,colorFilter)};
  if(lang==='ja'){
   if(category==='flowers'&&familyFilter==='all'&&colorFilter==='all'&&!query)$('#material-count').textContent=`${flowers.length}種 · ${browseSpecimens.length}タイプ`;
   $$('.material-card',$('#material-grid')).forEach((button,index)=>{
@@ -368,7 +511,7 @@ function rememberMaterial(family){quickRecent=[family,...quickRecent.filter(id=>
 function renderRecentMaterials(){
  const group=$('#quick-material-recent');if(!group)return;
  const recent=quickRecent.map(id=>flowers.find(f=>f.id===id)).filter(Boolean);group.hidden=!recent.length;
- $$('[data-recent-slot]',group).forEach((button,index)=>{const material=recent[index];button.hidden=!material;button.disabled=!material;if(!material)return;const specimen=specimenFor(material.family),name=assetName(material);button.dataset.quickRecent=material.family;button.setAttribute('aria-label',lang==='ja'?`${name}を再び選ぶ`:lang==='en'?`Choose ${name} again`:`再次挑选${name}`);button.title=name;button.innerHTML=`<img src="${(specimen.thumbnail||specimen.source==='flower-book')?`/assets/thumbs/${specimen.id}.webp`:assetPath(specimen.id)}" alt="">`});
+ $$('[data-recent-slot]',group).forEach((button,index)=>{const material=recent[index];button.hidden=!material;button.disabled=!material;if(!material)return;const specimen=specimenFor(material.family),name=assetName(material);button.dataset.quickRecent=material.family;button.setAttribute('aria-label',lang==='ja'?`${name}を再び選ぶ`:lang==='en'?`Choose ${name} again`:`再次挑选${name}`);button.title=name;button.innerHTML=`<img src="${cardImage(specimen)}" alt="" decoding="async">`});
  toneMaterialImages(group);
 }
 function renderQuickMaterials(){
@@ -376,7 +519,7 @@ function renderQuickMaterials(){
  const materials=flowers.filter(a=>(quickFilter==='all'||(quickFilter==='book'?photoSpecimens.some(s=>s.family===a.family):quickFilter==='bundle'?a.bundle:a.group===quickFilter))&&familyHasColor(a.family,quickColorFilter)&&(!query||`${a.name} ${a.en} ${a.ja||''} ${assetName(a)}`.toLocaleLowerCase().includes(query)));
  $('#quick-material-count').textContent=lang==='ja'?`${materials.length}種類`:lang==='en'?`${materials.length} types`:`${materials.length} 种`;
  $('#quick-material-empty').hidden=!!materials.length;
- $('#quick-material-grid').innerHTML=materials.map(a=>{const sample=specimenForColor(a.family,quickColorFilter),name=assetName(a),image=(sample.thumbnail||sample.source==='flower-book')?`/assets/thumbs/${sample.id}.webp`:assetPath(sample.id),group=lang==='ja'?(a.group==='foliage'?'葉もの':a.bundle?'花束':a.group==='branch'?'枝もの':'花'):lang==='en'?(a.group==='foliage'?'Foliage':a.bundle?'Group':a.group==='branch'?'Branch':'Bloom'):(a.group==='foliage'?'叶材':a.bundle?'成组':a.group==='branch'?'枝叶':'花朵');return `<button type="button" class="material-card quick-material-card" data-quick-material="${esc(a.family)}" aria-label="${esc(lang==='ja'?`${name}を選ぶ`:lang==='en'?`Choose ${name}`:`挑选${name}`)}"><span class="add-mark">+</span><img src="${image}" alt="" loading="lazy" draggable="false"><strong>${esc(lang==='zh'?(a.shortName||name):name)}</strong><small>${esc(group)} · ${a.variants}${lang==='ja'?'姿':lang==='en'?(a.variants===1?' pose':' poses'):' 款'}</small></button>`}).join('');
+ $('#quick-material-grid').innerHTML=materials.map(a=>{const sample=specimenForColor(a.family,quickColorFilter),name=assetName(a),image=cardImage(sample),group=lang==='ja'?(a.group==='foliage'?'葉もの':a.bundle?'花束':a.group==='branch'?'枝もの':'花'):lang==='en'?(a.group==='foliage'?'Foliage':a.bundle?'Group':a.group==='branch'?'Branch':'Bloom'):(a.group==='foliage'?'叶材':a.bundle?'成组':a.group==='branch'?'枝叶':'花朵');return `<button type="button" class="material-card quick-material-card" data-quick-material="${esc(a.family)}" aria-label="${esc(lang==='ja'?`${name}を選ぶ`:lang==='en'?`Choose ${name}`:`挑选${name}`)}"><span class="add-mark">+</span><img src="${image}" alt="" loading="lazy" decoding="async" draggable="false"><strong>${esc(lang==='zh'?(a.shortName||name):name)}</strong><small>${esc(group)} · ${a.variants}${lang==='ja'?'姿':lang==='en'?(a.variants===1?' pose':' poses'):' 款'}</small></button>`}).join('');
  $$('[data-quick-family-group]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.quickFamilyGroup===quickFilter)));
  $$('[data-quick-color-group]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.quickColorGroup===quickColorFilter)));
  toneMaterialImages($('#quick-material-grid'));
@@ -397,7 +540,20 @@ $$('[data-vessel-style]').forEach(b=>b.onclick=()=>{vesselFilter=b.dataset.vesse
 $$('[data-family-group]').forEach(b=>b.onclick=()=>{familyFilter=b.dataset.familyGroup;$$('[data-family-group]').forEach(t=>t.classList.toggle('active',t===b));renderMaterials()});
 $$('[data-color-group]').forEach(b=>b.onclick=()=>{colorFilter=b.dataset.colorGroup;$$('[data-color-group]').forEach(t=>{const active=t===b;t.classList.toggle('active',active);t.setAttribute('aria-pressed',String(active))});renderMaterials()});
 function pointerStage(e){const r=$('#stage').getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]}
-function selectItem(id){selected=id;$$('.stem').forEach(n=>{const on=n.dataset.id===id;n.classList.toggle('selected',on);n.setAttribute('aria-pressed',String(on))});renderSelection();renderCutChoice();if(!$('#layer-menu').hidden)renderLayerList()}
+/**
+ * The stem whose visible pixels are under a client point: each sprite's alpha mask (stem-pick.js), with the crop box as the
+ * fallback while a sprite is missing. Tolerance `radius` is 6 CSS px (12 for touch); the selected stem wins within `keep`
+ * unless a stem drawn above it is directly under the point (`selectedFirst`: it wins within `keep` regardless). Works at
+ * any zoom and for stems that ignore pointer events (cut and erase modes). Returns {id, hits}; id is null on paper.
+ */
+function pickStem(clientX,clientY,{touch=false,radius=touch?12:6,keep=radius,selectedFirst=false}={}){
+ const rect=$('#stage').getBoundingClientRect();if(!(rect.width>0&&rect.height>0))return {id:null,hits:[]};
+ const point=[(clientX-rect.left)/rect.width,(clientY-rect.top)/rect.height];
+ const hits=stemHits(point,state.items,{assetOf:i=>assetById[i.type],spriteOf:i=>spriteCache.get(i.id)?.canvas||null,stagePx:rect.width,radius:Math.max(radius,keep)});
+ return {id:choosePick(hits,selected,{radius,keep,selectedFirst}),hits};
+}
+/** Select a stem by id; null deselects (the panel shows #selected-empty). */
+function selectItem(id){selected=id??null;$$('.stem').forEach(n=>{const on=n.dataset.id===id;n.classList.toggle('selected',on);n.setAttribute('aria-pressed',String(on))});renderSelection();renderCutChoice();renderSeatCues();if(!$('#layer-menu').hidden)renderLayerList()}
 function renderCutChoice(){
  const choice=$('#cut-choice');if(!choice)return;
  if(cutSession&&!cutSession.ids.every(id=>state.items.some(i=>i.id===id)))cutSession=null;
@@ -457,7 +613,7 @@ $('#layer-list').addEventListener('dragstart',e=>{const row=e.target.closest('[d
 $('#layer-list').addEventListener('dragover',e=>{const row=e.target.closest('[data-layer-id]');if(!row||row.dataset.layerId===layerDragId)return;e.preventDefault();const after=e.clientY>row.getBoundingClientRect().top+row.offsetHeight/2;$$('.layer-row').forEach(n=>n.classList.remove('drop-before','drop-after'));row.classList.add(after?'drop-after':'drop-before');e.dataTransfer.dropEffect='move'});
 $('#layer-list').addEventListener('drop',e=>{const row=e.target.closest('[data-layer-id]');if(!row)return;e.preventDefault();const after=row.classList.contains('drop-after'),id=layerDragId||e.dataTransfer.getData('text/plain');applyLayerDrop(id,row.dataset.layerId,after);layerDragId=null});
 $('#layer-list').addEventListener('dragend',()=>{layerDragId=null;$$('.layer-row').forEach(n=>n.classList.remove('dragging','drop-before','drop-after'))});
-$('#stage').addEventListener('contextmenu',e=>{e.preventDefault();if(stroke||gesture||movePointers.size||performance.now()<suppressLayerContextUntil)return;const stem=e.target.closest('.stem');if(stem)selectItem(stem.dataset.id);openLayerMenu(e.clientX,e.clientY)});
+$('#stage').addEventListener('contextmenu',e=>{e.preventDefault();if(stroke||gesture||movePointers.size||performance.now()<suppressLayerContextUntil)return;const id=pickStem(e.clientX,e.clientY,{touch:lastPointerType==='touch'}).id;if(id)selectItem(id);openLayerMenu(e.clientX,e.clientY)});
 $('#layers-tool').onclick=()=>$('#layer-menu').hidden?openLayerMenu():closeLayerMenu();$('#close-layers').onclick=closeLayerMenu;
 $('#layer-quick-front').onclick=moveSelectedToFront;
 $('#layer-quick-back').onclick=moveSelectedToBack;
@@ -474,58 +630,198 @@ $('#layer-quick-organize').onclick=()=>{
 const stage=$('#stage');
 function applyCanvasZoom(){
  const viewport=$('#canvas-viewport'),limit=Math.max(0,viewport.clientWidth*(zoomLevel-1)/2);zoomPanX=clamp(zoomPanX,-limit,limit);zoomPanY=clamp(zoomPanY,-limit,limit);
- stage.style.transform=`translate(${zoomPanX}px,${zoomPanY}px) scale(${zoomLevel})`;
+ stage.style.transform=`translate(${zoomPanX}px,${zoomPanY}px) scale(${zoomLevel})`;stage.style.setProperty('--mark-scale',String(Math.round(100/zoomLevel)/100));
  const percent=`${Math.round(zoomLevel*100)}%`;$('#zoom-reset').textContent=percent;$('#zoom-reset').setAttribute('aria-label',`${lang==='ja'?'倍率をリセット':lang==='en'?'Reset zoom':'重置画布缩放'} · ${percent}`);$('#zoom-in').disabled=zoomLevel>=3;$('#zoom-out').disabled=zoomLevel<=1;
 }
-function setCanvasZoom(next){const old=zoomLevel;zoomLevel=clamp(Math.round(next*100)/100,1,3);if(zoomLevel===1)zoomPanX=zoomPanY=0;else if(old!==zoomLevel){zoomPanX*=zoomLevel/old;zoomPanY*=zoomLevel/old}applyCanvasZoom();redrawStemCanvases();renderFixture();drawPruneOverlay()}
+function setCanvasZoom(next){const old=zoomLevel;zoomLevel=clamp(Math.round(next*100)/100,1,3);if(zoomLevel===1)zoomPanX=zoomPanY=0;else if(old!==zoomLevel){zoomPanX*=zoomLevel/old;zoomPanY*=zoomLevel/old}applyCanvasZoom();redrawStemCanvases();renderVesselLayers();drawPruneOverlay()}
 $('#zoom-in').onclick=()=>setCanvasZoom(zoomLevel+.25);$('#zoom-out').onclick=()=>setCanvasZoom(zoomLevel-.25);$('#zoom-reset').onclick=()=>setCanvasZoom(1);
 applyCanvasZoom();
 const gestureMetrics=(a,b)=>({distance:Math.hypot(b.x-a.x,b.y-a.y),bearing:Math.atan2(b.y-a.y,b.x-a.x)});
 const gestureAngleDelta=(now,start)=>Math.atan2(Math.sin(now-start),Math.cos(now-start))*180/Math.PI;
+/** A light tick on gesture snaps where the device supports it. */
+const buzz=()=>{try{navigator.vibrate?.(8)}catch{}};
+/** Stem cm a drag or pinch keeps for a drawn stem (null for photographs and cut pieces, whose length is the photograph's). */
+const keptStemCm=item=>{const a=assetById[item.type];return drawsStem(a)&&!cutEndSource(item,a)&&stemUnit(item,a)>0?stemCm(item,a):null};
 function startGestureIfReady(){
  if(gesture||!drag||drag.pointerType!=='touch'||movePointers.size<2)return false;
  const ids=[drag.pointer,...[...movePointers.keys()].filter(id=>id!==drag.pointer)].slice(0,2),a=movePointers.get(ids[0]),b=movePointers.get(ids[1]);if(!a||!b)return false;
  const metrics=gestureMetrics(a,b);if(metrics.distance<24)return false;
- gesture={pointers:ids,item:drag.item,el:drag.el,startDistance:metrics.distance,startBearing:metrics.bearing,baseAngle:drag.item.angle,baseH:drag.item.h,checkpointed:drag.started,gestureStarted:false,changed:drag.started};drag=null;suppressLayerContextUntil=performance.now()+600;updateGestureFeedback(a,b,gesture.item,true);return true;
+ clearTimeout(drag.lengthTimer);const item=drag.item,asset=assetById[item.type],endUV=cutEndSource(item,asset);
+ gesture={pointers:ids,item,el:drag.el,startDistance:metrics.distance,startBearing:metrics.bearing,baseAngle:item.angle,baseH:item.h,checkpointed:drag.started,gestureStarted:false,changed:drag.started,rotating:false,scaling:false,snapAngle:false,snapSize:false,stemCm0:keptStemCm(item),endUV,endAt:endUV?seatPoint(item,asset):null};drag=null;suppressLayerContextUntil=performance.now()+600;updateGestureFeedback(a,b,gesture.item,true);return true;
 }
 function syncGestureControls(item){$('#angle').value=item.angle;$('#angle-value').value=Math.round(item.angle)+'°';renderSizeControls(item)}
-function updateGestureFeedback(a,b,item,active=true){const feedback=$('#gesture-feedback');if(!feedback||!a||!b)return;const rect=stage.getBoundingClientRect(),x=((a.x+b.x)/2-rect.left)/rect.width*100,y=((a.y+b.y)/2-rect.top)/rect.height*100;feedback.style.setProperty('--gesture-x',`${clamp(x,8,92)}%`);feedback.style.setProperty('--gesture-y',`${clamp(y,8,92)}%`);$('output',feedback).value=`${Math.round(item.angle)}°`;feedback.classList.toggle('active',active)}
+/** The pinch bubble: angle and size as a share of true size ("28° · 100% 实寸"). */
+function gestureText(item){const a=assetById[item.type],pct=Math.round(item.h/a.height*100);return `${Math.round(item.angle)}° · ${pct}%`+(pct===100?L(' 实寸',' true size',' 実寸'):'')}
+function updateGestureFeedback(a,b,item,active=true){const feedback=$('#gesture-feedback');if(!feedback||!a||!b)return;const rect=stage.getBoundingClientRect(),x=((a.x+b.x)/2-rect.left)/rect.width*100,y=((a.y+b.y)/2-rect.top)/rect.height*100;feedback.style.setProperty('--gesture-x',`${clamp(x,8,92)}%`);feedback.style.setProperty('--gesture-y',`${clamp(y,8,92)}%`);$('output',feedback).value=gestureText(item);feedback.classList.add('wide');feedback.classList.toggle('active',active)}
+/** The steer bubble, above the pointer (further above a finger). */
+function showStemFeedback(x,y,text,pointerType){const feedback=$('#gesture-feedback');if(!feedback)return;const rect=stage.getBoundingClientRect(),lift=pointerType==='touch'?76:44;feedback.style.setProperty('--gesture-x',`${clamp((x-rect.left)/rect.width*100,8,92)}%`);feedback.style.setProperty('--gesture-y',`${clamp((y-lift-rect.top)/rect.height*100,8,92)}%`);$('output',feedback).value=text;feedback.classList.add('wide','active')}
+/**
+ * One pinch frame. Rotation engages past a 6° dead-zone and snaps to 15° steps within 2°; size engages past 3% and snaps to
+ * true size within 3% (sizeBounds still apply). A detached piece turns and scales about its cut end.
+ */
+function pinchTo(p,q){
+ const g=gesture,item=g.item,asset=assetById[item.type],metrics=gestureMetrics(p,q),turn=gestureAngleDelta(metrics.bearing,g.startBearing),ratio=metrics.distance/g.startDistance;
+ if(!g.rotating&&Math.abs(turn)>=6)g.rotating=true;
+ if(!g.scaling&&Math.abs(ratio-1)>=.03)g.scaling=true;
+ let angle=g.baseAngle,h=g.baseH,snapAngle=false,snapSize=false;
+ if(g.rotating){angle=clamp(g.baseAngle+turn,-180,180);const step=Math.round(angle/15)*15;snapAngle=Math.abs(angle-step)<=2;angle=snapAngle?step:Math.round(angle)}
+ if(g.scaling){h=clamp(g.baseH*ratio,...sizeBounds(asset));snapSize=Math.abs(h/asset.height-1)<=.03;h=snapSize?asset.height:Math.round(h*10)/10}
+ if((snapAngle&&!g.snapAngle)||(snapSize&&!g.snapSize))buzz();g.snapAngle=snapAngle;g.snapSize=snapSize;
+ if(!g.gestureStarted){if(!g.rotating&&!g.scaling){updateGestureFeedback(p,q,item);return}g.gestureStarted=true;if(!g.checkpointed){checkpoint();g.checkpointed=true}}
+ if(angle===item.angle&&h===item.h){updateGestureFeedback(p,q,item);return}
+ item.angle=angle;item.h=h;if(g.endUV){const at=anchorAt(item,asset,g.endUV,g.endAt);item.x=clamp(at.x,5,95);item.y=clamp(at.y,15,95)}
+ g.changed=true;g.el.style.cssText=stemStyle(item);scheduleVesselLayers();syncGestureControls(item);updateGestureFeedback(p,q,item);
+}
+/** End of a pinch: a drawn stem gets its centimetres back (the pinch scaled them with the photograph), as the size slider keeps them. */
+function settleGesture(g){
+ if(!g?.changed||g.stemCm0===null||!state.items.includes(g.item))return;
+ const item=g.item,a=assetById[item.type];item.length=Math.min(lengthForStem(item,a,g.stemCm0),lengthBounds(a,item.h,item.trim)[1]);updateStem(item);
+}
+/**
+ * Steer or move, decided at pointerdown (A11). A stem standing in the vessel, pressed away from its base, steers: it turns
+ * about the base (a detached piece: about its cut end) while the base slides a little along the mouth, and a drawn stem
+ * grows or shortens with the pointer's distance from the base. A press within 12 px (24 px touch) of the base, Alt or Shift,
+ * a stem that is not in the vessel, or a piece whose cut end was never stored moves the whole stem, as before.
+ */
+function dragMode(item,e){
+ const a=assetById[item.type],vessel=assetById[state.vessel],rect=stage.getBoundingClientRect(),endUV=cutEndSource(item,a),base=seatPoint(item,a);
+ const client=[rect.left+base[0]/100*rect.width,rect.top+base[1]/100*rect.height],px=Math.hypot(e.clientX-client[0],e.clientY-client[1]);
+ const seated=!!a&&!!vessel&&seatState(item,a,vessel).seated,move=px<=(e.pointerType==='touch'?24:12)||e.altKey||e.shiftKey||!seated||(!endUV&&isDetachedPiece(item));
+ return {mode:move?'move':'steer',seated0:seated,base0:base,baseClient:client,endUV,angle0:item.angle,bearing:Math.atan2(e.clientY-client[1],e.clientX-client[0]),turn:0,r0:px/Math.max(1,rect.width)*100,stemCm0:move?null:keptStemCm(item),stemCm:null,appliedCm:null,lengthAt:0,lengthTimer:0};
+}
+/** Steer bubble text: the angle, and a drawn stem's centimetres. */
+const steerText=(item,d)=>{const deg=`${Math.round(item.angle)}°`;if(d.stemCm0===null)return deg;const cm=Math.round(d.stemCm??d.stemCm0);return L(`${deg} · 枝梗 ${cm} cm`,`${deg} · stem ${cm} cm`,`${deg} · 茎 ${cm} cm`)};
+/** A drawn stem's length is part of its sprite key: steering applies it in 0.5 cm steps at most 12 times a second (the exact value on release). */
+function applySteerLength(d,cm){
+ const item=d.item,a=assetById[item.type];d.lengthAt=performance.now();d.appliedCm=cm;
+ item.length=Math.min(lengthForStem(item,a,cm),lengthBounds(a,item.h,item.trim)[1]);updateStem(item);
+}
+function queueSteerLength(d){
+ const cm=Math.round(d.stemCm*2)/2;if(cm===d.appliedCm)return;
+ const wait=1000/12-(performance.now()-d.lengthAt);
+ if(wait<=0){clearTimeout(d.lengthTimer);d.lengthTimer=0;applySteerLength(d,cm);return}
+ if(!d.lengthTimer)d.lengthTimer=setTimeout(()=>{d.lengthTimer=0;if(drag===d&&d.stemCm!==null){const next=Math.round(d.stemCm*2)/2;if(next!==d.appliedCm)applySteerLength(d,next)}},wait);
+}
+/** One steer frame: the angle (every frame, CSS only) and the base's slide along the mouth; a drawn stem's length via queueSteerLength. */
+function steerTo(d,e){
+ const item=d.item,a=assetById[item.type],vessel=assetById[state.vessel],px=Math.hypot(e.clientX-d.baseClient[0],e.clientY-d.baseClient[1]);
+ // Near the base the bearing is noise: keep the angle until the pointer is 8 px away again.
+ if(px>=8){const bearing=Math.atan2(e.clientY-d.baseClient[1],e.clientX-d.baseClient[0]);d.turn+=gestureAngleDelta(bearing,d.bearing);d.bearing=bearing}
+ // A piece's angle says nothing about which way it points (it may stand seated at ±170°): it turns freely, wrapped to ±180°.
+ item.angle=Math.round((d.endUV?((d.angle0+d.turn)%360+540)%360-180:clamp(d.angle0+d.turn,-135,135))*10)/10;
+ const x=slideBase(vessel,d.base0[0],d.base0[0]+(e.clientX-d.startX)/d.rect.width*100*.3,{front:!!item.aboveVessel});
+ if(d.endUV){const at=anchorAt(item,a,d.endUV,[x,d.base0[1]]);item.x=clamp(at.x,5,95);item.y=clamp(at.y,15,95)}else item.x=clamp(x,5,95);
+ if(d.stemCm0!==null){
+  // The stem follows the pointer's distance from the base once it has changed by 1 cm (a swing is never an accidental stretch).
+  const dr=px/d.rect.width*100-d.r0;
+  if(d.stemCm!==null||Math.abs(dr)>=1){d.stemCm=clamp(d.stemCm0+dr,0,Math.max(stemMaxCm(a),d.stemCm0));queueSteerLength(d)}
+ }
+ d.el.style.cssText=stemStyle(item);scheduleVesselLayers();syncSelectionReadouts(item);renderSeatCues();showStemFeedback(e.clientX,e.clientY,steerText(item,d),d.pointerType);
+}
+/**
+ * End of a one-pointer drag. Steer: the exact stem length. Move: a base dropped within 3 cm of a mouth snaps into it; a stem
+ * that stood in the vessel and no longer does gets a toast that puts it back (Seat all in the banner does the same for all).
+ */
+function settleDrag(d){
+ clearTimeout(d.lengthTimer);d.lengthTimer=0;
+ if(!d.started||!state.items.includes(d.item))return;
+ const item=d.item,a=assetById[item.type],vessel=assetById[state.vessel];if(!a||!vessel)return;
+ if(d.mode==='steer'){if(d.stemCm!==null){item.length=Math.min(lengthForStem(item,a,d.stemCm),lengthBounds(a,item.h,item.trim)[1]);updateStem(item)}return}
+ const seat=seatState(item,a,vessel);
+ if(!seat.seated&&seat.gap>0&&seat.gap<=3){
+  const uv=cutEndSource(item,a),mouth=mouthBase(vessel,seatPoint(item,a)[0],.55,{front:!!item.aboveVessel});
+  if(uv){const at=anchorAt(item,a,uv,mouth);item.x=clamp(at.x,5,95);item.y=clamp(at.y,15,95)}else{item.x=mouth[0];item.y=mouth[1]}
+  updateStem(item);return;
+ }
+ if(d.seated0&&!seat.seated){const id=item.id;toast(L('枝梗离开了花器口','The stem left the vessel','茎が花器から外れました'),{action:()=>{const i=state.items.find(x=>x.id===id);if(i)reseatItem(i)},label:L('插回花器','Put back','挿し直す')})}
+}
+/** The first drag of a visit says how stems are held now (two fingers too, on touch). */
+function stemHint(pointerType){if(touchHintShown)return;touchHintShown=true;toast(L('拖动花头转向，拖根部圆点移动','Drag the flower to swing it; drag the base dot to move','花を引いて向きを変え、根元の点で移動')+(pointerType==='touch'?L(' · 双指旋转缩放',' · two fingers rotate and scale',' · 2本指で回転・拡大縮小'):''))}
 function finishMoveInteraction(suppressTouchContext=false){
  if(!drag&&!gesture&&!canvasPan&&!movePointers.size)return false;
- const changed=!!(drag?.started||gesture?.changed),ids=new Set([...movePointers.keys(),drag?.pointer,canvasPan?.pointer,...(gesture?.pointers||[])]);ids.delete(undefined);drag=null;gesture=null;canvasPan=null;movePointers.clear();$('#gesture-feedback')?.classList.remove('active');
+ if(drag)clearTimeout(drag.lengthTimer);
+ const changed=!!(drag?.started||gesture?.changed),ids=new Set([...movePointers.keys(),drag?.pointer,canvasPan?.pointer,...(gesture?.pointers||[])]);ids.delete(undefined);drag=null;gesture=null;canvasPan=null;movePointers.clear();$('#gesture-feedback')?.classList.remove('active','wide');
  for(const id of ids){try{if(stage.hasPointerCapture(id))stage.releasePointerCapture(id)}catch{}}
- if(suppressTouchContext)suppressLayerContextUntil=performance.now()+600;if(changed)persist();return changed;
+ if(suppressTouchContext)suppressLayerContextUntil=performance.now()+600;renderSeatCues();if(changed)persist();return changed;
 }
 stage.addEventListener('pointerdown',e=>{
  if(e.button!==0||editMode!=='move')return;
  if(e.pointerType==='touch'&&(gesture||drag?.pointerType==='touch')){e.preventDefault();e.stopPropagation();if(movePointers.size>=2)return;movePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});try{stage.setPointerCapture(e.pointerId)}catch{}startGestureIfReady();return}
- if(e.target.closest('.stage-tools,.layer-menu'))return;const el=e.target.closest('.stem');if(!el&&zoomLevel>1&&!drag&&!gesture){e.preventDefault();canvasPan={pointer:e.pointerId,startX:e.clientX,startY:e.clientY,x:zoomPanX,y:zoomPanY};try{stage.setPointerCapture(e.pointerId)}catch{}return}if(!el||drag||gesture)return;e.preventDefault();selectItem(el.dataset.id);const item=current();drag={pointer:e.pointerId,pointerType:e.pointerType,item,startX:e.clientX,startY:e.clientY,x:item.x,y:item.y,rect:stage.getBoundingClientRect(),el,started:false};if(e.pointerType==='touch'){movePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(!touchHintShown){touchHintShown=true;toast(L('单指移动 · 双指旋转与缩放','One finger moves · Two fingers rotate and scale'))}}el.focus({preventScroll:true});try{stage.setPointerCapture(e.pointerId)}catch{}
+ if(e.target.closest('.stage-tools,.layer-menu')||drag||gesture)return;lastPointerType=e.pointerType;
+ // Pick what you see (stem-pick.js): transparent parts of a stem's box are paper. A repeat tap on one spot within 600 ms
+ // walks down to the next stem under it.
+ const pick=pickStem(e.clientX,e.clientY,{touch:e.pointerType==='touch'});let id=pick.id;
+ if(id&&lastTap&&lastTap.id===selected&&performance.now()-lastTap.time<600&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<6){const order=cycleOrder(pick.hits);if(order.length>1)id=nextInCycle(order,selected)}
+ lastTap=null;const el=id?$(`.stem[data-id="${id}"]`,stage):null;
+ // Paper: a drag pans when zoomed; a tap without movement deselects (finishMovePointer).
+ if(!el){blankPress={pointer:e.pointerId,x:e.clientX,y:e.clientY};if(zoomLevel>1){e.preventDefault();canvasPan={pointer:e.pointerId,startX:e.clientX,startY:e.clientY,x:zoomPanX,y:zoomPanY};try{stage.setPointerCapture(e.pointerId)}catch{}}return}
+ e.preventDefault();selectItem(id);const item=current();drag={pointer:e.pointerId,pointerType:e.pointerType,item,startX:e.clientX,startY:e.clientY,x:item.x,y:item.y,rect:stage.getBoundingClientRect(),el,started:false,...dragMode(item,e)};if(e.pointerType==='touch')movePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});el.focus({preventScroll:true});try{stage.setPointerCapture(e.pointerId)}catch{}
 });
 stage.addEventListener('pointermove',e=>{
  if(canvasPan?.pointer===e.pointerId){e.preventDefault();zoomPanX=canvasPan.x+e.clientX-canvasPan.startX;zoomPanY=canvasPan.y+e.clientY-canvasPan.startY;applyCanvasZoom();return}
  if(movePointers.has(e.pointerId))movePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(!gesture&&drag?.pointerType==='touch'&&movePointers.size>1)startGestureIfReady();
- if(gesture&&gesture.pointers.includes(e.pointerId)){e.preventDefault();const a=movePointers.get(gesture.pointers[0]),b=movePointers.get(gesture.pointers[1]);if(!a||!b)return;const metrics=gestureMetrics(a,b),nextAngle=Math.round(clamp(gesture.baseAngle+gestureAngleDelta(metrics.bearing,gesture.startBearing),-180,180)),nextH=Math.round(clamp(gesture.baseH*metrics.distance/gesture.startDistance,...sizeBounds(assetById[gesture.item.type]))*10)/10;if(!gesture.gestureStarted){if(Math.abs(nextAngle-gesture.baseAngle)<.8&&Math.abs(nextH-gesture.baseH)<.6){updateGestureFeedback(a,b,gesture.item);return}gesture.gestureStarted=true;if(!gesture.checkpointed){checkpoint();gesture.checkpointed=true}}if(nextAngle===gesture.item.angle&&nextH===gesture.item.h){updateGestureFeedback(a,b,gesture.item);return}gesture.item.angle=nextAngle;gesture.item.h=nextH;gesture.changed=true;gesture.el.style.cssText=stemStyle(gesture.item);syncGestureControls(gesture.item);updateGestureFeedback(a,b,gesture.item);return}
- if(!drag||drag.pointer!==e.pointerId)return;e.preventDefault();if(drag.pointerType==='touch'&&movePointers.size>1)return;if(!drag.started&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<3)return;if(!drag.started){checkpoint();drag.started=true}drag.item.x=clamp(drag.x+(e.clientX-drag.startX)/drag.rect.width*100,5,95);drag.item.y=clamp(drag.y+(e.clientY-drag.startY)/drag.rect.height*100,15,95);drag.el.style.cssText=stemStyle(drag.item)
+ if(gesture&&gesture.pointers.includes(e.pointerId)){e.preventDefault();const a=movePointers.get(gesture.pointers[0]),b=movePointers.get(gesture.pointers[1]);if(a&&b)pinchTo(a,b);return}
+ if(!drag||drag.pointer!==e.pointerId)return;e.preventDefault();if(drag.pointerType==='touch'&&movePointers.size>1)return;if(!drag.started&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<3)return;if(!drag.started){checkpoint();drag.started=true;stemHint(drag.pointerType)}
+ if(drag.mode==='steer'){steerTo(drag,e);return}
+ drag.item.x=clamp(drag.x+(e.clientX-drag.startX)/drag.rect.width*100,5,95);drag.item.y=clamp(drag.y+(e.clientY-drag.startY)/drag.rect.height*100,15,95);drag.el.style.cssText=stemStyle(drag.item);scheduleVesselLayers();renderSeatCues()
 });
-function finishMovePointer(e){const involved=movePointers.has(e.pointerId)||drag?.pointer===e.pointerId||canvasPan?.pointer===e.pointerId||gesture?.pointers.includes(e.pointerId);if(involved)finishMoveInteraction(e.pointerType==='touch')}
+function finishMovePointer(e){
+ if(blankPress?.pointer===e.pointerId){const tap=e.type==='pointerup'&&Math.hypot(e.clientX-blankPress.x,e.clientY-blankPress.y)<3;blankPress=null;if(tap&&selected&&!drag&&!gesture&&editMode==='move')selectItem(null)}
+ if(drag?.pointer===e.pointerId){lastTap=e.type==='pointerup'&&!drag.started?{time:performance.now(),x:drag.startX,y:drag.startY,id:drag.item.id}:null;settleDrag(drag)}
+ if(gesture?.pointers.includes(e.pointerId))settleGesture(gesture);
+ const involved=movePointers.has(e.pointerId)||drag?.pointer===e.pointerId||canvasPan?.pointer===e.pointerId||gesture?.pointers.includes(e.pointerId);if(involved)finishMoveInteraction(e.pointerType==='touch')}
 stage.addEventListener('pointerup',finishMovePointer);stage.addEventListener('pointercancel',finishMovePointer);stage.addEventListener('lostpointercapture',finishMovePointer);
+/** Whether a press at a client point on this stem would move it rather than steer (see dragMode; modifiers aside). */
+function pressMoves(item,x,y){
+ const a=assetById[item.type],rect=stage.getBoundingClientRect(),base=seatPoint(item,a);
+ return !isSeated(item)||(isDetachedPiece(item)&&!cutEndSource(item,a))||Math.hypot(x-(rect.left+base[0]/100*rect.width),y-(rect.top+base[1]/100*rect.height))<=12;
+}
+// Mouse hover: the grab cursor shows only over visible plant pixels, from the same pick a press makes (one test per frame);
+// the move cursor where a press would move the stem (its base, or a stem out of the vessel).
+let hoverFrame=0,hoverAt=null;
+stage.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||e.buttons||editMode!=='move'||drag||canvasPan)return;hoverAt=[e.clientX,e.clientY,e.altKey||e.shiftKey];if(!hoverFrame)hoverFrame=requestAnimationFrame(()=>{hoverFrame=0;if(!hoverAt)return;const id=pickStem(hoverAt[0],hoverAt[1]).id,item=id&&state.items.find(i=>i.id===id);stage.classList.toggle('over-stem',!!item);stage.classList.toggle('over-base',!!item&&(hoverAt[2]||pressMoves(item,hoverAt[0],hoverAt[1])))})});
+stage.addEventListener('pointerleave',()=>{hoverAt=null;stage.classList.remove('over-stem','over-base')});
 function setEditMode(mode){
  if(drag||gesture||canvasPan||movePointers.size)finishMoveInteraction(true);
  if(mode!=='move'&&!current()){toast(L('先选中要修剪的那一枝。','Select a material to cut first.','先に切る花材を選んでください。'));return}
  editMode=mode;if(mode!=='move'){setEditorTab('shape');$('#stem-details').open=true}stroke=null;$('#stage').dataset.tool=mode;
  $('#move-tool').setAttribute('aria-pressed',String(mode==='move'));$('#prune-tool').setAttribute('aria-pressed',String(mode==='split'));$('#erase-tool').setAttribute('aria-pressed',String(mode==='brush'));
  $$('[data-prune]').forEach(b=>b.classList.toggle('active',b.dataset.prune===mode));$('#brush-setting').hidden=mode!=='brush';
- $('#stage-hint').textContent=mode==='split'?L('从目标枝一侧起笔，横划过连接处','Start beside the target twig; draw across its attachment','切りたい枝の側から付け根を横切ってください'):mode==='brush'?L('涂抹剪掉细节 · Esc 退出','Brush over details to remove · Esc to exit','なぞって細部を消します · Escで終了'):L('拖动移动 · 双指旋转缩放 · 右键调层次','Drag to move · Pinch to rotate and scale · Right-click for layers','ドラッグで移動 · 2本指で回転・拡大縮小 · 右クリックでレイヤー');
+ renderModePill();renderSeatCues();
  $('#prune-help').textContent=mode==='split'?L('只在剪线接触的局部剪开。剪下部分会成为独立图层，可以移动或删除。','The cut opens only where your stroke touches. The detached part becomes its own movable layer.','線が触れた部分だけを切ります。切り離した部分は移動・削除できるレイヤーになります。'):mode==='move'?L('先选中一枝，再剪开局部连接或修掉细节。','Select a material, then cut a local attachment or refine details.','花材を選んで、付け根を切るか細部を整えます。'):L('在枝叶上涂抹去除细节。只修剪当前选中的一枝。','Brush over foliage details. Only the selected stem will be pruned.','選択中の花材をなぞって細部を消します。');drawPruneOverlay();
 }
+/** The pill over the canvas in cut and erase modes: the target stem, a one-line instruction, the brush size (erase), how
+ to leave, and Done. DOM only; exports never include it. */
+function renderModePill(){
+ const pill=$('#mode-pill');if(!pill)return;const item=current(),on=editMode!=='move'&&!!item;pill.hidden=!on;if(!on)return;
+ const brush=editMode==='brush';pill.dataset.mode=editMode;
+ $('#mode-pill-target').textContent=itemName(item);
+ $('#mode-pill-text').textContent=brush?L('涂抹去除细节','Brush away details','なぞって細部を消します'):L('从目标枝一侧起笔，横划过连接处','Start beside the target twig; draw across its attachment','切りたい枝の側から付け根を横切ってください');
+ $('#mode-pill-exit').textContent=matchMedia?.('(pointer:fine)').matches?L('Esc 退出','Esc to exit','Escで終了'):L('再点一次工具即退出','Tap the tool again to exit','もう一度タップで終了');
+ $('#mode-pill-brush').hidden=!brush;$('#mode-pill-size').value=$('#brush-size').value;
+}
+$('#mode-pill-done').onclick=()=>{setEditMode('move');renderStage()};
+for(const [id,step] of [['brush-smaller',-3],['brush-larger',3]])$('#'+id).onclick=()=>{const input=$('#brush-size'),next=clamp(Number(input.value)+step,Number(input.min)||5,Number(input.max)||35);if(String(next)===input.value)return;input.value=String(next);input.dispatchEvent(new Event('input',{bubbles:true}))};
 $('#move-tool').onclick=()=>setEditMode('move');$('#prune-tool').onclick=()=>setEditMode(editMode==='split'?'move':'split');$('#erase-tool').onclick=()=>setEditMode(editMode==='brush'?'move':'brush');$$('[data-prune]').forEach(b=>b.onclick=()=>setEditMode(editMode===b.dataset.prune?'move':b.dataset.prune));
 $('#stem-details').addEventListener('toggle',()=>{if(!$('#stem-details').open&&editMode!=='move')setEditMode('move')});
-$('#brush-size').oninput=e=>$('#brush-value').value=e.target.value;
-$('#restore-cuts').onclick=()=>{if(!current()?.cuts.length)return;checkpoint();current().cuts=[];renderStage();persist();toast(L('已恢复细部擦除。','Brushwork restored.','細部消去を戻しました。'))};
+$('#brush-size').oninput=e=>{$('#brush-value').value=e.target.value;const pillSize=$('#mode-pill-size');if(pillSize)pillSize.value=e.target.value};
+$('#restore-cuts').onclick=()=>{if(!current()?.cuts.length)return;checkpoint();current().cuts=[];current().sv=stemVersion(current());renderStage();persist();undoToast(L('已恢复细部擦除。','Brushwork restored.','細部消去を戻しました。'))};
 function drawPruneOverlay(){const c=$('#prune-overlay');if(!c)return;const size=Math.max(1,Math.round($('#stage').getBoundingClientRect().width));c.width=c.height=size;const ctx=c.getContext('2d');if(!stroke?.points.length||!current())return;const item=current(),asset=assetById[item.type],points=stroke.kind==='split'?[stroke.points[0],stroke.points.at(-1)]:stroke.points;ctx.beginPath();points.forEach((p,k)=>{const q=sourceToStage(p,item,asset);ctx[k?'lineTo':'moveTo'](q[0]*size,q[1]*size)});ctx.strokeStyle='#a5533e';ctx.lineWidth=stroke.kind==='split'?2.5:2;ctx.setLineDash(stroke.kind==='split'?[7,4]:[5,4]);ctx.stroke();}
-new ResizeObserver(()=>{applyCanvasZoom();drawPruneOverlay();renderFixture();mountLayerDock()}).observe($('#stage'));
-$('#stage').addEventListener('pointerdown',e=>{if(editMode==='move'||e.button!==0||!current()||stroke)return;e.preventDefault();if(editMode==='split'&&(current().localCuts||[]).length>=8)return toast(L('这一段已经剪得很细，可先整理现有片段。','This piece has reached the cut limit. Arrange its pieces first.','この部分はこれ以上分割できません。'));if(editMode!=='split'&&current().cuts.length>=24)return toast(L('这枝已有 24 处剪口；可恢复剪枝后重剪。','This stem already has 24 cuts. Restore it before pruning again.'));const total=state.items.reduce((n,i)=>n+i.cuts.reduce((m,c)=>m+c.points.length,0),0);if(editMode!=='split'&&total>7800)return toast(L('剪枝细节已很多，请先恢复部分剪口。','There is extensive pruning detail. Restore some cuts first.'));const item=current(),p=stageToSource(pointerStage(e),item,assetById[item.type]);stroke={kind:editMode,points:[p],radius:clamp(Number($('#brush-size').value)/$('#stage').getBoundingClientRect().width/(item.h/100)/2,.002,.3),pointer:e.pointerId};$('#stage').setPointerCapture(e.pointerId);drawPruneOverlay()});
+new ResizeObserver(()=>{applyCanvasZoom();drawPruneOverlay();renderVesselLayers();mountLayerDock()}).observe($('#stage'));
+/**
+ * Cut and erase act on the stem under the pointer. Split: a stroke that starts on another stem switches to it, unless the
+ * selected stem is within 24 px (strokes start beside the twig). Erase: only when the selected stem has nothing within the
+ * brush and another stem does. Decided once, at pointerdown.
+ */
+function retargetPrune(e){
+ const touch=e.pointerType==='touch',brush=editMode==='brush',radius=brush?Math.max(1,Number($('#brush-size').value)/2):touch?12:6;
+ const id=pickStem(e.clientX,e.clientY,{touch,radius,keep:brush?radius:24,selectedFirst:true}).id;
+ if(!id||id===selected)return;
+ selectItem(id);const name=itemName(current());
+ toast(brush?L(`现在擦除：${name}`,`Now erasing: ${name}`,`${name}を消します`):L(`现在剪：${name}`,`Now cutting: ${name}`,`${name}を切ります`));
+}
+$('#stage').addEventListener('pointerdown',e=>{if(editMode==='move'||e.button!==0||!current()||stroke)return;e.preventDefault();lastPointerType=e.pointerType;retargetPrune(e);if(editMode==='split'&&(current().localCuts||[]).length>=8)return toast(L('这一段已经剪得很细，可先整理现有片段。','This piece has reached the cut limit. Arrange its pieces first.','この部分はこれ以上分割できません。'));if(editMode!=='split'&&current().cuts.length>=24)return toast(L('这枝已有 24 处剪口；可恢复剪枝后重剪。','This stem already has 24 cuts. Restore it before pruning again.'));const total=state.items.reduce((n,i)=>n+i.cuts.reduce((m,c)=>m+c.points.length,0),0);if(editMode!=='split'&&total>7800)return toast(L('剪枝细节已很多，请先恢复部分剪口。','There is extensive pruning detail. Restore some cuts first.'));const item=current(),p=stageToSource(pointerStage(e),item,assetById[item.type]);stroke={kind:editMode,points:[p],radius:clamp(Number($('#brush-size').value)/$('#stage').getBoundingClientRect().width/(item.h/100)/2,.002,.3),pointer:e.pointerId};$('#stage').setPointerCapture(e.pointerId);drawPruneOverlay()});
 let brushPreviewFrame=0;
 $('#stage').addEventListener('pointermove',e=>{if(!stroke||stroke.pointer!==e.pointerId)return;const item=current();const p=stageToSource(pointerStage(e),item,assetById[item.type]);const previous=sourceToStage(stroke.points.at(-1),item,assetById[item.type]),next=pointerStage(e);if(Math.hypot(next[0]-previous[0],next[1]-previous[1])<.003)return;if(stroke.kind==='split')stroke.points=[stroke.points[0],p];else stroke.points.push(p);if(stroke.points.length>512)stroke.points=simplifyPoints(stroke.points,256);if(stroke.kind==='brush'&&!brushPreviewFrame){const itemId=item.id;brushPreviewFrame=requestAnimationFrame(()=>{brushPreviewFrame=0;if(stroke?.kind==='brush'&&current()?.id===itemId)drawStemCanvas($(`.stem[data-id="${itemId}"]`),item,{previewCut:stroke})})}drawPruneOverlay()});
 function splitSelected(cut){
@@ -546,26 +842,98 @@ function splitSelected(cut){
  if(!result.ok){toast(result.reason==='short'?L('请横划过想剪开的连接处。','Draw across the attachment to cut it.','切りたい付け根を横切ってください。'):L('这一剪还没把局部剪开，请靠近枝叶连接处再试。','That stroke did not separate a local piece. Try near its attachment.','まだ切り離されていません。枝葉の付け根で試してください。'));return false}
  const root=item.originId||item.id,prefix=item.pieceLabel||'',makePiece=(part,label)=>({...clone(item),id:uid(),originId:root,pieceLabel:label,localCuts:[...(item.localCuts||[]),{cut:result.cut,part,anchor:result.anchors[part]}]});
  const pieces=[makePiece('main',prefix?`${prefix}1`:'A'),makePiece('detached',prefix?`${prefix}2`:'B')];
- checkpoint();const index=state.items.findIndex(i=>i.id===item.id);state.items.splice(index,1,...pieces);selected=pieces[1].id;cutSession={ids:pieces.map(i=>i.id)};dropSprite(item.id);setEditMode('move');$('#stem-details').open=false;renderStage();persist();return true;
+ checkpoint();const index=state.items.findIndex(i=>i.id===item.id);state.items.splice(index,1,...pieces);selected=pieces[1].id;cutSession={ids:pieces.map(i=>i.id)};dropSprite(item.id);setEditMode('move');$('#stem-details').open=false;renderStage();persist();undoToast(L('已剪成两段','Cut into two pieces','二つに切りました'));return true;
 }
 function finishPrune(e,cancel=false){
  if(!stroke||stroke.pointer!==e.pointerId)return;const cut=stroke;stroke=null;
  if(e.pointerType==='touch')suppressLayerContextUntil=performance.now()+600;
  if(!cancel&&cut.kind==='split'){if(cut.points.length>=2&&splitSelected(cut))return;renderStage();return}
  if(!cancel&&cut.kind==='brush'){
-  const item=current();checkpoint();item.cuts.push({kind:cut.kind,points:simplifyPoints(cut.points),radius:clamp(cut.radius,.002,.3)});
+  const item=current();
+  // A stroke that reaches no visible pixel of the stem (on the pre-cut mask) is not a cut: no undo step, nothing stored.
+  if(!strokeTouches(specimenCanvas(item)?.mask,cut,item,assetById[item.type])){renderStage();toast(L('这一笔没有碰到选中的花材','The brush didn’t touch the selected stem','ブラシが選んだ花材に触れていません'));return}
+  checkpoint();item.cuts.push({kind:cut.kind,points:simplifyPoints(cut.points),radius:clamp(cut.radius,.002,.3)});
   const mask=specimenCanvas(item)?.mask,fullyErased=!!mask&&!mask.data.some(alpha=>alpha>12);
-  if(fullyErased){state.items=state.items.filter(entry=>entry.id!==item.id);dropSprite(item.id);selected=state.items.find(entry=>entry.originId&&entry.originId===item.originId)?.id||state.items.at(-1)?.id||null;cutSession=null;setEditMode('move');toast(L('这一小段已擦除，可撤销。','This piece was erased. You can undo.','この部分を消去しました。元に戻せます。'))}
-  else toast(L('已剪去选中的枝叶，可撤销。','Selected foliage removed. You can undo this action.'));
+  if(fullyErased){state.items=state.items.filter(entry=>entry.id!==item.id);dropSprite(item.id);selected=state.items.find(entry=>entry.originId&&entry.originId===item.originId)?.id||state.items.at(-1)?.id||null;cutSession=null;setEditMode('move');undoToast(L('这一小段已擦除','This piece was erased','この部分を消去しました'))}
+  else undoToast(L('已剪去选中的枝叶','Selected foliage removed','選んだ枝葉を消しました'));
  }
  renderStage();if(!cancel)persist();
 }
 $('#stage').addEventListener('pointerup',e=>finishPrune(e));$('#stage').addEventListener('pointercancel',e=>finishPrune(e,true));
-$('#stage').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeLayerMenu();cutSession=null;renderCutChoice();setEditMode('move');renderStage();return}if(e.target.closest('input,textarea'))return;if(e.key==='Enter'&&e.target.closest('.stem')){selectItem(e.target.closest('.stem').dataset.id);return}const item=current();if(!item)return;if(['Delete','Backspace'].includes(e.key)){e.preventDefault();removeSelected();return}if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();checkpoint();const step=e.shiftKey?2:.5;item.x=clamp(item.x+(e.key==='ArrowRight'?step:e.key==='ArrowLeft'?-step:0),5,95);item.y=clamp(item.y+(e.key==='ArrowDown'?step:e.key==='ArrowUp'?-step:0),15,95);const el=$(`.stem[data-id="${item.id}"]`);if(el)el.style.cssText=stemStyle(item);persist()});
+/** Esc steps back one level: leave cut/erase, then close the cut choice, layers or material drawer, then deselect. */
+function escapeStep(){
+ if(editMode!=='move'){setEditMode('move');renderStage();return true}
+ if(cutSession||!$('#layer-menu').hidden||!$('#quick-material-drawer').hidden){cutSession=null;renderCutChoice();closeLayerMenu();closeQuickMaterialDrawer();return true}
+ if(selected){selectItem(null);return true}
+ return false;
+}
+/** Arrow nudges and bracket turns: one undo step per burst (needsCheckpoint), saved through the persist debounce. */
+function keyStep(kind,item,apply){
+ const now=performance.now();if(needsCheckpoint(lastKeyStep,{kind,id:item.id,mark:undoStack.at(-1),now}))checkpoint();
+ lastKeyStep={kind,id:item.id,mark:undoStack.at(-1),time:now};apply(item);queueStemUpdate(item);schedulePersist();
+}
+/**
+ * Arrow keys (A11). A stem standing in the vessel: ←/→ turn it 1° (Shift 5°) about its base (a piece: its cut end), ↑/↓
+ * lengthen or shorten a drawn stem by 1 cm (Shift 5 cm; a photographed stem keeps its photograph's length and says so once).
+ * Alt+arrows, and every stem that is not in the vessel, move it 0.5 cm (Shift 2 cm) as before.
+ */
+function arrowStep(item,action){
+ const a=assetById[item.type];
+ if(action.alt||!isSeated(item)){keyStep('nudge',item,i=>{i.x=clamp(i.x+action.dx,5,95);i.y=clamp(i.y+action.dy,15,95)});return}
+ if(action.dx){const deg=Math.sign(action.dx)*(action.shift?5:1);keyStep('turn',item,i=>aboutCutEnd(i,j=>{j.angle=clamp(Math.round((j.angle+deg)*10)/10,-180,180)}));return}
+ if(keptStemCm(item)===null){if(!photoArrowHint){photoArrowHint=true;toast(L('这枝的长度就是照片里的长度，↑/↓ 不改变它；←/→ 转向，Alt+方向键移动。','This stem keeps its photograph’s length, so ↑/↓ leave it; ←/→ turn it, Alt+arrows move it.','この茎は写真の長さのままです。↑/↓では変わりません。←/→で向きを変え、Alt+矢印で移動します。'))}return}
+ const step=(action.dy<0?1:-1)*(action.shift?5:1);
+ keyStep('stem',item,i=>{const cm=clamp(Math.round(stemCm(i,a))+step,0,MAX_STEM_CM);i.length=Math.min(lengthForStem(i,a,cm),lengthBounds(a,i.h,i.trim)[1])});
+}
+/**
+ * One studio keyboard map (keyAction in editor-state.js). Text fields, selects, editable content and open dialogs keep their
+ * own keys, including native text undo. Undo/redo and Esc work anywhere in the studio; the stem keys (arrows, [ ], Delete,
+ * Enter, Mod+D) only while focus is on the canvas, its toolbar or the mode pill.
+ */
+document.addEventListener('keydown',e=>{
+ if(e.defaultPrevented||e.isComposing)return;
+ const target=e.target instanceof Element?e.target:null;
+ if(target?.closest('input,textarea,select,[contenteditable]:not([contenteditable=false]),dialog')||document.querySelector('dialog[open]')||$('#studio-view')?.hidden)return;
+ const action=keyAction(e);if(!action)return;
+ const onStage=!!target?.closest('#canvas-viewport,.stage-tools');
+ if(action.type==='undo'||action.type==='redo'){e.preventDefault();$(`#${action.type}-button`).click();return}
+ if(action.type==='escape'){if(escapeStep())e.preventDefault();return}
+ if(!onStage)return;
+ if(action.type==='select'){const stem=target.closest('.stem');if(stem){e.preventDefault();selectItem(stem.dataset.id)}return}
+ const item=current();if(!item)return;
+ if(action.type==='duplicate'){e.preventDefault();duplicateSelected();return}
+ if(action.type==='remove'){e.preventDefault();removeSelected();return}
+ if(action.type==='nudge'){e.preventDefault();arrowStep(item,action);return}
+ if(action.type==='rotate'){e.preventDefault();keyStep('rotate',item,i=>aboutCutEnd(i,j=>{j.angle=clamp(Math.round((j.angle+action.deg)*10)/10,-180,180)}))}
+});
+// Keyboard focus selects: tabbing onto a stem makes it the one the keys and the panel act on. Focus from a press (a mouse
+// down or a touch tap on a transparent part of a stem's box) is not :focus-visible and must not select: picking decides that.
+const keyboardFocus=el=>{try{return el.matches(':focus-visible')}catch{return true}};
+$('#stage').addEventListener('focusin',e=>{const stem=e.target.closest?.('.stem');if(stem&&!restoringStemFocus&&stem.dataset.id!==selected&&keyboardFocus(stem)&&state.items.some(i=>i.id===stem.dataset.id))selectItem(stem.dataset.id)});
 /** Slider ticks restyle only the selected stem once per frame; drawn stems keep their centimetres and never pass MAX_STEM_CM. */
-for(const [id,key,factor] of [['angle','angle',1],['size','h',1],['trim','trim',1],['length','length',.01]]){let active=false;const el=$('#'+id);el.addEventListener('input',()=>{const item=current();if(!item)return;const a=assetById[item.type];if(key==='trim'&&drawsStem(a))return;if(!active){checkpoint();active=true}const maxLength=()=>lengthBounds(a,item.h,item.trim)[1];if(key==='length'&&drawsStem(a))item.length=Math.min(lengthForStem(item,a,+el.value),maxLength());else if(key==='h'&&drawsStem(a)){const cm=stemCm(item,a);item.h=+el.value;item.length=Math.min(lengthForStem(item,a,cm),maxLength())}else item[key]=+el.value*factor;queueStemUpdate(item);schedulePersist()});el.addEventListener('change',()=>{active=false;flushPersist()});el.addEventListener('blur',()=>{active=false;flushPersist()})}
-function removeSelected(){if(!current())return;checkpoint();state.items=state.items.filter(i=>i.id!==selected);selected=state.items.at(-1)?.id||null;setEditMode('move');renderStage();persist()}
-function duplicateSelected(){const item=current();if(!item)return;if(state.items.length>=24)return toast(L('画布最多放置 24 组花材。','The canvas can hold up to 24 material layers.'));checkpoint();const duplicate={...clone(item),id:uid(),x:clamp(item.x+2.5,5,95),y:clamp(item.y-2,15,95),cuts:clone(item.cuts||[]),localCuts:clone(item.localCuts||[])};duplicate.originId=duplicate.id;const index=state.items.findIndex(i=>i.id===item.id);state.items.splice(index+1,0,duplicate);selected=duplicate.id;renderStage();persist();toast(L('已复制花材，剪口与长度也已保留。','Duplicated the material with its cuts and stem length.'))}
+for(const [id,key,factor] of [['angle','angle',1],['size','h',1],['trim','trim',1],['length','length',.01]]){let active=false;const el=$('#'+id);el.addEventListener('input',()=>{const item=current();if(!item)return;const a=assetById[item.type];if(key==='trim'&&drawsStem(a))return;if(!active){checkpoint();active=true}const maxLength=()=>lengthBounds(a,item.h,item.trim)[1];const apply=i=>{if(key==='length'&&drawsStem(a))i.length=Math.min(lengthForStem(i,a,+el.value),maxLength());else if(key==='h'&&drawsStem(a)){const cm=stemCm(i,a);i.h=+el.value;i.length=Math.min(lengthForStem(i,a,cm),maxLength())}else i[key]=+el.value*factor};if(key==='angle'||key==='h')aboutCutEnd(item,apply);else apply(item);queueStemUpdate(item);schedulePersist()});el.addEventListener('change',()=>{active=false;flushPersist()});el.addEventListener('blur',()=>{active=false;flushPersist()})}
+function removeSelected(){const item=current();if(!item)return;const name=itemName(item);checkpoint();state.items=state.items.filter(i=>i.id!==selected);selected=state.items.at(-1)?.id||null;setEditMode('move');renderStage();persist();undoToast(L(`已移除${name}`,`Removed ${name}`,`${name}を外しました`))}
+/**
+ * Duplicate (A11). A copy of a stem standing in the vessel is a companion inserted just behind it: its base 1.5 cm beside the
+ * original's (alternating sides), its focus turned 12° toward the side with fewer flowers and 20% lower (companionFit; a cut
+ * piece only turns about its cut end and moves along the mouth). Anything else keeps the old small offset in front. The copy
+ * keeps its cuts and drops the piece label (labels are A/B/1/2 paths of one cut stem).
+ */
+function duplicateSelected(){
+ const item=current();if(!item)return;if(state.items.length>=24)return toast(L('画布最多放置 24 组花材。','The canvas can hold up to 24 material layers.'));
+ const a=assetById[item.type],vessel=assetById[state.vessel],seated=isSeated(item),uv=cutEndSource(item,a);
+ checkpoint();const duplicate={...clone(item),id:uid(),pieceLabel:'',cuts:clone(item.cuts||[]),localCuts:clone(item.localCuts||[])};duplicate.originId=duplicate.id;const index=state.items.findIndex(i=>i.id===item.id);
+ if(seated){
+  const head=uv?(()=>{const h=pieceHead(item,a,specimenCanvas(item)?.mask);return h?sourceToStage(h,item,a).map(v=>v*100):tipPoint(item,a)})():tipPoint(item,a);
+  const tips=state.items.filter(i=>i!==item&&assetById[i.type]).map(i=>tipPoint(i,assetById[i.type])[0]),left=tips.filter(x=>x<head[0]-.5).length,right=tips.filter(x=>x>head[0]+.5).length;
+  const side=duplicateSide,toward=right<left?1:left<right?-1:side;duplicateSide=-duplicateSide;
+  if(uv){const mouth=mouthBase(vessel,seatPoint(item,a)[0]+1.5*side,.55,{front:!!item.aboveVessel});duplicate.angle=clamp(Math.round((item.angle+12*toward)*10)/10,-180,180);const at=anchorAt(duplicate,a,uv,mouth);duplicate.x=clamp(at.x,5,95);duplicate.y=clamp(at.y,15,95)}
+  else Object.assign(duplicate,companionFit(item,a,vessel,{side,toward}));
+  state.items.splice(index,0,duplicate);
+ }else{duplicate.x=clamp(item.x+2.5,5,95);duplicate.y=clamp(item.y-2,15,95);state.items.splice(index+1,0,duplicate)}
+ selected=duplicate.id;renderStage();persist();
+ undoToast(!seated?L('已复制花材，剪口与长度也已保留。','Duplicated the material with its cuts and stem length.','花材を複製しました。剪定と茎の長さもそのままです。'):uv?L('已复制这一段，插在旁边并稍稍转开。','Duplicated the piece beside it, turned slightly away.','この部分を隣に複製し、少し向きを変えました。'):L('已复制为一枝稍低的陪衬，插在旁边。','Duplicated as a slightly lower companion beside it.','少し低い添えとして隣に複製しました。'));
+}
 function moveSelectedToFront(){const item=current();if(!item)return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=true;state.items.push(item);selected=item.id;renderStage();persist();toast(L('已移到最前层','Moved to the front layer'))}
 function moveSelectedToBack(){const item=current();if(!item)return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=false;state.items.unshift(item);selected=item.id;renderStage();persist();toast(L('已移到最后层','Moved to the back layer'))}
 function moveSelectedToRandomMiddle(){
@@ -574,19 +942,19 @@ function moveSelectedToRandomMiddle(){
  const original=state.items.filter(i=>!i.aboveVessel).indexOf(item),positions=Array.from({length:back.length+1},(_,index)=>index);
  const middle=positions.filter(index=>index>0&&index<back.length),pool=middle.length?middle:positions;
  const choices=pool.filter(index=>item.aboveVessel||index!==original);if(!choices.length)return;
- checkpoint();item.aboveVessel=false;back.splice(choices[Math.floor(Math.random()*choices.length)],0,item);state.items=[...back,...front];selected=item.id;renderStage();persist();toast(L('已随机放在花器后方','Placed behind the vase','花器の後ろに配置しました'));
+ checkpoint();item.aboveVessel=false;back.splice(choices[Math.floor(Math.random()*choices.length)],0,item);state.items=[...back,...front];selected=item.id;renderStage();persist();undoToast(L('已随机放在花器后方','Placed behind the vase','花器の後ろに配置しました'));
 }
-$('#delete-button').onclick=removeSelected;$('#reseat-button').onclick=reseatSelected;$('#scale-reset').onclick=resetRealSize;$('#flip-button').onclick=()=>{if(!current())return;checkpoint();current().flip=!current().flip;renderStage();persist()};$('#duplicate-button').onclick=duplicateSelected;$('#layer-button').onclick=moveSelectedToFront;$('#layer-back-button').onclick=moveSelectedToBack;
+$('#delete-button').onclick=removeSelected;$('#reseat-button').onclick=reseatSelected;$('#scale-reset').onclick=resetRealSize;$('#flip-button').onclick=()=>{const item=current();if(!item)return;const seated=isSeated(item);checkpoint();aboutCutEnd(item,i=>{i.flip=!i.flip;if(seated)i.angle=-i.angle||0});renderStage();persist()};$('#seat-all').onclick=seatAll;$('#seat-banner-close').onclick=()=>{seatBannerClosed=floatingItems().map(i=>i.id).sort().join(',');renderSeatCues()};$('#duplicate-button').onclick=duplicateSelected;$('#layer-button').onclick=moveSelectedToFront;$('#layer-back-button').onclick=moveSelectedToBack;
 $('#undo-button').onclick=()=>{finishMoveInteraction(true);if(!undoStack.length)return;redoStack.push({state:clone(state),selected});const previous=undoStack.pop();state=previous.state;selected=previous.selected;cutSession=null;setEditMode('move');renderAll()};$('#redo-button').onclick=()=>{finishMoveInteraction(true);if(!redoStack.length)return;undoStack.push({state:clone(state),selected});const next=redoStack.pop();state=next.state;selected=next.selected;cutSession=null;setEditMode('move');renderAll()};
-$('#guide-button').onclick=()=>{const on=$('#guide').hidden;$('#guide').hidden=!on;$('#guide-button').setAttribute('aria-pressed',String(on))};$('#reset-button').onclick=()=>{checkpoint();state.items=[];selected=null;cutSession=null;setEditMode('move');renderStage();persist();toast(L('花器已留空，随时可以撤销。','The vessel is empty. You can undo this action.'))};
+$('#guide-button').onclick=()=>{const on=$('#guide').hidden;$('#guide').hidden=!on;$('#guide-button').setAttribute('aria-pressed',String(on))};$('#reset-button').onclick=()=>{if(!state.items.length)return toast(L('花器里还没有花材。','There are no materials to clear.','まだ花材がありません。'));checkpoint();state.items=[];selected=null;cutSession=null;setEditMode('move');renderStage();persist();undoToast(L('已清空花材','All materials cleared','花材をすべて外しました'))};
 $$('[data-scene]').forEach(b=>b.onclick=()=>{checkpoint();state.scene=b.dataset.scene;renderStage();persist()});$$('[data-mood]').forEach(b=>b.onclick=()=>{checkpoint();state.mood=b.dataset.mood;$$('[data-mood]').forEach(t=>t.classList.toggle('active',t===b));persist()});
 $('#work-title').addEventListener('input',e=>{state.title=e.target.value;persist()});$('#work-subtitle').addEventListener('input',e=>{state.subtitle=e.target.value;persist()});$('#intention').addEventListener('input',e=>{state.intention=e.target.value;persist()});
 $('#generation-mode').onchange=e=>{checkpoint();state.generation=e.target.value;$('#generation-mode-help').textContent=generationDescriptions[lang][state.generation];persist()};
 
 function openModal(html,kicker='HANAMA ATELIER'){$('#modal-kicker').textContent=kicker;$('#modal').classList.toggle('variant-modal',kicker==='BOTANICAL VARIATIONS');$('#modal-content').innerHTML=html;icons($('#modal'));if(!$('#modal').open)$('#modal').showModal()}
 $('#close-modal').onclick=()=>$('#modal').close();$('#modal').addEventListener('click',e=>{if(e.target===$('#modal')){const r=$('#modal').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('#modal').close()}});
-function help(){const html=lang==='en'?`<h2>Take a moment and arrange slowly.</h2><div class="step-list"><div><span class="step-number">01</span><p><strong>Choose and place.</strong><br>Select materials beside the canvas, then choose a natural color and pose. Drag to move; use two fingers to rotate and scale. Zoom with the nearby controls. Draw across a local attachment to split off a movable piece, or brush away fine details. Open Layers to reorder.</p></div><div><span class="step-number">02</span><p><strong>Set your intention.</strong><br>Choose the scene and add a note. All three modes preserve your flowers, main composition and overall light. They allow different degrees of small adjustments to stem curves, facing, depth and insertion so the sketch becomes a believable real arrangement.</p></div><div><span class="step-number">03</span><p><strong>From draft to artwork.</strong><br>Download the pack, upload draft.png to ChatGPT image creation or GPT Image, and paste prompt.txt. The composition guide is optional. Import the result into My Works to save or share it.</p></div></div><p class="file-note">Keyboard: use arrow keys to nudge, Shift + arrows for larger moves, and Delete to remove the selected material. Drafts and artworks stay in this browser unless you export them.</p><div class="modal-actions"><button class="button dark" id="help-done">Start arranging</button><button class="button outline" id="help-import">Import draft file</button></div>`:`<h2>给自己一刻，慢慢插花。</h2><div class="step-list"><div><span class="step-number">01</span><p><strong>选花，落枝。</strong><br>在画布旁挑选花材，选好姿态与花色。单指拖动位置，双指旋转缩放；旁边按钮可放大画布。划过一处枝叶连接，就能分出可移动、可删除的一段；细节也可涂抹修剪。图层入口可调整前后顺序。</p></div><div><span class="step-number">02</span><p><strong>写下你的意境。</strong><br>选择光与景，留下一句话。三种生成方式都保留用花、主要构图与整体光感，允许不同程度的小幅整理：枝条弧度、花面朝向、前后空间和瓶口插入关系。</p></div><div><span class="step-number">03</span><p><strong>从草稿，到作品。</strong><br>下载创作包，在 ChatGPT 图片创作或 GPT Image 中上传 draft.png，再粘贴 prompt.txt。轮廓参考图可按需附上。生成后可导入「我的作品」保存或分享。</p></div></div><p class="file-note">键盘操作：方向键微调，Shift + 方向键大幅移动，Delete 删除。草稿与成品仅保存在当前浏览器，导出文件可以备份。</p><div class="modal-actions"><button class="button dark" id="help-done">开始这一枝</button><button class="button outline" id="help-import">导入草稿文件</button></div>`;openModal(html);$('#help-done').onclick=()=>$('#modal').close();$('#help-import').onclick=()=>$('#draft-upload').click()}
-function helpJapanese(){const html=`<h2>ゆっくり、ひと枝ずつ。</h2><div class="step-list"><div><span class="step-number">01</span><p><strong>花材を選び、配置する。</strong><br>花材と花器を選び、色や姿を整えます。追加位置は最前面か最後面を選択できます。ドラッグで移動し、2本指で回転・拡大縮小。キャンバス脇のボタンで拡大できます。付け根を横切るように線を引くと、切り離した部分が独立したレイヤーになり、移動や削除ができます。レイヤーから前後も並べ替えられます。</p></div><div><span class="step-number">02</span><p><strong>作品のイメージを決める。</strong><br>背景と雰囲気を選び、ひとことメモを添えます。生成用の3つの仕上げ方は、花材・構図・全体の光を保ちながら、枝の曲線や花の向き、奥行き、器への挿し方を自然に整えます。</p></div><div><span class="step-number">03</span><p><strong>下書きを作品にする。</strong><br>生成用パックをダウンロードし、draft.pngをChatGPTの画像作成またはGPT Imageにアップロードして、prompt.txtを貼り付けます。完成画像は「マイ作品」に読み込んで保存・共有できます。</p></div></div><p class="file-note">キーボード：矢印キーで微調整、Shift＋矢印キーで大きく移動、Deleteで選択した花材を削除します。</p><div class="modal-actions"><button class="button dark" id="help-done">創作を始める</button><button class="button outline" id="help-import">下書きを読み込む</button></div>`;openModal(html);$('#help-done').onclick=()=>$('#modal').close();$('#help-import').onclick=()=>$('#draft-upload').click()}
+function help(){const html=lang==='en'?`<h2>Take a moment and arrange slowly.</h2><div class="step-list"><div><span class="step-number">01</span><p><strong>Choose and place.</strong><br>Select materials beside the canvas, then choose a natural color and pose. Drag the flower to swing it; drag the base dot to move; use two fingers to rotate and scale. A stem that leaves the vessel gets a ring at its base, and Seat all puts it back. Zoom with the nearby controls. Draw across a local attachment to split off a movable piece, or brush away fine details. Open Layers to reorder.</p></div><div><span class="step-number">02</span><p><strong>Set your intention.</strong><br>Choose the scene and add a note. All three modes preserve your flowers, main composition and overall light. They allow different degrees of small adjustments to stem curves, facing, depth and insertion so the sketch becomes a believable real arrangement.</p></div><div><span class="step-number">03</span><p><strong>From draft to artwork.</strong><br>Download the pack, upload draft.png to ChatGPT image creation or GPT Image, and paste prompt.txt. The composition guide is optional. Import the result into My Works to save or share it.</p></div></div><p class="file-note">Keyboard: for a stem in the vessel, ←/→ turn it (Shift 5°), ↑/↓ change its stem length (Shift 5 cm) and Alt+arrows move it; other materials move with the arrow keys (Shift for larger moves). [ and ] rotate (Shift for 10°), Delete removes, Ctrl/⌘+Z undoes, Ctrl/⌘+Shift+Z redoes, Ctrl/⌘+D duplicates, and Esc leaves cutting or deselects. Tab moves between materials. Drafts and artworks stay in this browser unless you export them.</p><div class="modal-actions"><button class="button dark" id="help-done">Start arranging</button><button class="button outline" id="help-import">Import draft file</button></div>`:`<h2>给自己一刻，慢慢插花。</h2><div class="step-list"><div><span class="step-number">01</span><p><strong>选花，落枝。</strong><br>在画布旁挑选花材，选好姿态与花色。拖动花头转向，拖根部圆点移动，双指旋转缩放；离开花器的花枝根部会有圆圈提示，可一键全部插回。旁边按钮可放大画布。划过一处枝叶连接，就能分出可移动、可删除的一段；细节也可涂抹修剪。图层入口可调整前后顺序。</p></div><div><span class="step-number">02</span><p><strong>写下你的意境。</strong><br>选择光与景，留下一句话。三种生成方式都保留用花、主要构图与整体光感，允许不同程度的小幅整理：枝条弧度、花面朝向、前后空间和瓶口插入关系。</p></div><div><span class="step-number">03</span><p><strong>从草稿，到作品。</strong><br>下载创作包，在 ChatGPT 图片创作或 GPT Image 中上传 draft.png，再粘贴 prompt.txt。轮廓参考图可按需附上。生成后可导入「我的作品」保存或分享。</p></div></div><p class="file-note">键盘操作：插在花器里的花枝，←/→ 转向（Shift 每次 5°），↑/↓ 调整枝梗长度（Shift 每次 5 cm），Alt+方向键移动；其他花材方向键微调（Shift 加大）。[ 和 ] 旋转（Shift 每次 10°），Delete 删除，Ctrl/⌘+Z 撤销，Ctrl/⌘+Shift+Z 重做，Ctrl/⌘+D 复制，Esc 退出剪枝或取消选择；Tab 可在花材间切换。草稿与成品仅保存在当前浏览器，导出文件可以备份。</p><div class="modal-actions"><button class="button dark" id="help-done">开始这一枝</button><button class="button outline" id="help-import">导入草稿文件</button></div>`;openModal(html);$('#help-done').onclick=()=>$('#modal').close();$('#help-import').onclick=()=>$('#draft-upload').click()}
+function helpJapanese(){const html=`<h2>ゆっくり、ひと枝ずつ。</h2><div class="step-list"><div><span class="step-number">01</span><p><strong>花材を選び、配置する。</strong><br>花材と花器を選び、色や姿を整えます。追加位置は最前面か最後面を選択できます。花を引いて向きを変え、根元の点で移動、2本指で回転・拡大縮小。花器から外れた茎は根元に輪が付き、まとめて挿し直せます。キャンバス脇のボタンで拡大できます。付け根を横切るように線を引くと、切り離した部分が独立したレイヤーになり、移動や削除ができます。レイヤーから前後も並べ替えられます。</p></div><div><span class="step-number">02</span><p><strong>作品のイメージを決める。</strong><br>背景と雰囲気を選び、ひとことメモを添えます。生成用の3つの仕上げ方は、花材・構図・全体の光を保ちながら、枝の曲線や花の向き、奥行き、器への挿し方を自然に整えます。</p></div><div><span class="step-number">03</span><p><strong>下書きを作品にする。</strong><br>生成用パックをダウンロードし、draft.pngをChatGPTの画像作成またはGPT Imageにアップロードして、prompt.txtを貼り付けます。完成画像は「マイ作品」に読み込んで保存・共有できます。</p></div></div><p class="file-note">キーボード：花器に挿した茎は←/→で向き（Shiftで5°）、↑/↓で茎の長さ（Shiftで5 cm）、Alt+矢印で移動。ほかの花材は矢印キーで微調整（Shiftで大きく移動）。[ と ] で回転（Shiftで10°ずつ）、Deleteで削除、Ctrl/⌘+Zで元に戻す、Ctrl/⌘+Shift+Zでやり直し、Ctrl/⌘+Dで複製、Escで剪定を終えるか選択を解除します。Tabで花材を切り替えられます。</p><div class="modal-actions"><button class="button dark" id="help-done">創作を始める</button><button class="button outline" id="help-import">下書きを読み込む</button></div>`;openModal(html);$('#help-done').onclick=()=>$('#modal').close();$('#help-import').onclick=()=>$('#draft-upload').click()}
 $('#help-button').onclick=()=>lang==='ja'?helpJapanese():help();
 function sources(){const html=lang==='en'?`<h2>Materials from nature, ideas from ikebana.</h2><p>Hanama is a free-form creative exercise. It does not score work or present its simplified composition hints as school rules.</p><h3>Ikebana references</h3><div class="source-list"><a href="https://chs.ikenobo.jp/about/style.html" target="_blank" rel="noopener noreferrer">Ikenobo · Three styles of ikebana ↗</a><br><a href="https://www.sogetsu.or.jp/e/begin/" target="_blank" rel="noopener noreferrer">Sogetsu · Learning through free expression ↗</a></div><p>Ikenobo free style values the form and texture of plants; Sogetsu encourages personal expression. The spacing and direction cues here are creative suggestions for the game.</p><h3>The Flower Book · reading notes</h3><p>Rachel Siegfried, DK: vessel shape (pp. 10–11), floral roles and natural facing (pp. 12–21), cherry (pp. 64–67), iris (pp. 108–111), and chrysanthemum (pp. 156–159). The editable studies interpret these ideas. The library includes original photographs for all 60 botanical profiles, preserving the flower faces and 34 natural groupings. Page backgrounds and text were removed. Six earlier AI adaptations remain compatible with saved drafts.</p><h3>Asset notes</h3><p>Book photographs are labeled separately from original GPT Image plants. Book vessels use image-assisted extraction and reconstruction of hidden openings. Other newer vessels are original GPT Image assets. Two original vessels come from <a href="https://purepng.com/photo/18638/objects-vase" target="_blank" rel="noopener noreferrer">PurePNG / PNGStock</a>, marked CC0 on the source page. The archived exhibition photograph is Rémi Jouan's <a href="https://commons.wikimedia.org/wiki/File:Ikebana_International_Paris_2019_(01).JPG" target="_blank" rel="noopener noreferrer">Ikebana International Paris 2019 (01)</a>, used under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>.</p><p class="file-note">Sources reviewed September 2026. You control exports and sharing; Hanama does not publish your images automatically.</p>`:`<h2>从自然取材，从花道取意。</h2><p>花间以自由创作练习为出发点，不为作品打分，也不将简化的构图方法当作流派规范。</p><h3>花道参考</h3><div class="source-list"><a href="https://chs.ikenobo.jp/about/style.html" target="_blank" rel="noopener noreferrer">池坊 · 花道的三种样式 ↗</a><br><a href="https://www.sogetsu.or.jp/e/begin/" target="_blank" rel="noopener noreferrer">草月 · 自由表达与学习 ↗</a></div><p>池坊的自由花重视草木的形状与质感；草月鼓励创作者表达自己的想法。这里的留白、方向和疏密提示，是游戏中的创作建议。</p><h3>《The Flower Book》阅读手记</h3><p>Rachel Siegfried 著，DK 出版：花器形态（书页 10–11）、花材主次与自然朝向（12–21）、樱枝（64–67）、鸢尾（108–111）、菊花（156–159）。可编辑练习重新诠释这些思路。素材库已收录书中全部 60 个花材条目的实拍照片，去除版面和底色，保留原有花面与 34 种成组姿态。此前六款 AI 整理素材继续兼容旧草稿。</p><h3>素材说明</h3><p>「原书实拍」保留书中花材摄影，其他花枝姿态使用 GPT Image 原创生成。书中花器通过图像辅助提取并补全遮挡的器口；其他新增花器为 GPT Image 原创。原有两只花器来自 <a href="https://purepng.com/photo/18638/objects-vase" target="_blank" rel="noopener noreferrer">PurePNG / PNGStock</a>，来源页标注 CC0。保留的展览参考摄影为 Rémi Jouan 的 <a href="https://commons.wikimedia.org/wiki/File:Ikebana_International_Paris_2019_(01).JPG" target="_blank" rel="noopener noreferrer">Ikebana International Paris 2019 (01)</a>，依据 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> 使用。</p><p class="file-note">资料整理：2026 年 9 月。你的作品由你导出和分享；本工房不自动公开上传图片。</p>`;openModal(html,'REFERENCES & MATERIALS')}
 function sourcesJapanese(){openModal(`<h2>自然の素材と、いけばなの発想。</h2><p>花間は自由な創作を楽しむためのアトリエです。構図のヒントは流派の決まりではなく、表現のための提案です。</p><h3>いけばなの参考</h3><div class="source-list"><a href="https://chs.ikenobo.jp/about/style.html" target="_blank" rel="noopener noreferrer">池坊 · いけばなの三つの様式 ↗</a><br><a href="https://www.sogetsu.or.jp/e/begin/" target="_blank" rel="noopener noreferrer">草月流 · 自由な表現から学ぶ ↗</a></div><h3>『The Flower Book』と素材</h3><p>Rachel Siegfried著、DK刊。書籍の植物写真60種と、自然な組み合わせ34点を収録しています。書籍の写真は花の表情を保って整理しています。既存の枝葉素材にはヤナギ、ユーカリ、シダがあります。今後も実物の植物素材を少しずつ追加します。</p><h3>画像の出典</h3><p>書籍由来の植物写真とオリジナル素材を区別して表示しています。器の一部はPurePNG / PNGStockのCC0素材、展示写真はRémi Jouan撮影の<a href="https://commons.wikimedia.org/wiki/File:Ikebana_International_Paris_2019_(01).JPG" target="_blank" rel="noopener noreferrer">Ikebana International Paris 2019 (01)</a>をCC BY 4.0で使用しています。</p><p class="file-note">作品は自動公開されません。保存・書き出し・共有はご自身で行えます。</p>`,'参考資料と素材')}
@@ -595,9 +963,11 @@ async function loadImage(src){return new Promise((resolve,reject)=>{const img=ne
 const imageTasks=new Map();
 function ensureAsset(id){if(images[id])return Promise.resolve(images[id]);if(!imageTasks.has(id)){imageTasks.set(id,loadImage(assetPath(id)).then(img=>{images[id]=img;return img}).catch(err=>{imageTasks.delete(id);throw err}))}return imageTasks.get(id)}
 const assetsReady=Promise.allSettled([...new Set([...state.items.map(i=>i.type),state.vessel])].map(ensureAsset));
-assetsReady.then(results=>{renderStage();if(results.some(r=>r.status==='rejected'))toast(L('部分花材未载入；已载入的花材仍可使用。','Some materials did not load; the available materials can still be used.'))});
+assetsReady.then(results=>{renderStage();persist();if(demoAtBoot!==null&&!undoStack.length&&[state.title,state.subtitle,state.intention].join('\n')===demoAtBoot)markClean();if(results.some(r=>r.status==='rejected'))toast(L('部分花材未载入；已载入的花材仍可使用。','Some materials did not load; the available materials can still be used.'))});
 function drawCover(ctx,img,x,y,w,h){const factor=Math.max(w/img.width,h/img.height),iw=img.width*factor,ih=img.height*factor;ctx.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih)}
 async function draftCanvas(s=state,size=1600){
+ // A work stored before drawn-stem renderer 2 has no sv: draw it as validate() would open it in the studio.
+ if(s.items.some(i=>i.sv===undefined))s={...s,items:s.items.map(i=>i.sv===undefined?{...i,sv:stemVersion(i)}:i)};
  await Promise.all([...new Set([...s.items.map(i=>i.type),s.vessel])].map(ensureAsset));
  const c=document.createElement('canvas');c.width=c.height=size;
  paintArrangement(c.getContext('2d'),size,s,assetById,scenes,specimenCanvas,images);return c;
@@ -615,7 +985,10 @@ async function copyText(text){try{await navigator.clipboard.writeText(text);toas
 /** Render each pass separately so a cut piece remains its own editable Compositor layer. */
 async function layeredCompositorZip(snapshot,size=1600){
  await Promise.all([...new Set([...snapshot.items.map(i=>i.type),snapshot.vessel])].map(ensureAsset));
- const plan=compositorLayerPlan(snapshot,item=>assetName(assetById[item.type]));
+ // The same passes as the flat draft, so the layers composite to draft.png: ground shadows under the stems behind the vessel,
+ // their inserted ends (with the support) above it, and the front rim over stems in front, each only when it has content.
+ const clips=seatedClips(snapshot,assetById,specimenCanvas),seats=kenzanSeats(snapshot,assetById,specimenCanvas),flags={ground:true,interior:clips.interior.length>0||seats.back.length>0,water:seats.front.length>0,rim:clips.rim.length>0};
+ const plan=compositorLayerPlan(snapshot,item=>assetName(assetById[item.type]),flags);
  const root=`${fileTitle(snapshot).slice(0,70)||'Hanama'}.comp`,files=[],layers=[];
  for(let index=0;index<plan.length;index++){
   const pass=plan[index],id=crypto.randomUUID().toUpperCase(),canvas=document.createElement('canvas');canvas.width=canvas.height=size;
@@ -623,7 +996,11 @@ async function layeredCompositorZip(snapshot,size=1600){
    const ctx=canvas.getContext('2d');if(!ctx)throw Error(L('画布内存不足，请稍后重试。','Not enough canvas memory. Please try again.','キャンバスのメモリが不足しています。再度お試しください。'));
    if(pass.kind==='background')paintSceneBackground(ctx,size,snapshot,scenes);
    if(pass.kind==='botanical')paintBotanicalLayer(ctx,size,snapshot,pass.item,assetById,specimenCanvas);
-   if(pass.kind==='vessel')paintVesselLayer(ctx,size,snapshot,assetById,images);
+   if(pass.kind==='ground')paintGroundPass(ctx,size,snapshot,assetById,images);
+   if(pass.kind==='vessel')paintVesselLayer(ctx,size,snapshot,assetById,images,{ground:!flags.ground,fixture:!flags.interior});
+   if(pass.kind==='interior')paintInsertedPass(ctx,size,snapshot,assetById,images,specimenCanvas,{clips:clips.interior,seats});
+   if(pass.kind==='water')paintKenzanPass(ctx,size,snapshot,assetById,images,{seats,side:'front',getSprite:specimenCanvas});
+   if(pass.kind==='rim')paintRimPass(ctx,size,snapshot,assetById,images,specimenCanvas,{clips:clips.rim});
    if(pass.kind==='finish')paintSceneFinish(ctx,size,snapshot);
    files.push([`${root}/images/${id}.png`,await canvasBlob(canvas)]);
   }finally{canvas.width=canvas.height=0}
@@ -655,23 +1032,20 @@ const dbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open('hanama-
 async function dbAction(mode,fn){const db=await dbPromise;return new Promise((resolve,reject)=>{const tx=db.transaction('works',mode);const req=fn(tx.objectStore('works'));let result;req.onsuccess=()=>result=req.result;tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(Error(L('本机存储空间不足或不可用，请导出文件保存。','Local storage is full or unavailable. Export a file to keep your work.')));tx.onabort=()=>reject(Error(L('保存未完成，请导出文件备份。','Saving did not finish. Export a backup file.')))})}
 const listWorks=()=>dbAction('readonly',store=>store.getAll());
 async function refreshCount(){try{$('#gallery-count').textContent=(await listWorks()).length}catch{}}
-async function saveDraft(s=state,{notify=true}={}){const snapshot=clone(s),preview=await canvasBlob(await draftCanvas(snapshot,600),'image/jpeg',.86);const prev=await dbAction('readonly',store=>store.get(snapshot.id));await dbAction('readwrite',store=>store.put({id:snapshot.id,state:snapshot,title:snapshot.title||L('未命名作品','Untitled Arrangement'),updated:Date.now(),preview,art:prev?.art||null}));await refreshCount();if(notify)toast(L('草稿已收进「我的作品」','Draft saved to My Works'));return snapshot.id}
+async function saveDraft(s=state,{notify=true}={}){const snapshot=clone(s),preview=await canvasBlob(await draftCanvas(snapshot,600),'image/jpeg',.86);const prev=await dbAction('readonly',store=>store.get(snapshot.id));await dbAction('readwrite',store=>store.put({id:snapshot.id,state:snapshot,title:snapshot.title||L('未命名作品','Untitled Arrangement'),updated:Date.now(),preview,art:prev?.art||null}));if(snapshot.id===state.id)markClean(snapshot);await refreshCount();if(notify)toast(L('草稿已收进「我的作品」','Draft saved to My Works'));return snapshot.id}
 $('#save-button').onclick=async e=>{e.currentTarget.disabled=true;try{await saveDraft()}catch(err){toast(err.message)}finally{$('#save-button').disabled=false}};
-const hasMeaningfulCanvas=s=>s.items.length>0||String(s.intention||'').trim()||String(s.subtitle||'').trim()||!['',...untitledTitles].includes(String(s.title||'').trim())||s.vessel!=='round'||s.scene!=='paper'||s.mood!=='静寂'||s.generation!=='natural';
-async function activateCanvas(next,{saveCurrent=true,message=''}={}){const activeView=$('.view:not([hidden])');if(activeView)activeView.inert=true;try{const candidate=validate(next);await Promise.all([...new Set([...candidate.items.map(i=>i.type),candidate.vessel])].map(ensureAsset));if(saveCurrent&&hasMeaningfulCanvas(state))await saveDraft(state,{notify:false});state=candidate;selected=state.items.at(-1)?.id||null;undoStack=[];redoStack=[];cutSession=null;spriteCache.clear();closeLayerMenu();$('#guide').hidden=true;$('#guide-button').setAttribute('aria-pressed','false');setEditMode('move');renderAll();setView('studio');if(message)toast(message)}finally{if(activeView)activeView.inert=false}}
-$('#new-canvas-button').onclick=async e=>{const button=e.currentTarget,hadWork=!!hasMeaningfulCanvas(state),next=initial();next.title=L('未命名作品','Untitled Arrangement');next.subtitle='';next.intention='';next.items=[];button.disabled=true;try{await activateCanvas(next,{message:hadWork?L('原草稿已保存，新画布已打开。','The previous draft was saved and a new canvas is ready.'):L('新画布已打开。','A new canvas is ready.')})}catch(err){toast(err.message)}finally{button.disabled=false}};
+const skippedMessage=n=>L(`有 ${n} 处内容无法读取，已跳过。`,`Skipped ${n} part${n===1?'':'s'} that could not be read.`,`読み込めない部分を${n}か所スキップしました。`);
+/**
+ * Open `next` in the studio. The current canvas is filed into My Works first, unless it is empty or unchanged since it was
+ * opened or saved (isCleanCanvas). `clean` records the opened canvas as untouched (studies, templates, saved works);
+ * `lenient` reads a saved work leniently (validate); `message` may be a function of {saved}. Returns {saved}.
+ */
+async function activateCanvas(next,{saveCurrent=true,message='',clean=false,lenient=false}={}){const activeView=$('.view:not([hidden])');if(activeView)activeView.inert=true;try{const report={skipped:0},candidate=validate(next,{lenient,report});await Promise.all([...new Set([...candidate.items.map(i=>i.type),candidate.vessel])].map(ensureAsset));const saved=!!(saveCurrent&&hasMeaningfulCanvas(state)&&!isCleanCanvas(state));if(saved)await saveDraft(state,{notify:false});state=candidate;selected=state.items.at(-1)?.id||null;undoStack=[];redoStack=[];cutSession=null;spriteCache.clear();closeLayerMenu();$('#guide').hidden=true;$('#guide-button').setAttribute('aria-pressed','false');setEditMode('move');renderAll();if(clean)markClean();setView('studio');const text=typeof message==='function'?message({saved}):message;if(report.skipped)toast(skippedMessage(report.skipped));else if(text)toast(text);return {saved}}finally{if(activeView)activeView.inert=false}}
+$('#new-canvas-button').onclick=async e=>{const button=e.currentTarget,next=initial();next.title=L('未命名作品','Untitled Arrangement');next.subtitle='';next.intention='';next.items=[];button.disabled=true;try{await activateCanvas(next,{clean:true,message:({saved})=>saved?L('原草稿已保存，新画布已打开。','The previous draft was saved and a new canvas is ready.'):L('新画布已打开。','A new canvas is ready.')})}catch(err){toast(err.message)}finally{button.disabled=false}};
 $('#language-select').onchange=e=>{if(!['zh','en','ja'].includes(e.target.value))return;lang=e.target.value;try{localStorage.setItem(LANGUAGE_STORE,lang)}catch{}relocalizePresetFields(state,lang);renderAll();const active=$('.view:not([hidden])')?.id;if(active==='inspiration-view')renderInspiration();if(active==='gallery-view')renderGallery().catch(err=>toast(err.message))};
 function setView(view){$$('.view').forEach(el=>el.hidden=el.id!==`${view}-view`);$$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));if(view==='gallery')renderGallery().catch(err=>toast(err.message));if(view==='inspiration')renderInspiration();window.scrollTo({top:0,behavior:'instant'})}
 $$('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
-function studyState(study){
- const vessel=assetById[study.vessel],insertion=vesselGeometry(vessel).insertion;
- const items=study.items.map(({type,to=[0,20],s=1,flip=false,front=false,base})=>{
-  const a=assetById[type],item=makeItem(type,{h:Math.round(a.height*clamp(s,.8,1.25)*10)/10,flip,aboveVessel:front});
-  const stemBase=mouthBase(vessel,insertion[0]+(base??to[0]*.1),.6);
-  return Object.assign(item,reach(item,a,stemBase,[insertion[0]+to[0],insertion[1]-to[1]]));
- });
- return {...initial(),title:study.title[localeIndex(lang)],intention:'',vessel:study.vessel,scene:study.scene,mood:study.mood,items};
-}
+function studyState(study){return buildStudyState(study,{assetById,lang,makeItem,initial})}
 function renderInspiration(){
  const index=localeIndex(lang),root=$('#inspiration-view');
  const schoolNames={ikenobo:['池坊','Ikenobo','池坊'],ohara:['小原流','Ohara','小原流'],sogetsu:['草月流','Sogetsu','草月流'],free:['自由花','Free style','自由花']};
@@ -709,16 +1083,16 @@ function renderInspiration(){
  $('#study-reset')?.addEventListener('click',()=>{studyFilter=seasonFilter=studyDensity='all';studyLimit=9;renderInspiration()});
  $('#study-more')?.addEventListener('click',()=>{studyLimit+=12;renderInspiration()});
  const byId=new Map(displayed.map(study=>[study.id,study]));
- $$('[data-study]',root).forEach(button=>button.onclick=async()=>{button.disabled=true;try{await activateCanvas(studyState(byId.get(button.dataset.study)),{message:['搭配已打开，原草稿已保存在「我的作品」。','Study opened. Your previous draft is in My Works.','作品を開きました。前の下書きは「マイ作品」に保存しました。'][index]})}catch(err){toast(err.message)}finally{button.disabled=false}});
+ $$('[data-study]',root).forEach(button=>button.onclick=async()=>{button.disabled=true;try{await activateCanvas(studyState(byId.get(button.dataset.study)),{clean:true,message:({saved})=>saved?['搭配已打开，原草稿已保存在「我的作品」。','Study opened. Your previous draft is in My Works.','作品を開きました。前の下書きは「マイ作品」に保存しました。'][index]:['搭配已打开','Study opened','作例を開きました'][index]})}catch(err){toast(err.message)}finally{button.disabled=false}});
 }
 async function renderGallery(){
  const works=(await listWorks()).sort((a,b)=>b.updated-a.updated);galleryUrls.forEach(URL.revokeObjectURL);galleryUrls=[];
  const cards=works.map(w=>{const url=URL.createObjectURL(w.art||w.preview);galleryUrls.push(url);const status=w.art?L('生成成品','Generated artwork'):L('插花草稿','Ikebana draft'),date=new Date(w.updated).toLocaleDateString(lang==='en'?'en-US':lang==='ja'?'ja-JP':'zh-CN');return `<article class="art-card"><img src="${url}" alt="${esc(w.title)}" loading="lazy"><div class="art-card-content"><h2>${esc(w.title)}</h2>${w.state?.subtitle?`<p class="art-subtitle">${esc(w.state.subtitle)}</p>`:''}<p>${status} · ${date}</p><div class="art-card-actions"><button data-work-edit="${esc(w.id)}">${L('继续创作','Continue')}</button><button data-work-share="${esc(w.id)}">${L('分享作品 ↗','Share ↗')}</button><button data-work-delete="${esc(w.id)}" aria-label="${esc(L(`删除${w.title}`,`Delete ${w.title}`))}">${L('删除','Delete')}</button></div></div></article>`}).join('');
  $('#gallery-view').innerHTML=`<div class="page-heading"><div><p class="eyebrow">YOUR PERSONAL COLLECTION</p><h1>${L('一花一记','A Record of Each Flower')}</h1><p>${L('这里珍藏你的草稿与成品，仅保存在当前浏览器。','Your drafts and artworks are stored only in this browser.')}</p></div><button class="button outline" id="gallery-import"><span data-icon="upload"></span>${L('导入生成作品','Import Generated Artwork')}</button></div>${works.length?`<div class="gallery-grid">${cards}</div>`:`<div class="empty-gallery"><h2>${L('留住你的第一枝。','Keep your first stem.')}</h2><p>${L('在工房保存草稿，或把生成的成品导入这里。','Save a draft in the atelier or import a generated artwork here.')}</p><button class="button dark" id="back-studio">${L('回到插花台','Back to Atelier')}</button></div>`}`;
  icons($('#gallery-view'));$('#gallery-import').onclick=()=>{importArtFor=clone(state);$('#art-upload').click()};$('#back-studio')?.addEventListener('click',()=>setView('studio'));
- $$('[data-work-edit]').forEach(b=>b.onclick=async()=>{const w=works.find(w=>w.id===b.dataset.workEdit),next=w.id===state.id?clone(state):w.state;b.disabled=true;try{await activateCanvas(next)}catch(err){toast(err.message)}finally{b.disabled=false}});
+ $$('[data-work-edit]').forEach(b=>b.onclick=async()=>{const w=works.find(w=>w.id===b.dataset.workEdit),next=w.id===state.id?clone(state):w.state;b.disabled=true;try{await activateCanvas(next,{clean:true,lenient:true})}catch(err){toast(err.message)}finally{b.disabled=false}});
  $$('[data-work-share]').forEach(b=>b.onclick=()=>shareWork(works.find(w=>w.id===b.dataset.workShare)).catch(err=>toast(err.message)));
- $$('[data-work-delete]').forEach(b=>b.onclick=()=>{const w=works.find(w=>w.id===b.dataset.workDelete);openModal(`<h2>${esc(L(`移除「${w.title}」？`,`Remove “${w.title}”?`))}</h2><p>${L('这会删除本机作品集中的草稿和成品，已下载的图片仍然保留。','This deletes the draft and artwork from this browser. Downloaded files remain.')}</p><div class="modal-actions"><button class="button outline" id="cancel-delete">${L('保留作品','Keep Work')}</button><button class="button accent" id="confirm-delete">${L('删除作品','Delete Work')}</button></div>`);$('#cancel-delete').onclick=()=>$('#modal').close();$('#confirm-delete').onclick=async()=>{try{await dbAction('readwrite',store=>store.delete(w.id));$('#modal').close();await renderGallery();await refreshCount();toast(L('已移除作品','Work removed'))}catch(e){toast(e.message)}}})
+ $$('[data-work-delete]').forEach(b=>b.onclick=()=>{const w=works.find(w=>w.id===b.dataset.workDelete);openModal(`<h2>${esc(L(`移除「${w.title}」？`,`Remove “${w.title}”?`))}</h2><p>${L('这会删除本机作品集中的草稿和成品，已下载的图片仍然保留。','This deletes the draft and artwork from this browser. Downloaded files remain.')}</p><div class="modal-actions"><button class="button outline" id="cancel-delete">${L('保留作品','Keep Work')}</button><button class="button accent" id="confirm-delete">${L('删除作品','Delete Work')}</button></div>`);$('#cancel-delete').onclick=()=>$('#modal').close();$('#confirm-delete').onclick=async()=>{try{await dbAction('readwrite',store=>store.delete(w.id));if(w.id===state.id){state.id=uid();persist()}$('#modal').close();await renderGallery();await refreshCount();toast(L('已移除作品','Work removed'))}catch(e){toast(e.message)}}})
 }
 async function artPoster(w){
  const c=document.createElement('canvas');c.width=1600;c.height=1870;const ctx=c.getContext('2d');ctx.fillStyle='#f5f2e8';ctx.fillRect(0,0,c.width,c.height);
@@ -732,15 +1106,38 @@ async function artPoster(w){
 }
 async function shareWork(w){
  const html=lang==='en'?`<h2>Let this arrangement meet someone.</h2><p>The share card keeps the artwork, title and subtitle. The draft file lets a friend continue the composition.</p><div class="modal-actions"><button class="button accent" id="share-system" disabled><span data-icon="share"></span>Share Image</button><button class="button outline" id="share-download" disabled><span data-icon="download"></span>Download Share Card</button><button class="button outline" id="share-original">Download ${w.art?'Saved Artwork':'Draft Image'}</button></div><h3>Share an editable draft</h3><p class="file-note">The link carries the material layout and intention, not the generated image. The recipient needs access to this atelier.</p><input class="share-field" id="share-link" readonly aria-label="Draft share link"><div class="modal-actions"><button class="button outline" id="copy-link">Copy Draft Link</button><button class="button outline" id="share-json">Download Draft File</button></div>`:`<h2>让这一枝，遇见别人。</h2><p>分享卡保留作品与题名、副题。草稿文件还能让朋友继续你的创作。</p><div class="modal-actions"><button class="button accent" id="share-system" disabled><span data-icon="share"></span>分享图片</button><button class="button outline" id="share-download" disabled><span data-icon="download"></span>下载分享卡</button><button class="button outline" id="share-original">下载${w.art?'保存的成品':'草稿图'}</button></div><h3>也可以分享可编辑的草稿</h3><p class="file-note">链接仅携带花材布局与意境，不包含成品图片。接收者需要有权访问此工房。</p><input class="share-field" id="share-link" readonly aria-label="草稿分享链接"><div class="modal-actions"><button class="button outline" id="copy-link">复制草稿链接</button><button class="button outline" id="share-json">下载草稿文件</button></div>`;
- openModal(html,lang==='ja'?'作品を共有':'SHARE YOUR LITTLE WORLD');if(lang==='ja'){translateTextNodes($('#modal-content'),{'让这一枝，遇见别人。':'この花を、誰かへ。','分享卡保留作品与题名、副题。草稿文件还能让朋友继续你的创作。':'共有カードには作品と題名、副題が残ります。下書きファイルを渡せば、相手も続きを編集できます。','分享图片':'画像を共有','下载分享卡':'共有カードをダウンロード','下载保存的成品':'完成作品をダウンロード','下载草稿图':'下書き画像をダウンロード','保存的成品':'保存した完成作品','草稿图':'下書き画像','也可以分享可编辑的草稿':'編集できる下書きも共有できます','链接仅携带花材布局与意境，不包含成品图片。接收者需要有权访问此工房。':'リンクには花材の配置とイメージが含まれ、完成画像は含まれません。受け取る方もこのアトリエを利用できる必要があります。','复制草稿链接':'下書きリンクをコピー','下载草稿文件':'下書きファイルをダウンロード'});$('#share-link').setAttribute('aria-label','下書き共有リンク')}const shared=validate(w.state);shared.id='shared';const hash=await encodeShare(shared);const linkOK=hash.length<=30000;$('#share-link').value=linkOK?location.origin+location.pathname+hash:L('剪枝细节较多，请下载草稿文件分享。','This draft has extensive pruning details; share the downloaded draft file instead.');$('#copy-link').disabled=!linkOK;$('#copy-link').onclick=()=>copyText($('#share-link').value);$('#share-json').onclick=()=>download(new Blob([JSON.stringify(w.state,null,2)],{type:'application/json'}),fileTitle(w.state)+'.json');
+ openModal(html,lang==='ja'?'作品を共有':'SHARE YOUR LITTLE WORLD');if(lang==='ja'){translateTextNodes($('#modal-content'),{'让这一枝，遇见别人。':'この花を、誰かへ。','分享卡保留作品与题名、副题。草稿文件还能让朋友继续你的创作。':'共有カードには作品と題名、副題が残ります。下書きファイルを渡せば、相手も続きを編集できます。','分享图片':'画像を共有','下载分享卡':'共有カードをダウンロード','下载保存的成品':'完成作品をダウンロード','下载草稿图':'下書き画像をダウンロード','保存的成品':'保存した完成作品','草稿图':'下書き画像','也可以分享可编辑的草稿':'編集できる下書きも共有できます','链接仅携带花材布局与意境，不包含成品图片。接收者需要有权访问此工房。':'リンクには花材の配置とイメージが含まれ、完成画像は含まれません。受け取る方もこのアトリエを利用できる必要があります。','复制草稿链接':'下書きリンクをコピー','下载草稿文件':'下書きファイルをダウンロード'});$('#share-link').setAttribute('aria-label','下書き共有リンク')}const shared=validate(w.state,{lenient:true});shared.id='shared';const hash=await encodeShare(shared);const linkOK=hash.length<=30000;$('#share-link').value=linkOK?location.origin+location.pathname+hash:L('剪枝细节较多，请下载草稿文件分享。','This draft has extensive pruning details; share the downloaded draft file instead.');$('#copy-link').disabled=!linkOK;$('#copy-link').onclick=()=>copyText($('#share-link').value);$('#share-json').onclick=()=>download(new Blob([JSON.stringify(w.state,null,2)],{type:'application/json'}),fileTitle(w.state)+'.json');
  $('#share-original').onclick=async()=>{try{const source=w.art||await canvasBlob(await draftCanvas(w.state,1600));download(source,fileTitle(w.state)+(w.art?L('-成品','-artwork'):L('-草稿','-draft'))+'.'+(source.type==='image/png'?'png':'jpg'))}catch(e){toast(e.message)}};
  const poster=await artPoster(w);$('#share-system').disabled=false;$('#share-download').disabled=false;$('#share-download').onclick=()=>download(poster,fileTitle(w.state)+L('-分享卡.png','-share-card.png'));$('#share-system').onclick=async()=>{const file=new File([poster],fileTitle(w.state)+'.png',{type:'image/png'});try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:w.title})}else{download(poster,file.name);toast(L('分享卡已下载，可以发送给朋友。','Share card downloaded and ready to send.'))}}catch(err){if(err.name!=='AbortError')toast(L('设备分享不可用，请下载分享卡。','Device sharing is unavailable. Download the share card instead.'))}}
 }
 $('#art-upload').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>15*1024*1024)return toast(L('请选择不超过 15 MB 的 PNG、JPG 或 WebP 图片。','Choose a PNG, JPG, or WebP image no larger than 15 MB.'));const s=clone(importArtFor||state);try{const url=URL.createObjectURL(file);let img;try{img=await loadImage(url)}finally{URL.revokeObjectURL(url)}const c=document.createElement('canvas'),scale=Math.min(1,2000/Math.max(img.width,img.height));c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);const art=await canvasBlob(c,'image/jpeg',.93),preview=await canvasBlob(await draftCanvas(s,600),'image/jpeg',.85);const artworkId=uid();await dbAction('readwrite',store=>store.put({id:artworkId,state:{...s,id:artworkId},title:s.title||file.name.replace(/\.[^.]+$/,''),updated:Date.now(),preview,art}));$('#modal').close();await refreshCount();setView('gallery');toast(L('成品已收藏，可以分享了。','Artwork saved to My Works and ready to share.'))}catch(err){toast(err.message)}finally{importArtFor=null}});
 $('#draft-upload').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;if(file.size>500000)return toast(L('草稿文件过大，请选择花间导出的 JSON 文件。','The draft file is too large. Choose a JSON file exported by Hanama.'));let next;try{next=validate(JSON.parse(await file.text()))}catch{return toast(L('文件无法读取，请选择花间导出的 composition.json。','The file could not be read. Choose a composition.json exported by Hanama.'))}next.id=uid();try{await activateCanvas(next,{message:L('草稿已恢复，可以继续创作。','Draft restored and ready to edit.')});$('#modal').close()}catch(err){toast(err.message)}});
-icons();applyLanguage();renderMaterials();renderAll();refreshCount();if(sharedLoaded)setTimeout(()=>toast(L('已打开分享草稿，你可以继续创作。','Shared draft opened. You can continue editing.')),700);
+/** File the local drafts a share link displaced (stashed raw at boot) into My Works; a stash that cannot be saved stays for
+ the next visit, one that no longer reads moves to the unreadable key. Returns the drafts filed. */
+async function fileDisplacedDrafts(){
+ let list=[];try{list=readStash(localStorage.getItem(DISPLACED_STORE))}catch{}
+ if(!list.length)return [];
+ const filed=[],keep=[];
+ for(const raw of list){
+  let draft;try{draft=validate(JSON.parse(raw),{lenient:true});relocalizePresetFields(draft,lang)}catch{try{localStorage.setItem(UNREADABLE_STORE,raw)}catch{}continue}
+  try{await saveDraft(draft,{notify:false});filed.push(draft)}catch{keep.push(raw)}
+ }
+ try{if(keep.length)localStorage.setItem(DISPLACED_STORE,JSON.stringify(keep));else localStorage.removeItem(DISPLACED_STORE)}catch{}
+ return filed;
+}
+/** After the first render: file displaced drafts, then say what happened to the local draft. */
+async function afterBoot(){
+ const filed=await fileDisplacedDrafts().catch(()=>[]);
+ await new Promise(resolve=>setTimeout(resolve,700));
+ const title=filed.at(-1)?.title||L('未命名作品','Untitled Arrangement');
+ if(sharedLoaded)toast(filed.length?L(`已打开分享的草稿。你之前的「${title}」已保存在「我的作品」`,`Shared draft opened. Your previous “${title}” is saved in My Works.`,`共有された下書きを開きました。前の「${title}」は「マイ作品」に保存しました`):L('已打开分享草稿，你可以继续创作。','Shared draft opened. You can continue editing.'));
+ else if(filed.length)toast(L(`之前的「${title}」已保存在「我的作品」`,`Your previous “${title}” is saved in My Works.`,`前の「${title}」は「マイ作品」に保存しました`));
+ else if(bootUnreadable)toast(L('上次的草稿无法读取，原始内容已另存在本机。','Your last draft could not be read; its raw data is kept on this device.','前回の下書きを読み込めませんでした。元のデータはこの端末に残しています。'));
+ else if(bootReport.skipped)toast(skippedMessage(bootReport.skipped));
+}
+icons();applyLanguage();renderMaterials();renderAll();refreshCount();afterBoot();
 // A shared draft may arrive as a same-page hash navigation in an already-open studio.
 window.addEventListener('hashchange',async()=>{
  if(!location.hash.startsWith('#draft=')&&!location.hash.startsWith('#draft2='))return;
- let imported;try{imported=await decodeShare(location.hash)}catch{return toast(L('草稿链接无法打开，请用导出的 JSON 文件恢复。','The draft link could not be opened. Restore it from an exported JSON file.'))}imported.id=uid();history.replaceState(null,'',location.pathname+location.search);try{await activateCanvas(imported,{message:L('已打开分享草稿，剪枝与花色也一并保留。','Shared draft opened with pruning and color choices preserved.')})}catch(err){toast(err.message)}
+ let imported;try{imported=await decodeShare(location.hash)}catch{return toast(L('草稿链接无法打开，请用导出的 JSON 文件恢复。','The draft link could not be opened. Restore it from an exported JSON file.'))}imported.id=uid();history.replaceState(null,'',location.pathname+location.search);const previous=String(state.title||'').trim()||L('未命名作品','Untitled Arrangement');try{await activateCanvas(imported,{message:({saved})=>saved?L(`已打开分享的草稿。你之前的「${previous}」已保存在「我的作品」`,`Shared draft opened. Your previous “${previous}” is saved in My Works.`,`共有された下書きを開きました。前の「${previous}」は「マイ作品」に保存しました`):L('已打开分享草稿，剪枝与花色也一并保留。','Shared draft opened with pruning and color choices preserved.','共有された下書きを開きました。剪定と花色もそのままです。')})}catch(err){toast(err.message)}
 });

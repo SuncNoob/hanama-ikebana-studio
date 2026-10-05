@@ -9,4 +9,4 @@ export const studySpecimens = [
  {id:'study-peony-early',family:'peony',name:'芍药',en:'Peony',ja:'芍薬',group:'bloom',color:'乳白',colorEn:'warm ivory',colorJa:'温かみのある白',swatch:'#e7e0ce',pose:'初开侧垂',poseEn:'Early side-opening bloom',poseJa:'咲き始めの横顔',height:42,anchor:.43},
  {id:'study-chrysanthemum-late',family:'chrysanthemum',name:'菊花',en:'Chrysanthemum',ja:'菊',group:'bloom',color:'暖白',colorEn:'warm white',colorJa:'温かな白',swatch:'#e6dfc9',pose:'舒展侧面',poseEn:'Loose side bloom',poseJa:'横に広がる花',height:40,anchor:.45},
  {id:'study-hydrangea-transition',family:'hydrangea',name:'绣球',en:'Hydrangea',ja:'アジサイ',group:'bloom',color:'蓝紫绿',colorEn:'blue violet and green',colorJa:'青紫と緑',swatch:'#8b8ca9',pose:'半开斜视',poseEn:'Transitional half-bloom',poseJa:'咲き途中の斜め姿',height:43,anchor:.55}
-].map(a=>({...a,source:'generated-botanical-study',format:'png',width:1024,heightPx:1536,split:.64,thumbnail:false}));
+].map(a=>({...a,source:'generated-botanical-study',format:'png',width:1024,heightPx:1536,split:.64,thumbnail:true}));

@@ -26,5 +26,5 @@ const alternateFoliage = [
 ];
 export const foliageSpecimens = [...originalFoliage,...alternateFoliage.map(({base,...alternate})=>({
  ...originalFoliage.find(a=>a.family===base),...alternate,
- source:'generated-botanical-study',format:'png',thumbnail:false,width:1024,heightPx:1536,split:.62
+ source:'generated-botanical-study',format:'png',thumbnail:true,width:1024,heightPx:1536,split:.62
 }))];

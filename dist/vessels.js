@@ -34,7 +34,7 @@ export const newVessels=[
     color:'墨黑',colorEn:'ink black',group:'low',style:'japanese',height:18,width:437,heightPx:258,
     mouth:[0.4988558352402746,0.21705426356589147],
     openings:[ellipse([0.4989,0.2171],[0.405,0.16],0.39)],
-    fixture:fixture('kenzan','visible','黑化黄铜剑山','Blackened-brass kenzan','A low blackened-brass kenzan is centered inside the bowl and remains discreetly visible between the exact stem insertions.',{center:[0.499,0.235],radius:[0.135,0.042],material:'blackened-brass'})
+    fixture:fixture('kenzan','visible','黑化黄铜剑山','Blackened-brass kenzan','A low blackened-brass kenzan is centered inside the bowl and remains discreetly visible between the exact stem insertions. Still, clear water just covers the pin holder.',{center:[0.499,0.235],radius:[0.135,0.042],material:'blackened-brass',water:true})
   },
   {
     id:'white-square-column',name:'白色方形直筒',shortName:'白瓷方筒',en:'White square column vase',
@@ -48,7 +48,7 @@ export const newVessels=[
     color:'炭黑',colorEn:'charcoal black',group:'low',style:'japanese',height:18,width:380,heightPx:276,
     mouth:[0.5026315789473684,0.2246376811594203],
     openings:[rect([0.5026,0.2246],[0.33,0.13],0.39)],
-    fixture:fixture('kenzan','visible','黑化黄铜剑山','Blackened-brass kenzan','A low blackened-brass kenzan is centered inside the square basin and remains subtly visible at the exact stem bases.',{center:[0.503,0.245],radius:[0.135,0.042],material:'blackened-brass'})
+    fixture:fixture('kenzan','visible','黑化黄铜剑山','Blackened-brass kenzan','A low blackened-brass kenzan is centered inside the square basin and remains subtly visible at the exact stem bases. Still, clear water just covers the pin holder.',{center:[0.503,0.245],radius:[0.135,0.042],material:'blackened-brass',water:true})
   },
   {
     id:'celadon-shallow-suiban',name:'浅青釉宽浅水盘',shortName:'浅青水盘',en:'Pale celadon shallow suiban',
@@ -69,7 +69,7 @@ export const newVessels=[
     color:'暖沙色',colorEn:'warm sand',group:'low',style:'japanese',height:20,width:460,heightPx:297,
     mouth:[0.49782608695652175,0.21548821548821548],
     openings:[ellipse([0.4978,0.2155],[0.445,0.18],0.43)],
-    fixture:fixture('kenzan','partial','黑化黄铜剑山','Blackened-brass kenzan','A low blackened-brass kenzan is centered below the broad rim and is only partially visible between the exact stem insertions.',{center:[0.498,0.245],radius:[0.12,0.036],material:'blackened-brass'})
+    fixture:fixture('kenzan','partial','黑化黄铜剑山','Blackened-brass kenzan','A low blackened-brass kenzan is centered below the broad rim and is only partially visible between the exact stem insertions. Still, clear water just covers the pin holder.',{center:[0.498,0.245],radius:[0.12,0.036],material:'blackened-brass',water:true})
   },
   {
     id:'rust-dark-cylinder',name:'铁锈深釉粗陶筒',shortName:'铁锈陶筒',en:'Rust dark-glazed stoneware cylinder',
@@ -124,7 +124,7 @@ export const newVessels=[
     id:'french-charcoal-compote',name:'法式炭黑高脚浅盆',shortName:'炭黑高脚盆',en:'French charcoal footed compote',
     color:'炭黑',colorEn:'charcoal black',group:'low',style:'french',height:16,width:620,heightPx:326,
     mouth:[0.5,0.14],openings:[ellipse([0.5,0.14],[0.45,0.09],0.26)],
-    fixture:fixture('kenzan','visible','黄铜剑山','Brass kenzan','A low brass kenzan is centered in the charcoal compote and remains deliberately but discreetly visible between the exact stem bases.',{center:[0.5,0.15],radius:[0.13,0.036],material:'brass'})
+    fixture:fixture('kenzan','visible','黄铜剑山','Brass kenzan','A low brass kenzan is centered in the charcoal compote and remains deliberately but discreetly visible between the exact stem bases. Still, clear water just covers the pin holder.',{center:[0.5,0.15],radius:[0.13,0.036],material:'brass',water:true,lip:0.2})
   },
   {
     id:'french-blue-cachepot',name:'法式雾蓝竖纹瓷盆',shortName:'雾蓝瓷盆',en:'French mist-blue fluted cachepot',
@@ -151,6 +151,6 @@ export const newVessels=[
     id:'modern-travertine-trough',name:'现代洞石长槽器',shortName:'洞石长槽器',en:'Modern travertine trough vessel',
     color:'浅洞石色',colorEn:'pale travertine',group:'shallow',style:'modern',height:12,width:620,heightPx:223,
     mouth:[0.5,0.198],openings:[rect([0.5,0.198],[0.415,0.078],0.315)],
-    fixture:fixture('kenzan','partial','三枚黑化黄铜剑山','Three blackened-brass kenzan','Three low blackened-brass kenzan are aligned inside the long trough. They remain only partially visible and hold the exact existing stem insertion points without changing the composition.',{centers:[[0.29,0.205],[0.5,0.205],[0.71,0.205]],radius:[0.07,0.024],material:'blackened-brass'})
+    fixture:fixture('kenzan','partial','三枚黑化黄铜剑山','Three blackened-brass kenzan','Three low blackened-brass kenzan are aligned inside the long trough. They remain only partially visible and hold the exact existing stem insertion points without changing the composition. Still, clear water just covers the holders.',{centers:[[0.29,0.205],[0.5,0.205],[0.71,0.205]],radius:[0.07,0.024],material:'blackened-brass',water:true,lip:0.23})
   }
 ];

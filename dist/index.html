@@ -11,10 +11,14 @@
 <meta name="author" content="Marko Sun">
 <link rel="license" href="/LICENSE.txt">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=34">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&amp;display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&amp;display=swap"></noscript>
+<link rel="stylesheet" href="/style.css?v=hn2">
 <link rel="stylesheet" href="/material-drawer.css?v=34">
-<link rel="stylesheet" href="/ui-polish.css?v=41">
-<script type="module" src="/app.js?v=38">
+<link rel="stylesheet" href="/ui-polish.css?v=hn2">
+<script type="module" src="/app.js?v=hn2">
 </script>
 </head>
 <body>
@@ -134,7 +138,9 @@
 </div>
 <div class="stage-shell">
 <div id="canvas-viewport" class="canvas-viewport">
-<div class="stage" id="stage" tabindex="0" role="application" aria-label="插花画布。拖动花材调整位置，双指旋转和缩放；右键打开花材图层；方向键微调，Delete 删除。" data-aria-zh="插花画布。拖动花材调整位置，双指旋转和缩放；右键打开花材图层；方向键微调，Delete 删除。" data-aria-en="Ikebana canvas. Drag materials to move; use two fingers to rotate and scale; right-click for layers; use arrow keys to nudge and Delete to remove.">
+<div class="stage" id="stage" tabindex="0" role="application" aria-label="插花画布。点选花材后拖动花头转向，拖根部圆点移动，双指旋转和缩放；右键打开花材图层。插在花器里的花枝：←/→ 转向，↑/↓ 调整枝梗长度，Alt+方向键移动；其他花材方向键微调。[ 和 ] 旋转，Delete 删除，Ctrl/⌘+Z 撤销，Esc 取消选择。" data-aria-zh="插花画布。点选花材后拖动花头转向，拖根部圆点移动，双指旋转和缩放；右键打开花材图层。插在花器里的花枝：←/→ 转向，↑/↓ 调整枝梗长度，Alt+方向键移动；其他花材方向键微调。[ 和 ] 旋转，Delete 删除，Ctrl/⌘+Z 撤销，Esc 取消选择。" data-aria-en="Ikebana canvas. Select a material, drag the flower to swing it and drag the base dot to move it; use two fingers to rotate and scale; right-click for layers. For a stem in the vessel, ←/→ turn it, ↑/↓ change its stem length and Alt+arrows move it; other materials move with the arrow keys. [ and ] rotate, Delete removes, Ctrl/⌘+Z undoes, Esc deselects." data-aria-ja="いけばなキャンバス。花材を選び、花を引いて向きを変え、根元の点で移動、2本指で回転・拡大縮小、右クリックでレイヤー。花器に挿した茎は←/→で向き、↑/↓で茎の長さ、Alt+矢印で移動。ほかの花材は矢印キーで移動。[ と ] で回転、Deleteで削除、Ctrl/⌘+Zで元に戻す、Escで選択解除。">
+<canvas id="scene-layer" aria-hidden="true">
+</canvas>
 <div class="stage-grain">
 </div>
 <div class="scene-label" aria-hidden="true" data-zh="一 花 一 世 界" data-en="ONE FLOWER, ONE WORLD">一 花 一 世 界</div>
@@ -146,12 +152,18 @@
 <div class="composition" id="composition">
 </div>
 <img id="vessel" class="vessel" src="/assets/round.png" alt="窑变圆瓶" draggable="false">
+<canvas id="interior-layer" aria-hidden="true">
+</canvas>
 <canvas id="fixture-layer" aria-hidden="true">
 </canvas>
 <div class="composition composition-front" id="composition-front">
 </div>
+<canvas id="rim-layer" aria-hidden="true">
+</canvas>
 <canvas id="prune-overlay" aria-hidden="true">
 </canvas>
+<div id="seat-marks" class="seat-marks" aria-hidden="true">
+</div>
 <div id="gesture-feedback" class="gesture-feedback" aria-hidden="true">
 <output>0°</output>
 </div>
@@ -186,6 +198,16 @@
 </div>
 <p class="layer-menu-tip" data-zh="拖动调整顺序；虚化只辅助查看，不影响作品。" data-en="Drag to reorder. Blur is only an editing aid." data-ja="ドラッグで順序を変更。ぼかしは編集中だけ表示します。">拖动调整顺序；虚化只辅助查看，不影响作品。</p>
 </section>
+</div>
+<div id="mode-pill" class="mode-pill" hidden>
+<p class="mode-pill-copy" role="status" aria-live="polite"><strong id="mode-pill-target"></strong><span id="mode-pill-text"></span><small id="mode-pill-exit"></small></p>
+<div id="mode-pill-brush" class="mode-pill-brush" role="group" aria-label="剪口大小" data-aria-zh="剪口大小" data-aria-en="Brush size" data-aria-ja="ブラシサイズ" hidden><button type="button" id="brush-smaller" aria-label="缩小剪口" data-aria-zh="缩小剪口" data-aria-en="Smaller brush" data-aria-ja="ブラシを小さく">−</button><output id="mode-pill-size">16</output><button type="button" id="brush-larger" aria-label="放大剪口" data-aria-zh="放大剪口" data-aria-en="Larger brush" data-aria-ja="ブラシを大きく">+</button></div>
+<button type="button" id="mode-pill-done" class="mode-pill-done" data-zh="完成" data-en="Done" data-ja="完了">完成</button>
+</div>
+<div id="seat-banner" class="seat-banner" role="status" aria-live="polite" hidden>
+<span id="seat-banner-text"></span>
+<button type="button" id="seat-all" class="seat-all" data-zh="全部插回" data-en="Seat all" data-ja="すべて挿し直す">全部插回</button>
+<button type="button" id="seat-banner-close" class="seat-banner-close" aria-label="关闭提示" data-aria-zh="关闭提示" data-aria-en="Dismiss" data-aria-ja="閉じる">×</button>
 </div>
 </div>
 <div class="stage-tools">
@@ -223,7 +245,7 @@
 </span>
 </button>
 <button id="reset-button" class="icon-button" title="清空花材" aria-label="清空花材" data-title-zh="清空花材" data-title-en="Clear materials" data-aria-zh="清空花材" data-aria-en="Clear materials">
-<span data-icon="refresh">
+<span data-icon="eraser">
 </span>
 </button>
 </div>
@@ -252,7 +274,6 @@
 <button data-scene="night" class="scene-dot night" aria-label="墨夜背景" title="墨夜" data-aria-zh="墨夜背景" data-aria-en="Night background" data-title-zh="墨夜" data-title-en="Night">
 </button>
 </div>
-<span class="stage-hint" id="stage-hint">拖动移动 · 双指旋转缩放 · 右键调层次</span>
 <button id="export-draft" class="text-button">
 <span data-icon="download">
 </span>

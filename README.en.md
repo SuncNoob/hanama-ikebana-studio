@@ -7,7 +7,7 @@ A hands-on flower-arranging studio for placing botanicals, pruning stems, choosi
 ## Create an arrangement
 
 1. Browse by material type, color, or name. Color filtering checks every pose of a botanical family and shows matching variants.
-2. Choose a vessel and place materials on the canvas. Move, rotate, scale, flip, and reorder layers. On mobile, use two fingers to rotate and scale.
+2. Choose a vessel and place materials on the canvas. Move, rotate, scale, flip, and reorder layers. On mobile, use two fingers to rotate and scale. Dragging a flower swings its stem around the vessel mouth; drag the base dot to move the whole stem. Stems that leave the vessel are marked and can be seated again in one step, and a cut-off piece goes back in by its real cut end.
 3. Cut a stem into two independently movable layers, or refine a detail with the eraser. Adjust stem length separately from the size of the flower or foliage.
 4. Name the work, choose its light and setting, then export a generation pack. Use its draft and short prompt in your own image-generation tool; import the result into your gallery afterward.
 
