@@ -3,8 +3,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {assetById,vessels,studies,studyState,makeItem} from './helpers/catalog.mjs';
-import {isKenzan,mouthBase,KENZAN,kenzanHolders,kenzanPins,onHolder} from '../dist/scale.js?v=hn2';
-import {kenzanSeats,paintInsertedPass,paintKenzanPass,paintFixture} from '../dist/compositor.js?v=hn2';
+import {isKenzan,mouthBase,KENZAN,kenzanHolders,kenzanPins,onHolder} from '../dist/scale.js?v=hn3';
+import {kenzanSeats,paintInsertedPass,paintKenzanPass,paintFixture} from '../dist/compositor.js?v=hn3';
 import {vesselGeometry} from '../dist/geometry.js?v=28';
 
 const KENZAN_VESSELS=['ink-black-low-bowl','charcoal-square-basin','celadon-shallow-suiban','indigo-oval-suiban','sand-wide-pottery-bowl','french-charcoal-compote','modern-travertine-trough'];

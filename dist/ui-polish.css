@@ -84,7 +84,7 @@ button { transition: background-color .16s ease, border-color .16s ease, color .
 .material-search::placeholder { color: #758074; opacity: 1; }
 .material-grid { gap: 10px; }
 .material-card { border-color: var(--ui-line); border-radius: 9px; background: #f9f9f5; }
-.material-card:hover { border-color: #94a68d; background: #f0f3ec; box-shadow: 0 3px 12px #2e3d2b0d; }
+@media (hover: hover) { .material-card:hover { border-color: #94a68d; background: #f0f3ec; box-shadow: 0 3px 12px #2e3d2b0d; } }
 .material-card:active { transform: scale(.985); }
 .material-card strong { font-size: 13px; line-height: 1.3; }
 .material-card small { font-size: 11px; }
@@ -108,7 +108,7 @@ button { transition: background-color .16s ease, border-color .16s ease, color .
 .stage-tools .tool-separator { margin-inline: 1px; }
 .zoom-controls { border-color: #d3dad0; background: #fbfbf8f2; box-shadow: 0 5px 18px #26352820; }
 .zoom-controls button { width: 40px; min-height: 40px; }
-.stage-bottom, .quick-material-bar { width: min(100%, calc(100dvh - 315px)); max-width: 100%; }
+.stage-bottom, .quick-material-bar, .guide-panel { width: min(100%, calc(100dvh - 315px)); max-width: 100%; }
 .stage-bottom { margin-inline: auto; min-height: 58px; }
 .scene-picker { gap: 4px; color: #566657; font-size: 13px; white-space: nowrap; }
 .scene-picker>span { margin-right: 5px; }
@@ -261,6 +261,8 @@ dialog h2 { line-height: 1.35; }
 .variant-modal .file-note { font-size: 12px !important; line-height: 1.5 !important; }
 
 @media (min-width: 901px) {
+  /* A14: the canvas never shrinks below 340 px (the toolbar's width plus its inset); short windows scroll instead. */
+  :root { --stage-fit: max(340px, calc(100dvh - 350px)); }
   .studio-layout { height: auto; min-height: calc(100dvh - 135px); }
   .material-panel { height: calc(100dvh - 135px); min-height: 650px; align-self: start; position: sticky; top: 88px; }
   .material-grid { grid-auto-rows: 164px; }
@@ -268,10 +270,10 @@ dialog h2 { line-height: 1.35; }
   .material-card img { height: 92px; margin-bottom: 6px; }
   .material-card small { display: -webkit-box; min-height: 1.25em; overflow: hidden; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.25; }
   .stage-shell { align-items: center; }
-  .canvas-viewport { max-width: calc(100dvh - 350px); }
-  .stage-tools { left: max(14px, calc((100% - (100dvh - 350px)) / 2 + 14px)); }
-  .zoom-controls { right: max(8px, calc((100% - (100dvh - 350px)) / 2 - 55px)); }
-  .stage-bottom, .quick-material-bar { width: min(100%, calc(100dvh - 350px)); }
+  .canvas-viewport { max-width: var(--stage-fit); }
+  .stage-tools { left: max(14px, calc((100% - var(--stage-fit)) / 2 + 14px)); }
+  .zoom-controls { right: max(8px, calc((100% - var(--stage-fit)) / 2 - 55px)); }
+  .stage-bottom, .quick-material-bar, .guide-panel { width: min(100%, var(--stage-fit)); }
   .workspace>.design-panel { max-height: calc(100dvh - 120px); overflow-y: auto; scrollbar-width: thin; }
 }
 
@@ -281,7 +283,7 @@ dialog h2 { line-height: 1.35; }
 }
 
 @media (max-width: 900px) {
-  .stage-bottom, .quick-material-bar { width: 100%; }
+  .stage-bottom, .quick-material-bar, .guide-panel { width: 100%; }
   .workspace>.design-panel { max-width: 100%; }
   .zoom-controls { gap: 2px; margin-top: 8px; }
   .zoom-controls button { width: 42px; min-height: 40px; }
@@ -343,7 +345,686 @@ dialog h2 { line-height: 1.35; }
   .quick-material-filters button { min-height: 32px; padding-inline: 8px; font-size: 12px; }
 }
 
+/* Ikebana guide (A13): an SVG in stage centimetres over the canvas; hairline strokes at any size, labels with a paper halo. */
+.ikebana-guide { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; --guide-ink: #5f6d55; --guide-lit: #a5533e; --guide-halo: #f7f6f1; }
+.stage[data-scene=stone] .ikebana-guide { --guide-halo: #dde2dd; }
+.stage[data-scene=night] .ikebana-guide { --guide-ink: #dbe2d2; --guide-lit: #f0b49b; --guide-halo: #2f3832; }
+.ikebana-guide line, .ikebana-guide circle, .ikebana-guide path { fill: none; stroke: var(--guide-ink); stroke-width: 1.1; vector-effect: non-scaling-stroke; }
+.ikebana-guide line { stroke-dasharray: 5 4; opacity: .75; }
+.ikebana-guide .guide-origin { fill: var(--guide-ink); stroke: none; }
+.ikebana-guide text { fill: var(--guide-ink); stroke: var(--guide-halo); paint-order: stroke; stroke-linejoin: round; font-family: var(--sans); font-variant-numeric: tabular-nums; }
+.ikebana-guide .guide-glyph { font-family: var(--serif); font-weight: 700; }
+.ikebana-guide .lit line, .ikebana-guide .lit circle { stroke: var(--guide-lit); stroke-width: 1.8; opacity: 1; }
+.ikebana-guide .lit text { fill: var(--guide-lit); font-weight: 600; }
+.ikebana-guide .filled circle { fill: #a5533e38; }
+.stage[data-scene=night] .ikebana-guide .filled circle { fill: #f0b49b40; }
+.ikebana-guide .guide-thirds path { stroke-dasharray: 4 4; opacity: .65; }
+.ikebana-guide .guide-thirds text { stroke: none; opacity: .85; }
+.guide-panel { display: grid; gap: 6px; margin: 8px auto 0; padding: 8px 10px; border: 1px solid #d7dcd3; border-radius: 10px; background: #fbfbf8; color: #566657; font-size: 12px; line-height: 1.4; }
+.guide-panel[hidden] { display: none; }
+.guide-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.guide-chip-group { display: inline-flex; overflow: hidden; border: 1px solid #ccd3c5; border-radius: 8px; }
+.guide-chip-group button, .guide-chip { min-height: 32px; padding: 4px 11px; border: 0; background: #fff; color: #4f5d50; font-size: 12px; }
+.guide-chip { border: 1px solid #ccd3c5; border-radius: 8px; }
+.guide-chip-group button + button { border-left: 1px solid #ccd3c5; }
+.guide-chip-group button[aria-pressed=true], .guide-chip[aria-pressed=true] { background: #e5ebde; color: #2f4532; font-weight: 600; }
+.guide-chip-group button:focus-visible, .guide-chip:focus-visible, .guide-fit:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.guide-legend { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; margin: 0; }
+.guide-key::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 5px; border: 1.5px solid #5f6d55; border-radius: 50%; vertical-align: -.5px; }
+.guide-note { color: #7a8274; font-size: 11px; }
+.guide-readout { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; }
+.guide-reading { min-width: 0; color: #3d4a3f; font-variant-numeric: tabular-nums; }
+.guide-fit { flex: none; min-height: 30px; padding: 4px 10px; border: 1px solid #b56a56; border-radius: 7px; background: #fff; color: #924c3d; font-size: 12px; white-space: nowrap; }
+.guide-fit:hover { background: #fbf1ed; }
+.guide-fit[hidden] { display: none; }
+
+/* Start card (A12): over an empty canvas; the wrapper lets pointers through, only the card takes them. */
+.start-card-wrap { position: absolute; inset: 0; z-index: 403; display: flex; align-items: flex-start; justify-content: center; padding: max(7%, 62px) 12px 10px; pointer-events: none; }
+.start-card-wrap[hidden] { display: none; }
+.start-card { position: relative; width: min(100%, 360px); padding: 16px 16px 8px; border: 1px solid #d3dad0; border-radius: 14px; background: #fbfaf6f2; box-shadow: 0 10px 30px #26352824; color: var(--ink); text-align: center; pointer-events: auto; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); max-height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.start-card h2 { margin: 0 26px 4px; font-family: var(--serif); font-size: 19px; font-weight: 600; }
+.start-card-rule { margin: 0 0 12px; color: #5f6a5c; font-size: 12px; line-height: 1.5; }
+.start-line { width: 100%; min-height: 40px; }
+.start-card-label { margin: 12px 0 6px; color: #6d7768; font-size: 11px; }
+.start-studies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.start-study { display: grid; gap: 4px; min-width: 0; padding: 0; border: 0; background: none; color: var(--ink); font-size: 11px; line-height: 1.3; cursor: pointer; }
+.start-study img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border: 1px solid #dfe3da; border-radius: 8px; background: #eeede7; }
+.start-study:hover img, .start-study:focus-visible img { border-color: #8a9a85; }
+.start-study:focus-visible { outline: none; }
+.start-help { min-height: 32px; margin-top: 4px; font-size: 12px; }
+.start-card-close { position: absolute; top: 5px; right: 5px; width: 30px; height: 30px; padding: 0; border-radius: 8px; color: #646b61; font-size: 18px; line-height: 1; }
+.start-card-close:hover { background: #ece9e0; color: var(--ink); }
+/* A short stage (small laptop windows, landscape phones): drop the rule line so the whole card fits; it scrolls if it still cannot. */
+@media (min-width: 601px) and (max-height: 820px) {
+  .start-card-rule { display: none; }
+  .start-card h2 { margin-bottom: 10px; }
+  .start-card-label { margin-top: 8px; }
+}
+
+/* Honest stem length (A12): the stretch of the length slider past the species' usual stem is amber. */
+.length-track { position: relative; }
+.length-track input { position: relative; z-index: 1; }
+.length-track .cap-band { display: none; position: absolute; z-index: 0; top: 50%; right: 0; left: calc(8px + (100% - 16px) * var(--cap, 1)); height: 14px; border-radius: 7px; background: #e2a24a70; transform: translateY(-50%); pointer-events: none; }
+.length-track.past-cap .cap-band { display: block; }
+.stem-cap-warning { background: #dc9a3f1c; color: #80531b; }
+.stem-cap-warning button { color: #80531b; }
+
+@media (max-width: 600px) {
+  .start-card-wrap { padding-top: 10px; }
+  .start-card { width: min(100%, 320px); padding: 10px 12px 4px; }
+  .start-card h2 { margin-bottom: 8px; font-size: 16px; }
+  .start-card-rule { display: none; }
+  .start-line { min-height: 38px; }
+  .start-card-label { margin: 8px 0 5px; }
+  .start-studies { grid-template-columns: repeat(3, 56px); justify-content: center; gap: 12px; }
+  .start-study span { display: none; }
+  .start-help { min-height: 30px; margin-top: 2px; }
+  .guide-panel { padding: 7px 8px; }
+  .guide-chip-group button, .guide-chip { min-height: 34px; padding-inline: 9px; }
+}
+
+/* A14 — phones and small windows. The canvas frame (canvas, toolbar, zoom pill, cut choice) has no box of its own unless one of
+   the layouts below gives it one: a sticky frame over the inspector on portrait phones and tablets, a sticky column beside
+   it in short landscape windows. */
+.stage-frame { display: contents; }
+.sheet-scrim { display: none; }
+#quick-material-title:focus:not(:focus-visible) { outline: none; }
+.page-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.empty-actions .button { min-width: 0; }
+
+/* The Guide stays in the header on phones and tablets, as a round icon button like New canvas. */
+@media (max-width: 900px) {
+  .header-actions > #help-button { display: inline-flex; flex: none; width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 0; border: 1px solid #c9cbbf; border-radius: 50%; }
+  .header-actions > #help-button > span:last-child { display: none; }
+  .header-actions > #help-button svg { width: 17px; height: 17px; }
+}
+/* Room for the Guide in one header row: New canvas and the Guide go icon-only below 1000 px, Save below 900 px, and the
+   HANAMA wordmark gives way to the seal (en below 820 px, ja below 1000 px). */
+@media (min-width: 681px) and (max-width: 1000px) {
+  .header-actions > :is(.header-new, #help-button) { display: inline-flex; flex: none; width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 0; border: 1px solid #c9cbbf; border-radius: 50%; }
+  .header-actions > :is(.header-new, #help-button) > span:last-child { display: none; }
+}
+@media (min-width: 681px) and (max-width: 900px) {
+  .header-actions > #save-button { width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 0; }
+  .header-actions > #save-button > span:last-child { display: none; }
+}
+@media (min-width: 681px) and (max-width: 820px) {
+  html[lang="en"] .brand-word { display: none; }
+}
+@media (min-width: 681px) and (max-width: 1000px) {
+  html[lang="ja"] .brand-word { display: none; }
+}
+@media (min-width: 1151px) and (max-width: 1240px) {
+  html:not([lang="zh-CN"]) .brand-name small { display: none; }
+}
+@media (min-width: 1001px) and (max-width: 1300px) {
+  html[lang="ja"] .header-actions > :is(.header-new, #help-button) { width: 40px; min-width: 40px; padding: 0; border: 1px solid #c9cbbf; border-radius: 50%; }
+  html[lang="ja"] .header-actions > :is(.header-new, #help-button) > span:last-child { display: none; }
+}
+@media (max-width: 480px) {
+  /* Four header buttons leave no room for the HANAMA wordmark on phones; the seal stands for the brand. */
+  html:not([lang="zh-CN"]) .brand-word { display: none; }
+  html:not([lang="zh-CN"]) .brand .seal { display: grid; }
+}
+@media (max-width: 352px) {
+  /* With Share in the header (B6) the 间 wordmark no longer fits beside five buttons on the narrowest phones. */
+  .brand-word { display: none; }
+  .brand .seal { display: grid; }
+}
+@media (max-width: 360px) {
+  .header-actions > #help-button { width: 36px; min-width: 36px; height: 36px; min-height: 36px; }
+}
+
+/* Portrait phones and tablets: the canvas and its toolbar stay at the top while the inspector, layers and sliders scroll
+   under them; the zoom pill sits in the canvas's bottom-right corner. */
+@media (max-width: 900px) and (orientation: portrait) and (min-height: 600px) {
+  #studio-view { --sticky-canvas: min(100%, 50vh); }
+  @supports (height: 100svh) { #studio-view { --sticky-canvas: min(100%, 50svh); } }
+  #studio-view .stage-shell { display: contents; }
+  #studio-view .stage-frame {
+    position: sticky; top: 0; z-index: 600;
+    display: grid; grid-template-columns: minmax(0, 1fr) var(--sticky-canvas) minmax(0, 1fr); align-items: start;
+    align-self: stretch; width: auto; margin: 0; padding: 6px 0 8px;
+    background: #eceee9; box-shadow: 0 10px 12px -12px #2635282e;
+  }
+  #studio-view .canvas-viewport { grid-column: 2; grid-row: 1; width: 100%; max-width: none; }
+  #studio-view .stage-tools {
+    grid-column: 2; grid-row: 2;
+    position: relative; top: auto; left: auto; transform: none;
+    display: grid; grid-template-columns: repeat(8, minmax(0, 1fr));
+    width: 100%; max-width: 100%; min-height: 50px; margin: 8px 0 0; padding: 4px; overflow: visible;
+  }
+  #studio-view .stage-tools .tool-separator { display: none; }
+  #studio-view .stage-tools .icon-button { width: 100%; height: 40px; min-width: 0; flex: none; }
+  #studio-view .stage-tools :is(#prune-tool, #erase-tool) { padding: 2px 0; }
+  #studio-view .zoom-controls {
+    grid-column: 2; grid-row: 1; justify-self: end; align-self: end;
+    position: relative; z-index: 402; top: auto; right: auto; transform: none;
+    flex-direction: row; align-items: center; gap: 1px; margin: 0 6px 6px 0; padding: 2px;
+  }
+  #studio-view .zoom-controls button { width: 34px; min-height: 34px; font-size: 20px; }
+  #studio-view .zoom-controls #zoom-reset { width: 44px; font-size: 10px; }
+  /* The zoom pill holds the bottom-right corner, so the cut/erase pill and the seat banner sit at the top. */
+  #studio-view .mode-pill, #studio-view .seat-banner { top: 8px; bottom: auto; }
+  #studio-view .cut-choice { grid-column: 1 / -1; grid-row: 3; margin: 8px auto 0; }
+  /* Scrolling to the layer list or a focused slider stops below the sticky frame (--frame-h is measured in app.js). */
+  html:has(#studio-view:not([hidden])) { scroll-padding-top: calc(var(--frame-h, 0px) + 8px); }
+  /* The page stays put when the inspector under the frame grows or shrinks (sheet closing, a stem selected); scroll anchoring
+     would otherwise carry the view down to the library. */
+  body:has(#studio-view:not([hidden])) { overflow-anchor: none; }
+  #studio-view .start-card-wrap { padding-top: 10px; }
+  /* The English scene line sits above the zoom pill, which now holds the bottom-right corner. */
+  html[lang="en"] #studio-view .scene-label { bottom: 54px; }
+}
+
+/* Tablets (601–900, B8): no CSS columns on the inspector (they left a half-empty column). The heading and its tabs share a
+   row, and the stem inspector is a two-column grid — what the stem is on the left (picture, pose, note), how it is shaped on
+   the right (angle, size, length, real size) — so the angle slider sits just under the sticky canvas. Warnings, pruning and
+   the actions run full width below. Landscape windows keep their single right-hand column. */
+@media (min-width: 601px) and (max-width: 900px) {
+  .workspace > .design-panel { columns: auto; }
+}
+@media (min-width: 601px) and (max-width: 900px) and (orientation: portrait) {
+  .workspace > .design-panel { padding-top: 14px; }
+  .workspace > .design-panel > .panel-heading { flex-direction: row; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .workspace > .design-panel > .panel-heading h2 { white-space: nowrap; }
+  .workspace > .design-panel .editor-tabs { width: auto; flex: 0 1 300px; margin-left: auto; }
+  .workspace > .design-panel #selection-controls:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 24px; align-items: start; }
+  #selection-controls > * { grid-column: 1 / -1; min-width: 0; }
+  #selection-controls > .selected-material { grid-column: 1; grid-row: 1; }
+  #selection-controls > .variant-trigger { grid-column: 1; grid-row: 2; }
+  #selection-controls > .botanical-note { grid-column: 1; grid-row: 3 / span 2; }
+  #selection-controls > .range-control:has(#angle) { grid-column: 2; grid-row: 1; }
+  #selection-controls > .range-control:has(#size) { grid-column: 2; grid-row: 2; }
+  #selection-controls > .range-control:has(#length) { grid-column: 2; grid-row: 3; }
+  #selection-controls > .real-size { grid-column: 2; grid-row: 4; }
+  .workspace > .design-panel #selection-controls > .range-control:has(#angle) .slider-label { margin-top: 0; }
+}
+
+/* Short landscape windows (phones on their side, short laptop windows) and every landscape window up to 900 px wide: a
+   compact header, the canvas with its tools in a sticky column on the left, everything else on the right, the library
+   below, and the material sheet as a side panel. */
+@media (orientation: landscape) and (max-height: 540px), (orientation: landscape) and (max-width: 900px) {
+  :root { --fit: min(calc(100vh - 70px), 50vw); }
+  @supports (height: 100svh) { :root { --fit: min(calc(100svh - 70px), 50vw); } }
+  .masthead { display: flex; height: 52px; min-height: 0; padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left)); gap: 14px; }
+  .brand { gap: 8px; }
+  .brand .seal { display: grid; width: 28px; height: 32px; font-size: 21px; }
+  .brand-name { font-size: 20px; letter-spacing: 2px; }
+  .brand-name small { display: none; }
+  .main-nav { height: auto; align-self: stretch; gap: clamp(12px, 2.6vw, 28px); }
+  .nav-button { min-height: 0; font-size: 13px; }
+  .header-actions { gap: 6px; }
+  .header-actions > :is(.header-new, #help-button, #save-button) { width: 36px; min-width: 36px; height: 36px; min-height: 36px; padding: 0; }
+  .header-actions > :is(.header-new, #help-button) { border: 1px solid #c9cbbf; border-radius: 50%; }
+  .header-actions > :is(.header-new, #help-button, #save-button) > span:last-child { display: none; }
+  #language-select { width: 92px; min-width: 92px; height: 36px; min-height: 36px; padding: 0 22px 0 8px; font-size: 12px; }
+
+  .studio-layout { display: flex; flex-direction: column; height: auto; min-height: 0; }
+  .material-panel { order: 1; align-self: stretch; position: static; height: auto; min-height: 0; border-right: 0; border-top: 1px solid var(--line); padding: 18px 20px 16px; }
+  .material-panel .material-grid { display: flex; flex: none; max-height: none; overflow-x: auto; overflow-y: hidden; gap: 10px; padding: 0 0 7px; scrollbar-width: thin; }
+  .material-panel .material-card { flex: 0 0 112px; min-width: 112px; min-height: 0; }
+  .material-foot { display: none; }
+
+  .workspace, .workspace:has(> .quick-material-drawer:not([hidden])) {
+    display: grid; grid-template-columns: auto minmax(0, 520px); grid-template-rows: repeat(9, auto) 1fr;
+    justify-content: center; justify-items: stretch; align-items: start; column-gap: 16px;
+    padding: 10px max(16px, env(safe-area-inset-right)) 18px max(16px, env(safe-area-inset-left));
+  }
+  .stage-shell { display: contents; }
+  .workspace > *, .stage-shell > * { grid-column: 2; grid-row: auto; }
+  .stage-shell > .stage-frame {
+    grid-column: 1; grid-row: 1 / -1; position: sticky; top: 8px; z-index: 600;
+    display: grid; grid-template-columns: var(--fit) auto; column-gap: 6px; align-items: start;
+  }
+  .stage-frame > .canvas-viewport { grid-column: 1; grid-row: 1; width: var(--fit); max-width: none; }
+  .stage-frame > .stage-tools {
+    grid-column: 2; grid-row: 1; position: static; top: auto; left: auto; transform: none;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    width: auto; max-width: none; min-height: 0; max-height: var(--fit); margin: 0; padding: 3px;
+    overflow-x: hidden; overflow-y: auto; scrollbar-width: none;
+  }
+  .stage-frame > .stage-tools .icon-button { flex: none; width: 36px; height: 36px; min-width: 0; }
+  .stage-frame > .stage-tools :is(#prune-tool, #erase-tool) { padding: 1px 0; }
+  .stage-frame > .stage-tools .tool-separator { display: block; flex: none; width: 18px; height: 1px; margin: 2px 0; }
+  .stage-frame > .zoom-controls {
+    grid-column: 1; grid-row: 1; justify-self: end; align-self: end;
+    position: relative; z-index: 402; top: auto; right: auto; transform: none;
+    flex-direction: row; align-items: center; gap: 1px; margin: 0 6px 6px 0; padding: 2px;
+  }
+  .stage-frame > .zoom-controls button { width: 34px; min-height: 34px; font-size: 20px; }
+  .stage-frame > .zoom-controls #zoom-reset { width: 44px; font-size: 10px; }
+  .stage-frame > .cut-choice {
+    grid-column: 1; grid-row: 1; align-self: end; z-index: 406;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; width: auto; margin: 0 8px 8px; padding: 9px 10px;
+  }
+  .stage-frame > .cut-choice .cut-choice-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; margin-left: 0; }
+  .mode-pill, .seat-banner { top: 8px; bottom: auto; }
+  .start-card-wrap { padding-top: 10px; }
+  /* The English scene line would sit under the zoom pill or run into the vessel on this small canvas. */
+  html[lang="en"] .stage-frame .scene-label { display: none; }
+
+  .workspace-heading { max-width: none; margin-bottom: 10px; }
+  .stage-shell > :is(.guide-panel, .quick-material-bar, .stage-bottom) { width: 100%; max-width: none; margin-inline: 0; }
+  .stage-shell > .guide-panel { margin-top: 0; margin-bottom: 8px; }
+  .stage-shell > .quick-material-bar { margin-top: 0; }
+  .stage-shell > .quick-material-bar, .stage-shell > .stage-bottom { flex-wrap: wrap; row-gap: 6px; }
+  .stage-shell > .stage-bottom > .stage-exports { margin-left: auto; }
+  .workspace > :is(.design-panel, .layer-menu) { grid-column: 2; grid-row: auto; position: static; top: auto; max-width: none; max-height: none; overflow: visible; columns: auto; margin: 12px 0 0; }
+
+  .workspace > .quick-material-drawer:not([hidden]) {
+    position: fixed; inset: 0 0 0 auto; z-index: 950; order: initial; align-self: auto;
+    width: min(420px, 48vw); max-width: none; height: 100dvh; max-height: none; margin: 0;
+    padding: 14px max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) 16px;
+    border-radius: 18px 0 0 18px; background: #f8f8f3; box-shadow: -16px 0 60px #1d2b2540;
+  }
+  .quick-material-drawer .quick-material-grid { min-height: 0; overscroll-behavior: contain; }
+  .quick-material-drawer { gap: 9px; }
+  .quick-material-heading .eyebrow, .quick-material-status { display: none; }
+  .quick-material-heading h2 { margin-top: 0; font-size: 19px; }
+  .quick-material-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .quick-material-grid .material-card, .quick-material-grid .quick-material-card { min-height: 124px; padding: 6px 4px; }
+  .quick-material-grid .material-card img, .quick-material-grid .quick-material-card img { height: 68px; }
+  body.material-sheet-open:has(#studio-view:not([hidden])) { overflow: hidden; }
+}
+@media (orientation: landscape) and (max-width: 760px) {
+  /* Small phones on their side: the right column is ~220–300 px, so its rows stack. */
+  .brand-word { display: none; }
+  .quick-material-recent-label { display: none; }
+  .workspace > .design-panel { padding: 14px; }
+  .workspace > .design-panel > .panel-heading { flex-direction: column; align-items: stretch; gap: 8px; }
+  .workspace > .design-panel .editor-tabs { width: 100%; }
+  .workspace > .design-panel .editor-tabs button { min-width: 0; }
+  .workspace > .design-panel .selected-material > div { min-width: 0; }
+  .workspace > .design-panel .selected-material strong { overflow-wrap: anywhere; }
+  .workspace > .design-panel .stem-details summary { gap: 8px; }
+  .workspace > .design-panel .stem-details summary > span:first-child { min-width: 0; }
+}
+@media (orientation: landscape) and (max-width: 640px) {
+  .masthead { gap: 10px; padding-inline: 12px; }
+  .main-nav { gap: 10px; }
+  .nav-button { padding-inline: 2px; font-size: 12px; }
+}
+
+/* The material sheet over the page (phones, tablets, short landscape): a scrim that closes it, a grab handle on a bottom
+   sheet, and toasts at the top while a sheet or the layer list fills the lower screen. */
+@media (max-width: 900px), (orientation: landscape) and (max-height: 540px) {
+  body.material-sheet-open .sheet-scrim { display: block; position: fixed; inset: 0; z-index: 940; background: #2733272e; -webkit-tap-highlight-color: transparent; }
+  body:is(.material-sheet-open, .layer-list-open) .toast { top: max(12px, env(safe-area-inset-top)); bottom: auto; transform: translate(-50%, -20px); }
+  body:is(.material-sheet-open, .layer-list-open) .toast.visible { transform: translate(-50%, 0); }
+}
+@media (max-width: 900px) and (orientation: portrait) {
+  .workspace > .quick-material-drawer:not([hidden]) .quick-material-heading { position: relative; margin-top: -18px; padding-top: 18px; touch-action: none; }
+  .workspace > .quick-material-drawer:not([hidden]) .quick-material-heading::before { content: ''; position: absolute; top: 7px; left: 50%; width: 38px; height: 4px; margin-left: -19px; border-radius: 2px; background: #c3cabd; }
+}
+/* Tall phones: the sheet peeks, so the canvas above it stays in view. */
+@media (max-width: 600px) and (min-height: 740px) {
+  .workspace > .quick-material-drawer:not([hidden]) { height: min(62dvh, 560px); }
+  .quick-material-status { display: none; }
+}
+
+/* iOS zooms the page into any focused field under 16 px. */
+@supports (-webkit-touch-callout: none) {
+  @media (pointer: coarse) {
+    #quick-material-search, #material-search, #work-subtitle, #intention, #language-select, #generation-mode, #prompt-text { font-size: 16px; }
+    #language-select { padding-inline: 6px 18px; }
+  }
+  @media (pointer: coarse) and (max-width: 360px) {
+    #language-select { width: 102px; min-width: 102px; }
+  }
+}
+
+/* Touch: 44 px targets for the small text controls and filters, taller sliders, larger scene dots. */
+@media (pointer: coarse) {
+  .editor-tabs button, #reseat-button, #scale-reset, #restore-cuts, .work-title-edit,
+  #material-filters button, #vessel-filters button, .color-filter-bar button, .quick-material-filters button { min-height: 44px; }
+  input[type=range] { min-height: 40px; }
+  .scene-dot { width: 40px; height: 40px; }
+  .scene-dot:before { inset: 10px; }
+  .scene-dot.active:after { inset: 6px; }
+}
+
+/* A canvas under ~420 px on a wide screen (short windows, landscape phones): the English scene line at the bottom right would
+   run into the study caption, so the caption keeps only its seal-script name. */
+@media (min-width: 901px) and (max-height: 770px), (orientation: landscape) and (max-height: 540px) {
+  html[lang="en"] .scene-caption small { display: none; }
+}
+/* The cut choice under a narrow canvas column (about 1024 px desktop windows): the buttons wrap below the text instead of
+   squeezing it to one word per line. */
+@media (min-width: 601px) {
+  .cut-choice { flex-wrap: wrap; row-gap: 8px; }
+  .cut-choice-copy { flex: 1 1 180px; }
+  .cut-choice-actions { margin-left: auto; }
+}
+@media (max-width: 400px) {
+  /* With 40 px scene dots the draft-image link wraps under them rather than widening the page (en at 320 px). */
+  .stage-bottom { flex-wrap: wrap; row-gap: 0; }
+  .stage-bottom > .stage-exports { margin-left: auto; }
+}
+@media (max-width: 600px) {
+  .page-heading .page-actions { justify-content: flex-start; margin-top: 18px; }
+  .page-heading .page-actions .button { margin-top: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   button { transition: none; }
 }
+
+/* Library cards (A15, B4): the role (or the vessel's shape) and true size under the name, a pose count or 书中器形 badge on
+   the picture, role headers under 全部, clamped lines of vessel facts, and the empty state's clear-filters button. Both
+   the left library and the quick sheet use these. */
+.material-card .card-role { color: #4c6046; font-weight: 500; }
+.material-card .card-figure { position: relative; display: block; }
+.material-card .card-badge {
+  position: absolute; right: 0; bottom: 4px; max-width: 100%; overflow: hidden; padding: 0 6px;
+  border: 1px solid #d5dbcd; border-radius: 999px; background: #f9f9f5eb; color: #5d6a5a;
+  font-size: 10px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; pointer-events: none;
+}
+.material-card .card-size { font-variant-numeric: tabular-nums; }
+/* Role and size may take two lines (three on the narrowest cards) instead of an ellipsis: Line · Focal · ≈47–50 cm. */
+.material-card .card-size, .quick-material-grid .material-card .card-size { display: -webkit-box; overflow: hidden; white-space: normal; text-overflow: clip; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+/* The pose dialog: each pose's true size as the first stem in the current vessel. */
+.variant-card .variant-size { display: block; margin-top: 3px; color: #6c7468; font-size: 12px; font-variant-numeric: tabular-nums; }
+.material-card :is(.vessel-meta, .vessel-fit) { display: -webkit-box; overflow: hidden; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.3; }
+/* Shape, height and mouth run to three short lines on the narrowest cards (Shallow · / 21 cm tall · / mouth 28 cm). */
+#vessel-filters:not([hidden]) ~ .material-grid .material-card .vessel-meta, .material-card .vessel-meta { -webkit-line-clamp: 3; }
+#vessel-filters:not([hidden]) ~ .material-grid .material-card .vessel-fit,
+.material-card .vessel-fit { min-height: 0; margin-top: 1px; color: #687266; }
+/* max-content rows: in the sheet's flex-sized, scrolling grid an auto row would stay at the cards' min-height and clip them. */
+.quick-material-grid { grid-auto-rows: max-content; }
+.quick-material-grid .vessel-card :is(.vessel-meta, .vessel-fit) { display: -webkit-box; white-space: normal; text-overflow: clip; }
+.quick-material-grid .vessel-card .vessel-fit { color: #687266; }
+.quick-material-grid .vessel-card strong { display: -webkit-box; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.material-role-heading {
+  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 7px; margin: 8px 2px -3px;
+  color: #4f5d4c; font: 500 13px/1.4 var(--serif); letter-spacing: .08em;
+}
+.material-role-heading:first-child { margin-top: 0; }
+.material-role-heading small { color: #6f786c; font: 11px/1 var(--sans); letter-spacing: 0; }
+/* 花之书 narrows whichever role is chosen, so it reads as an on/off toggle (dashed until pressed) rather than a sixth role. */
+.material-filters .book-toggle, .quick-material-filters .book-toggle { border: 1px dashed #bfc8b8; }
+.material-filters .book-toggle.active, .quick-material-filters .book-toggle[aria-pressed=true] { border-style: solid; border-color: #a8b6a1; }
+.material-grid-empty, .quick-material-empty { display: grid; justify-items: center; gap: 10px; }
+.material-grid-empty .clear-filters, .quick-material-empty .clear-filters {
+  min-height: 34px; padding: 5px 14px; border: 1px solid #a8b6a1; border-radius: 999px; background: #f4f6f0; color: #304232; font-size: 13px;
+}
+@media (hover: hover) { :is(.material-grid-empty, .quick-material-empty) .clear-filters:hover { background: #e4eadf; } }
+/* The quick sheet's plants/vessels switch (B4), styled like the library's tabs: a second line of the heading, or on phones
+   and in the landscape side panel the heading itself (the title then stays only for screen readers and as the focus target). */
+.quick-material-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 12px; }
+.quick-material-heading > .quick-material-modes { grid-column: 1 / -1; }
+@media (max-width: 600px) and (orientation: portrait), (orientation: landscape) and (max-height: 540px), (orientation: landscape) and (max-width: 900px) {
+  .quick-material-heading > div:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .quick-material-heading > .quick-material-modes { grid-column: 1; grid-row: 1; align-self: center; }
+}
+.quick-material-modes { display: grid; grid-template-columns: 1fr 1fr; flex: none; gap: 3px; padding: 3px; border-radius: 9px; background: #e9ece4; }
+.quick-material-modes button { min-height: 34px; padding: 4px 10px; border-radius: 7px; color: #5d6a5a; font-size: 13px; white-space: nowrap; }
+.quick-material-modes button[aria-pressed=true] { background: #fbfbf8; color: var(--ink); box-shadow: 0 1px 4px #2633261a; }
+@media (pointer: coarse) { .quick-material-modes button { min-height: 40px; } }
+.quick-material-status > span:first-child { flex: none; white-space: nowrap; }
+@media (min-width: 901px) {
+  /* Role headers and the taller vessel cards need rows that follow their content (max-content: an auto row in this
+     flex-sized, scrolling grid would stay at the cards' min-height and clip them). */
+  .material-grid { grid-auto-rows: max-content; }
+}
+/* Tablets in portrait: the library column is ~190 px, so vessel cards go one per row to keep their facts readable. */
+@media (min-width: 601px) and (max-width: 900px) and (orientation: portrait) {
+  #vessel-filters:not([hidden]) ~ .material-grid { grid-template-columns: minmax(0, 1fr); }
+}
+/* Where the left library is a horizontal strip (phones; short landscape) the role headers would be cards of their own. */
+@media (max-width: 600px) {
+  .material-panel .material-role-heading { display: none; }
+}
+@media (orientation: landscape) and (max-height: 540px), (orientation: landscape) and (max-width: 900px) {
+  .material-panel .material-role-heading { display: none; }
+  /* The side-panel sheet keeps two columns for vessels, so their facts are not cut short. */
+  .quick-material-drawer[data-mode="vessels"] .quick-material-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Generation dialog (A17): the draft at a glance, a pre-check, the mode switch, three steps and the folded extras. */
+#modal.pack-modal h2 { margin-bottom: 12px; }
+.pack-summary { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 14px; align-items: center; margin: 4px 0 14px; }
+.pack-summary img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--line); border-radius: 6px; background: #eceee5; }
+.pack-summary strong { font: 18px var(--serif); }
+#modal .pack-summary p { margin: 3px 0 0; font-size: 13px; line-height: 1.6; }
+#modal .pack-summary .export-subtitle { color: #697468; font-family: var(--serif); }
+.pack-check { margin: 0 0 14px; padding: 10px 14px 12px; border: 1px solid #e6cdbd; border-radius: 10px; background: #fbf3ec; }
+#modal .pack-check p { margin: 0 0 2px; color: var(--ink); font-size: 14px; }
+.pack-check ul { margin: 0 0 8px; padding-left: 18px; color: #7d4b36; font-size: 13px; line-height: 1.6; }
+.pack-check .button { min-height: 38px; }
+.pack-mode { margin: 0 0 14px; }
+.pack-mode .slider-label { margin: 0 0 6px; }
+.pack-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: #efefe8; }
+.pack-modes button { min-height: 36px; padding: 4px 6px; border-radius: 7px; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pack-modes button[aria-pressed="true"] { background: #fff; color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px #2a352824; }
+#modal .pack-mode .file-note { margin: 6px 0 0; }
+.pack-format { margin: 0 0 16px; }
+.pack-format .slider-label { display: block; margin: 0 0 6px; }
+.pack-formats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.pack-formats button { display: grid; align-content: center; gap: 2px; min-width: 0; min-height: 56px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); text-align: center; font-size: 13px; line-height: 1.25; }
+.pack-formats button small { color: var(--muted); font-size: 10px; white-space: nowrap; }
+.pack-formats button[aria-pressed="true"] { border-color: #657d5f; background: #eef2eb; box-shadow: inset 0 0 0 1px #657d5f; }
+.pack-formats button:hover { border-color: #657d5f; }
+.pack-formats button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#modal .pack-format .file-note { margin: 5px 0 0; }
+.pack-provider { margin: 0 0 16px; }
+.pack-provider .slider-label { display: block; margin: 0 0 6px; }
+.pack-providers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.pack-providers button { min-width: 0; min-height: 38px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); font-size: 13px; }
+.pack-providers button[aria-pressed="true"] { border-color: #657d5f; background: #eef2eb; box-shadow: inset 0 0 0 1px #657d5f; }
+.pack-providers button:hover { border-color: #657d5f; }
+.pack-providers button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#modal .pack-provider .file-note { margin: 5px 0 0; }
+.pack-steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: pack-step; }
+.pack-step { counter-increment: pack-step; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.pack-step::before { content: counter(pack-step); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #334134; color: #fff; font-size: 13px; font-weight: 600; }
+.pack-step.is-done::before { content: "✓"; background: #6d8a62; }
+#modal .pack-step h3 { margin: 0; font-size: 15px; line-height: 1.4; }
+#modal .pack-hint { margin: 2px 0 0; font-size: 12px; line-height: 1.5; }
+#modal .pack-hint-strong { color: var(--accent); }
+.pack-step-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.pack-step-actions .button { min-height: 44px; }
+.pack-step-actions a.button { text-decoration: none; }
+.pack-download { font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.pack-download[hidden] { display: none; }
+.pack-fallback { grid-column: 1 / -1; margin: 4px 0 0; text-align: center; }
+.pack-fallback[hidden] { display: none; }
+.pack-fallback img { display: block; width: min(100%, 360px); margin: 0 auto; border: 1px solid var(--line); border-radius: 6px; -webkit-touch-callout: default; -webkit-user-select: auto; user-select: auto; }
+.pack-fallback figcaption { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.pack-more { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+.pack-more summary { display: flex; align-items: center; min-height: 36px; color: var(--muted); font-size: 14px; cursor: pointer; }
+.pack-more summary:hover { color: var(--ink); }
+.pack-more .prompt-area { height: 190px; margin-top: 6px; }
+.pack-guide { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: center; margin: 6px 0 0; }
+.pack-guide img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--line); border-radius: 6px; background: #eceee5; }
+.pack-guide img:not([src]) { visibility: hidden; }
+.pack-guide figcaption { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.pack-more .modal-actions { margin-top: 12px; }
+#modal-content.is-drop-target { border-radius: 10px; outline: 2px dashed #6d8a62; outline-offset: 6px; }
+#gallery-view.is-drop-target { border-radius: 14px; outline: 2px dashed #6d8a62; outline-offset: -6px; }
+@media (max-width: 600px) {
+  #modal.pack-modal h2 { margin: 2px 0 10px; font-size: 21px; }
+  .pack-summary { grid-template-columns: 72px minmax(0, 1fr); gap: 12px; margin-bottom: 12px; }
+  .pack-summary strong { font-size: 16px; }
+  #modal .pack-summary p { font-size: 12px; line-height: 1.5; }
+  .pack-mode { margin-bottom: 12px; }
+  .pack-format { margin-bottom: 12px; }
+  .pack-provider { margin-bottom: 12px; }
+  .pack-formats button { min-height: 52px; padding: 5px 3px; font-size: 12px; }
+  .pack-formats button small { font-size: 9px; }
+  .pack-steps { gap: 8px; }
+  .pack-step { grid-template-columns: 28px minmax(0, 1fr); padding: 10px 12px; }
+  .pack-step-actions { grid-column: 1 / -1; justify-content: stretch; }
+  /* Side by side when both labels fit, else one per row (ja "プロンプトをコピー" at 360 px). */
+  .pack-step-actions .button { flex: 1 1 auto; min-width: max-content; }
+  .pack-step-actions .pack-download { flex-basis: 100%; }
+  .pack-more .prompt-area { height: 120px; }
+  /* "Download layered .comp project" is wider than a 320 px dialog: let export labels wrap. */
+  .pack-more .modal-actions .button { min-width: 0; white-space: normal; }
+  .pack-fallback img { width: min(100%, 240px); }
+  .pack-guide { grid-template-columns: 88px minmax(0, 1fr); }
+}
+
+/* My Works (B5): a photo card shows its hand draft on ⇄; a photo can be filed as generated or as a real arrangement. */
+.art-media { position: relative; }
+.art-media > img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.art-flip { position: absolute; right: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 12px; border: 1px solid #d3dad0; border-radius: 999px; background: #fbfaf6e8; color: var(--ink); font-size: 12px; box-shadow: 0 2px 8px #26352820; }
+.art-flip[aria-pressed="true"] { border-color: #334134; background: #334134; color: #fff; }
+@media (pointer: coarse) { .art-flip { min-height: 40px; } }
+.import-kind-preview { display: block; max-width: 100%; max-height: 180px; margin: 8px auto 0; border: 1px solid var(--line); border-radius: 8px; }
+.import-kind-preview[hidden] { display: none; }
+.import-kinds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0 6px; }
+.import-kind { display: grid; gap: 4px; align-content: start; min-height: 76px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; text-align: left; }
+.import-kind strong { font: 17px var(--serif); }
+.import-kind small { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.import-kind:hover, .import-kind:focus-visible { border-color: #6d8a62; }
+@media (max-width: 420px) { .import-kinds { grid-template-columns: minmax(0, 1fr); } }
+/* Short landscape phones: keep step 1 within the first screen of the dialog. */
+@media (orientation: landscape) and (max-height: 540px) {
+  #modal.pack-modal h2 { margin: 0 0 8px; font-size: 20px; }
+  .pack-summary { grid-template-columns: 56px minmax(0, 1fr); gap: 10px; margin-bottom: 10px; }
+  .pack-summary strong { font-size: 15px; }
+  #modal .pack-summary p { font-size: 12px; line-height: 1.45; }
+  .pack-mode { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: center; margin-bottom: 10px; }
+  .pack-mode .slider-label { margin: 0; }
+  #modal .pack-mode .file-note { grid-column: 1 / -1; margin: 0; }
+  .pack-format,.pack-provider { margin-bottom: 10px; }
+  .pack-step { padding: 8px 12px; }
+}
+
+/* Recipe (A18): the button sits beside Draft image (the pair wraps together on narrow phones); the dialog lists what to buy and a table of cut lengths. */
+.stage-exports { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.recipe-title { margin: 0 0 12px; font: 17px var(--serif); color: var(--ink); }
+.recipe-need { margin: 0 0 6px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; background: #fbfaf6; }
+.recipe-need h3 { margin: 0 0 6px; }
+.recipe-need > p { margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: #4d584c; }
+.recipe-shopping { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 14px; line-height: 1.5; }
+.recipe-shopping li { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.recipe-swatch { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #00000018; transform: translateY(1px); }
+.recipe-table-wrap { margin-top: 10px; }
+.recipe-table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.55; }
+.recipe-table caption { text-align: left; font-weight: 600; font-size: 16px; padding: 10px 0 6px; }
+.recipe-table th, .recipe-table td { padding: 9px 8px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
+.recipe-table thead th { border-top: 0; padding-top: 2px; padding-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 500; white-space: nowrap; }
+.recipe-table th[scope="row"] { width: 38px; padding-left: 0; }
+.recipe-table td:nth-child(2) { width: 34%; }
+.recipe-table td strong { display: block; font-weight: 600; }
+.recipe-cut { display: block; color: var(--accent); font-weight: 600; white-space: nowrap; }
+.recipe-table small { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.recipe-number { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; }
+.recipe-table tr.is-floating .recipe-number { background: var(--ink); }
+.recipe-warn { margin: 4px 0 0; color: var(--accent); font-size: 12px; line-height: 1.5; }
+.recipe-warn .text-button { display: inline; min-height: 0; padding: 0; color: inherit; font-size: inherit; text-decoration: underline; }
+@media (max-width: 600px) {
+  .recipe-table { font-size: 13px; }
+  .recipe-table th, .recipe-table td { padding: 8px 4px; }
+  .recipe-table th[scope="row"] { width: 30px; }
+  .recipe-number { width: 22px; height: 22px; font-size: 12px; }
+  .recipe-need { padding: 10px 12px; }
+}
+
+/* Sharing (B6): lineage under a title, the share icon on study cards, the arrival card for a shared draft. */
+.art-lineage { color: #7b6a58; font-family: var(--serif); font-size: 13px; }
+.art-card .art-lineage { margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.study-actions { display: flex; gap: 8px; align-items: stretch; }
+.study-actions .button { flex: 1 1 auto; min-width: 0; }
+.study-share { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; min-height: 44px; border: 1px solid #c9cbbf; border-radius: 8px; background: transparent; color: #4f5d4e; cursor: pointer; }
+.study-share:hover { background: #e9ede6; }
+.study-share svg { width: 17px; height: 17px; }
+.arrival { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 20px; align-items: start; margin: 6px 0 4px; }
+.arrival-figure { margin: 0; }
+.arrival-figure img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--line); border-radius: 8px; background: #eceee5; }
+.arrival-text h3 { margin: 0; font: 22px var(--serif); }
+.arrival-text h4 { margin: 14px 0 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+#modal .arrival-text .export-subtitle, #modal .arrival-text .art-lineage { margin: 4px 0 0; }
+.arrival-intention { margin: 10px 0 0; padding-left: 10px; border-left: 2px solid #d9d6c9; color: #4d584c; font-family: var(--serif); font-size: 14px; line-height: 1.7; }
+.arrival .file-note { margin: 10px 0 0; }
+@media (max-width: 600px) {
+  .arrival { grid-template-columns: 112px minmax(0, 1fr); gap: 12px; }
+  .arrival-text h3 { font-size: 18px; }
+  .arrival-actions .button { flex: 1 1 100%; }
+}
+
+/* Library and panel polish (B8). */
+/* 当季 · 秋: the season chip in both filter rows; pressing it again moves the season on. */
+.season-chip { display: inline-flex; align-items: center; gap: 4px; }
+.season-chip-name { font-weight: 600; color: #8f4a33; }
+.season-chip-name:empty { display: none; }
+/* The season mark on a family card: the current season when the family is in it, else its next season, muted. */
+.material-card .card-season {
+  position: absolute; left: 0; top: 4px; min-width: 18px; padding: 0 5px; text-align: center;
+  border: 1px solid #d5dbcd; border-radius: 999px; background: #f9f9f5eb; color: #7a8276;
+  font: 500 10px/16px var(--serif); white-space: nowrap; pointer-events: none;
+}
+.material-card .card-season.is-now { border-color: #e2c3ae; background: #f7eee6f2; color: #8f4a33; }
+/* The pose dialog: where a picture comes from is a small badge; its notes fold into 关于素材. */
+.variant-card { position: relative; }
+.variant-badge {
+  position: absolute; left: 6px; top: 6px; max-width: calc(100% - 12px); overflow: hidden; padding: 0 7px;
+  border: 1px solid #d5dbcd; border-radius: 999px; background: #f9f9f5eb; color: #5d6a5a;
+  font-size: 10px; line-height: 17px; text-overflow: ellipsis; white-space: nowrap;
+}
+.variant-badge[data-provenance="ai"], .variant-badge[data-provenance="art"] { border-style: dashed; }
+.material-about { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+.material-about summary { cursor: pointer; width: max-content; max-width: 100%; min-height: 32px; padding: 4px 0; color: #4f5d4c; font-weight: 500; }
+#modal .material-about .file-note { margin: 4px 0 0; }
+/* Recent strip: each slot re-adds its exact pose; ⋯ opens the family's poses. */
+.quick-material-recent { gap: 12px; }
+.quick-material-recent-slot { position: relative; display: inline-flex; flex: none; }
+.quick-material-recent-slot[hidden] { display: none !important; }
+.quick-material-recent-more {
+  position: absolute; right: -7px; bottom: -6px; display: grid; place-items: center; width: 20px; height: 20px; padding: 0;
+  border: 1px solid #cfd5c7; border-radius: 50%; background: #fbfbf7; color: #4f5d4c; font-size: 12px; line-height: 1;
+  box-shadow: 0 1px 3px #2a35281f;
+}
+.quick-material-recent-more::after { content: ""; position: absolute; inset: -6px; }
+.quick-material-recent-more:hover:not(:disabled) { background: #edf0e7; }
+.quick-material-recent-more:disabled { display: none; }
+/* Layer rows: the stem as it is on the canvas (its sprite, cut pieces included). */
+.layer-thumb { display: grid; place-items: center; flex: none; width: 28px; height: 36px; overflow: hidden; border-radius: 3px; background: #ecece5; }
+.layer-thumb > canvas, .layer-thumb > img { display: block; width: 100%; height: 100%; object-fit: contain; }
+@media (max-width: 900px) { .layer-thumb { width: 34px; height: 39px; } }
+.layer-menu.compact .layer-thumb { width: 30px; height: 30px; }
+/* 正在调整：X · 去调整 ↗ — shown on the 出图 tab when a stem is picked while a field there has focus. */
+.editing-chip {
+  display: flex; align-items: center; width: 100%; min-height: 40px; margin: 0 0 12px; padding: 6px 12px;
+  border: 1px solid #e2c3ae; border-radius: 999px; background: #f7eee6; color: #7d4b36; font-size: 13px; text-align: left;
+}
+.editing-chip[hidden], .design-panel[data-editor-tab=shape] > .editing-chip { display: none !important; }
+.editing-chip:hover { background: #f2e3d6; }
+/* B10 光 chip beside the scene dots: a small menu of window lights opens above it (phone-safe: it never leaves the stage width). */
+.light-picker { position: relative; display: inline-flex; flex: none; margin-left: 4px; }
+.light-chip {
+  display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 3px 10px 3px 7px;
+  border: 1px solid #cfd5c7; border-radius: 999px; background: #fbfbf7; color: #4f5d4c; font: inherit; font-size: 12px; cursor: pointer;
+}
+.light-chip:hover { background: #f1f2eb; }
+.light-chip.active { border-color: #c9a46d; background: #fbf3e4; color: #6d4f27; }
+.light-chip-mark { width: 12px; height: 12px; border-radius: 2px; background: linear-gradient(135deg, #fff6df 0 46%, #d9d2c1 46% 54%, #fff6df 54%); box-shadow: inset 0 0 0 1px #c8bfa9; transform: skewX(-10deg); }
+.light-chip.active .light-chip-mark { background: linear-gradient(135deg, #ffe0ab 0 46%, #c9a46d 46% 54%, #ffe0ab 54%); }
+.light-chip-name:empty { display: none; }
+.light-chip-name { font-weight: 500; }
+.light-chip.active > [data-zh] { display: none; }
+.light-menu {
+  position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 700; display: flex; flex-wrap: wrap; gap: 4px;
+  width: max-content; max-width: min(calc(100vw - 32px), 480px); padding: 6px; border: 1px solid #dcdfd4; border-radius: 10px;
+  background: #fbfbf7; box-shadow: 0 6px 22px #2a352826;
+}
+.light-menu[hidden] { display: none; }
+.light-menu button {
+  min-height: 36px; padding: 4px 11px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: #4f5d4c;
+  font: inherit; font-size: 13px; white-space: nowrap; cursor: pointer;
+}
+.light-menu button:hover { background: #eef0e8; }
+.light-menu button[aria-pressed="true"] { border-color: #c9a46d; background: #fbf3e4; color: #6d4f27; }
+@media (max-width: 600px) { .light-chip { min-height: 36px; padding-inline: 6px 9px; } .light-picker { margin-left: 2px; } }
+/* B9 My Works backup: last backup date with backup and restore, under the gallery heading. */
+.backup-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 18px; margin: -14px 0 26px; padding: 10px 0; border-block: 1px solid var(--line); }
+.backup-note { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.backup-actions { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-left: auto; }
+.backup-actions .text-button { min-height: 40px; color: #4f5d4c; font-size: 13px; }
+.backup-actions .text-button svg { width: 16px; height: 16px; }
+.backup-actions .text-button:disabled { opacity: .5; }
+@media (max-width: 600px) { .backup-bar { margin-top: -8px; } .backup-actions { margin-left: 0; } }

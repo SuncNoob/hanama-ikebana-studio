@@ -10,15 +10,18 @@
  * - `interior`: stems behind the vessel that enter its openings, plus the visible support, go above the vessel (the vessel
  *   pass then leaves the support out);
  * - `water`: on a kenzan, the pins and water over the bases of the stems in front (paintKenzanPass), under the rim;
- * - `rim`: the vessel's front rim over the ends of stems in front of it.
+ * - `rim`: the vessel's front rim over the ends of stems in front of it;
+ * - `light`: the window light (B10) as an opaque copy of the scene and its ground shadows with the light on it, straight
+ *   above the plain scene and ground shadows, so hiding it gives the draft without the light.
  */
-export function compositorLayerPlan(state,nameOf,{ground=false,interior=false,water=false,rim=false}={}){
+export function compositorLayerPlan(state,nameOf,{ground=false,interior=false,water=false,rim=false,light=false}={}){
  const back=state.items.filter(item=>!item.aboveVessel);
  const front=state.items.filter(item=>item.aboveVessel);
  const botanical=item=>({kind:'botanical',item,name:nameOf(item)});
  return [
   {kind:'background',name:'01 · Scene'},
   ...(ground?[{kind:'ground',name:'Vessel shadow'}]:[]),
+  ...(light?[{kind:'light',name:'Window light'}]:[]),
   ...back.map(botanical),
   {kind:'vessel',name:interior?'Vessel':'Vessel & support'},
   ...(interior?[{kind:'interior',name:'Inserted stem ends & support'}]:[]),

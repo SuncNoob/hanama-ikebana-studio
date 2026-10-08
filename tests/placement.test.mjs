@@ -4,9 +4,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {assetById,vessels,studies,studyState,makeItem,browseSpecimens} from './helpers/catalog.mjs';
 import {
- mouthBase,reach,aim,solveTo,seatState,autoFront,isKenzan,tipPoint,crownPoint,headroom,planSlot,slotState,slotTarget,shinCm,SLOTS,hashId,
+ mouthBase,mouthSpan,reach,aim,solveTo,seatState,autoFront,isKenzan,tipPoint,crownPoint,headroom,planSlot,slotState,slotTarget,shinCm,SLOTS,hashId,
  defaultCm,arrangementMetrics,remapSeated,drawsStem,stemCm,lengthBounds,lengthForStem,itemCm,PHOTO_LENGTH,angleCap,sizeBounds,isDetachedPiece
-} from '../dist/scale.js?v=hn2';
+} from '../dist/scale.js?v=hn3';
 import {stemMaxCm} from '../dist/botany.js';
 import {vesselGeometry} from '../dist/geometry.js?v=28';
 
@@ -223,4 +223,10 @@ test('remapSeated over every study × every vessel: no stem that stood in the ol
  assert.ok(isDetachedPiece(piece));assert.equal(isDetachedPiece(loose),false);
  const d=vesselGeometry(bottle).insertion.map((v,i)=>v-vesselGeometry(round).insertion[i]);
  for(const [item,out] of [piece,loose].map(i=>[i,remapSeated([i],round,bottle,assetById)[0]]))assert.deepEqual([out.x,out.y,out.angle],[item.x+d[0],item.y+d[1],item.angle]);
+});
+
+test('the cherry study\'s low front sakura enters the pitcher mouth instead of standing on its lip',()=>{
+ const s=studyState(studies.find(st=>st.id==='cherry')),v=assetById[s.vessel],sakura=s.items.find(i=>i.type==='photo-sakura');
+ const span=mouthSpan(v,sakura.x,.55,{front:true});
+ assert.ok(sakura.aboveVessel&&sakura.x>=span.lo&&sakura.x<=span.hi,`base x ${sakura.x} outside ${span.lo}–${span.hi}`);
 });

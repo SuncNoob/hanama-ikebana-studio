@@ -6,9 +6,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {assetById,vessels,studies,studyState,initial,makeItem,dist} from './helpers/catalog.mjs';
 import {
- mouthBase,mouthSpan,slideBase,seatState,seatPoint,cutEnd,cutEndSource,anchorAt,pieceHead,reseatPiece,companionFit,
+ mouthBase,mouthSpan,slideBase,besideBase,seatState,seatPoint,cutEnd,cutEndSource,anchorAt,pieceHead,reseatPiece,companionFit,companionClear,
  tipPoint,isKenzan,isDetachedPiece
-} from '../dist/scale.js?v=hn2';
+} from '../dist/scale.js?v=hn3';
 import {vesselGeometry,dimensions,sourceToStage,warpY} from '../dist/geometry.js?v=28';
 
 const near=(p,q,eps=1e-6)=>Math.hypot(p[0]-q[0],p[1]-q[1])<=eps;
@@ -116,7 +116,7 @@ test('companionFit: a duplicate of any seated study stem stands in the vessel be
     assert.ok(seatState(copy,a,v).seated,`${s.id} ${item.type}: copy seated`);
     assert.ok(distance(tipPoint(copy,a),tipPoint(item,a))>=3,`${s.id} ${item.type}: copy visible beside the original`);
     assert.ok(Math.abs(fit.angle)<=Math.max(75,Math.abs(item.angle))+1e-9,`${s.id} ${item.type}: ${fit.angle}°`);
-    assert.ok(Math.abs(copy.x-mouthBase(v,item.x+1.5*side,.55,{front:!!item.aboveVessel})[0])<1e-9);
+    assert.ok(Math.abs(copy.x-besideBase(v,item.x,side,{front:!!item.aboveVessel})[0])<1e-9);
    }
   }
  }
@@ -124,6 +124,44 @@ test('companionFit: a duplicate of any seated study stem stands in the vessel be
  // A stem with cuts only turns: its length and trim stay, so the cuts keep their place.
  const s=initial(),item={...s.items[0],cuts:[{kind:'brush',points:[[.5,.5]],radius:.02}]},a=assetById[item.type];
  const fit=companionFit(item,a,assetById[s.vessel]);assert.deepEqual(Object.keys(fit).sort(),['angle','x','y']);
+});
+
+test('besideBase: a duplicate at the edge of the mouth moves to the other side instead of landing on the same point',()=>{
+ for(const v of vessels){
+  for(const front of [false,true]){
+   const {lo,hi}=mouthSpan(v,vesselGeometry(v).insertion[0],.55,{front});
+   if(hi-lo<1.5)continue;
+   for(const [x,side] of [[hi,1],[lo,-1]]){
+    const base=besideBase(v,x,side,{front});
+    assert.ok(Math.abs(base[0]-x)>=.5,`${v.id} ${front?'front':'back'}: ${x} → ${base[0]}`);
+    assert.ok(base[0]>=lo-1e-9&&base[0]<=hi+1e-9);
+   }
+   const mid=(lo+hi)/2;assert.deepEqual(besideBase(v,mid,1,{front}),mouthBase(v,mid+1.5,.55,{front}));
+  }
+ }
+});
+
+test('companionClear: duplicating a copy again does not stack it on an earlier copy',()=>{
+ let checked=0;
+ for(const s of studies.map(study=>studyState(study))){
+  const v=assetById[s.vessel];
+  for(const item of s.items){
+   const a=assetById[item.type];if(!seatState(item,a,v).seated||item.cuts?.length)continue;
+   // The editor alternates sides: copy 1 goes right of the original, copy 2 (of copy 1) left, copy 3 (of copy 2) right again.
+   const one={...item,...companionFit(item,a,v,{side:1,toward:1})},two={...one,...companionFit(one,a,v,{side:-1,toward:1})};
+   const naive={...two,...companionFit(two,a,v,{side:1,toward:1})};
+   if(distance(tipPoint(naive,a),tipPoint(one,a))>=1)continue;
+   const others=[item,one].map(i=>tipPoint(i,a)),fit=companionClear(two,a,v,{side:1,toward:1,others}),three={...two,...fit};
+   const alt={...two,...companionFit(two,a,v,{side:-1,toward:1})};
+   if(others.some(p=>distance(p,tipPoint(alt,a))<1))continue;
+   checked++;
+   assert.ok(others.every(p=>distance(p,tipPoint(three,a))>=1),`${s.id} ${item.type}: copy 3 clears copy 1`);
+   assert.ok(seatState(three,a,v).seated);
+  }
+ }
+ assert.ok(checked>0);
+ const s=initial(),item=s.items[0],a=assetById[item.type],v=assetById[s.vessel];
+ assert.deepEqual(companionClear(item,a,v,{side:1,toward:-1}),companionFit(item,a,v,{side:1,toward:-1}));
 });
 
 test('app.js: steer, seat cues, vessel switch and duplicate are wired, with zh/en/ja strings',()=>{

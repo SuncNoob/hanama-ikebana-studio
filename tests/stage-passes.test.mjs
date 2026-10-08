@@ -3,8 +3,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {assetById,vessels,studies,studyState,makeItem} from './helpers/catalog.mjs';
-import {seatClip,seatState,stemWidthCm,vesselFoot,isKenzan,INTERIOR_MIN_RX} from '../dist/scale.js?v=hn2';
-import {LIGHT,lightShadow,HORIZON,filterSupported,seatedClips} from '../dist/compositor.js?v=hn2';
+import {seatClip,seatState,stemWidthCm,vesselFoot,isKenzan,INTERIOR_MIN_RX} from '../dist/scale.js?v=hn3';
+import {LIGHT,lightShadow,HORIZON,filterSupported,seatedClips} from '../dist/compositor.js?v=hn3';
 import {vesselMetrics} from '../dist/asset-metrics.js?v=hn2';
 import {vesselGeometry} from '../dist/geometry.js?v=28';
 

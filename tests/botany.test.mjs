@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {profiles,ROLES,HABITS,SEASONS,DEFAULT_STEM_MAX_CM,roleOf,rolesOf,hasRole,roleLabels,roleTips,seasonLabels,roleLabel,roleTip,stemMaxCm,stemMmOf,habitOf,seasonsOf,inSeason,unitNoun,aliasIndex,searchForm,roleAliases,variantRoles} from '../dist/botany.js';
-import {MAX_STEM_CM,drawsStem,stemCm} from '../dist/scale.js?v=hn2';
+import {MAX_STEM_CM,drawsStem,stemCm} from '../dist/scale.js?v=hn3';
 import {assetById,specimens,familyOrder,studies,studyState} from './helpers/catalog.mjs';
 
 const families=Object.keys(profiles);

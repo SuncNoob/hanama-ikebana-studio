@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {assetById,studies,studyState,initial,specimenOrder,vesselOrder,dist} from './helpers/catalog.mjs';
 import {legacyFlowers,legacyVessels,scenes,saturationTune} from '../dist/legacy-catalog.js?v=hn2';
-import {createItem,buildStudyItems,buildDemoItems,placeSpecs,demoSpecs,demoVessel} from '../dist/study-state.js?v=hn2';
-import {sizeBounds,mouthBase,tipPoint,crownPoint,drawsStem,stemCm,isKenzan,autoFront,seatState,baseOffset,angleCap,slotState,PHOTO_LENGTH} from '../dist/scale.js?v=hn2';
+import {createItem,buildStudyItems,buildDemoItems,placeSpecs,demoSpecs,demoVessel} from '../dist/study-state.js?v=hn3';
+import {sizeBounds,mouthBase,tipPoint,crownPoint,drawsStem,stemCm,isKenzan,autoFront,seatState,baseOffset,angleCap,slotState,PHOTO_LENGTH} from '../dist/scale.js?v=hn3';
 import {vesselGeometry,sourceToStage} from '../dist/geometry.js?v=28';
 import {specimenMetrics} from '../dist/asset-metrics.js?v=hn2';
 import {stemMaxCm} from '../dist/botany.js';
@@ -18,7 +18,7 @@ test('app.js builds its asset map from the moved modules in the same order the d
  assert.deepEqual(spread('specimens'),specimenOrder);
  assert.deepEqual(spread('vessels'),vesselOrder);
  assert.match(appSource,/from '\.\/legacy-catalog\.js\?v=hn2'/);
- assert.match(appSource,/from '\.\/study-state\.js\?v=hn2'/);
+ assert.match(appSource,/from '\.\/study-state\.js\?v=hn3'/);
  assert.doesNotMatch(appSource,/const (legacyFlowers|scenes|saturation)=/,'legacy literals must live only in legacy-catalog.js');
 });
 

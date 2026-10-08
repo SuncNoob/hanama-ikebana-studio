@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {compositorLayerPlan,compositorManifest} from '../dist/compositor-project.js?v=hn2';
+import {compositorLayerPlan,compositorManifest} from '../dist/compositor-project.js?v=hn3';
 
 const ids=Array.from({length:5},(_,i)=>`00000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`);
 

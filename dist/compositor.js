@@ -3,8 +3,9 @@
 import {dimensions,vesselGeometry,warpY} from './geometry.js?v=28';
 import {applyLocalCut} from './local-cut.js?v=31';
 import {naturalStemRoutesV1,naturalStemRoutes,stemRoots,stemPath} from './natural-stems.js?v=hn2';
-import {seatClip,vesselFoot,seatState,stemWidthCm,isKenzan,isDetachedPiece,KENZAN,kenzanHolders,kenzanPins,onHolder} from './scale.js?v=hn2';
+import {seatClip,vesselFoot,seatState,stemWidthCm,isKenzan,isDetachedPiece,KENZAN,kenzanHolders,kenzanPins,onHolder} from './scale.js?v=hn3';
 import {stemMmOf} from './botany.js?v=hn2';
+import {lightOf,paintLight} from './ambience.js?v=hn3';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
@@ -705,12 +706,30 @@ export function paintSceneFinish(ctx,size,s){
  const night=s.scene==='night';
  const vignette=ctx.createRadialGradient(size*.5,size*.45,size*.42,size*.5,size*.48,size*.78);vignette.addColorStop(.55,'#00000000');vignette.addColorStop(1,night?'#05090628':'#26302410');ctx.fillStyle=vignette;ctx.fillRect(0,0,size,size);
 }
-/** The whole draft, bottom to top: scene, ground shadows, stems behind, vessel, their inserted ends and the support (on a
+/**
+ * The arrangement's shape for the window light's shadow (B10), at frame size `size`: every botanical (no cast shadow) and
+ * the vessel image. Only the alpha matters.
+ */
+export function paintLightSilhouette(ctx,size,s,assets,getSprite,images){
+ for(const item of s.items){const a=assets[item.type];if(a)drawBotanical(ctx,size,item,a,getSprite)}
+ const vessel=assets[s.vessel],img=images?.[s.vessel];if(vessel&&img)ctx.drawImage(img,...vesselRect(vesselGeometry(vessel),size));
+}
+/** The window light (ambience.js) over a painted background when `s.light` is set: room tone, then the window patch with
+ the arrangement's shadow cut out of it. `{ambient, patch}` pick the parts: the draft paints the room tone under the ground
+ shadows and the patch over them, as the stage does. Returns whether a light was painted. */
+export function paintLightPass(ctx,size,s,assets,getSprite,images,createCanvas=browserCanvas,{ambient=true,patch=true}={}){
+ if(!lightOf(s.light))return false;
+ return paintLight(ctx,size,s,{createCanvas,horizon:HORIZON,ambient,patch,paintSilhouette:(c,S)=>paintLightSilhouette(c,S,s,assets,getSprite,images)});
+}
+/** The whole draft, bottom to top: scene, window light (when set), ground shadows, stems behind, vessel, their inserted ends and the support (on a
  kenzan: holder, stems, pins and water in front of them), stems in front, pins and water over their bases, front rim, finish.
  `createCanvas` (node renders) lets the kenzan be cached like in the browser. */
 export function paintArrangement(ctx,size,s,assets,scenes,getSprite,images,createCanvas=null){
  paintSceneBackground(ctx,size,s,scenes);
+ const lit=!!lightOf(s.light);
+ if(lit)paintLightPass(ctx,size,s,assets,getSprite,images,createCanvas||browserCanvas,{patch:false});
  paintGroundPass(ctx,size,s,assets,images);
+ if(lit)paintLightPass(ctx,size,s,assets,getSprite,images,createCanvas||browserCanvas,{ambient:false});
  for(const item of s.items.filter(i=>!i.aboveVessel))paintBotanicalLayer(ctx,size,s,item,assets,getSprite);
  paintVesselLayer(ctx,size,s,assets,images,{ground:false,fixture:false});
  const seats=kenzanSeats(s,assets,getSprite);

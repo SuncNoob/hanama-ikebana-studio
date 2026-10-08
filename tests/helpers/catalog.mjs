@@ -10,12 +10,12 @@ import {foliageSpecimens} from '../../dist/foliage-catalog.js?v=hn2';
 import {studySpecimens} from '../../dist/study-catalog.js?v=hn2';
 import {poseSpecimens} from '../../dist/pose-catalog.js?v=hn2';
 import {additionalPoseSpecimens} from '../../dist/additional-pose-catalog.js?v=hn2';
-import {bookVessels} from '../../dist/book-vessels.js?v=25';
-import {newVessels} from '../../dist/vessels.js?v=hn2';
-import {studies} from '../../dist/studies.js?v=hn2';
-import {applyRealScale} from '../../dist/scale.js?v=hn2';
+import {bookVessels} from '../../dist/book-vessels.js?v=hn3';
+import {newVessels} from '../../dist/vessels.js?v=hn3';
+import {studies} from '../../dist/studies.js?v=hn3';
+import {applyRealScale} from '../../dist/scale.js?v=hn3';
 import {legacyFlowers,legacyVessels,scenes,applyTone} from '../../dist/legacy-catalog.js?v=hn2';
-import {createItem,buildStudyState,buildDemoItems} from '../../dist/study-state.js?v=hn2';
+import {createItem,buildStudyState,buildDemoItems} from '../../dist/study-state.js?v=hn3';
 
 export const dist=fileURLToPath(new URL('../../dist/',import.meta.url));
 /** Names of the spreads, in app.js order. */

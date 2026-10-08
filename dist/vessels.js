@@ -102,13 +102,13 @@ export const newVessels=[
   },
   {
     id:'english-pewter-compote',name:'英式旧银高脚盆',shortName:'旧银高脚盆',en:'English aged pewter footed compote',
-    color:'旧银色',colorEn:'aged pewter',group:'low',style:'english',height:18,width:620,heightPx:382,
+    color:'旧银色',colorEn:'aged pewter',colorJa:'古い錫色',group:'low',style:'english',height:18,width:620,heightPx:382,
     mouth:[0.5,0.125],openings:[ellipse([0.5,0.125],[0.455,0.075],0.215)],
     fixture:fixture('chicken-wire','partial','深色花艺网','Dark floral wire mesh','A low hand-shaped dark floral wire mesh spans the compote below the rim. Only restrained fragments of the mesh remain visible between the exact stem bases.',{center:[0.5,0.135],radius:[0.37,0.058],material:'dark-wire'})
   },
   {
     id:'english-stone-garden-urn',name:'英式砂岩庭院瓮',shortName:'砂岩庭院瓮',en:'English weathered stone garden urn',
-    color:'暖砂岩',colorEn:'weathered warm stone',group:'low',style:'english',height:21,width:620,heightPx:454,
+    color:'暖砂岩',colorEn:'weathered warm stone',colorJa:'風化した砂岩色',group:'low',style:'english',height:21,width:620,heightPx:454,
     mouth:[0.5,0.115],openings:[ellipse([0.5,0.115],[0.43,0.075],0.225)],
     fixture:fixture('chicken-wire','hidden','内藏花艺网','Concealed floral wire','A reusable floral wire cage fits beneath the rim and supports stems inside the vessel.')
   },
@@ -116,7 +116,7 @@ export const newVessels=[
   // French classical vessels.
   {
     id:'french-medicis-urn',name:'法式象牙美第奇杯',shortName:'美第奇杯',en:'French ivory Medici urn',
-    color:'石灰象牙白',colorEn:'limewashed ivory',group:'tall',style:'french',height:27,width:620,heightPx:597,
+    color:'石灰象牙白',colorEn:'limewashed ivory',colorJa:'石灰仕上げの象牙色',group:'tall',style:'french',height:27,width:620,heightPx:597,
     mouth:[0.5,0.075],openings:[ellipse([0.5,0.075],[0.42,0.045],0.14)],
     fixture:fixture('chicken-wire','hidden','内藏花艺网','Concealed floral wire','A reusable floral wire cage fits beneath the rim and supports stems inside the vessel.')
   },
@@ -128,7 +128,7 @@ export const newVessels=[
   },
   {
     id:'french-blue-cachepot',name:'法式雾蓝竖纹瓷盆',shortName:'雾蓝瓷盆',en:'French mist-blue fluted cachepot',
-    color:'雾蓝釉',colorEn:'mist-blue glaze',group:'low',style:'french',height:20,width:620,heightPx:462,
+    color:'雾蓝釉',colorEn:'mist-blue glaze',colorJa:'霧青の釉薬',group:'low',style:'french',height:20,width:620,heightPx:462,
     mouth:[0.5,0.12],openings:[ellipse([0.5,0.12],[0.445,0.07],0.215)],
     fixture:fixture('chicken-wire','hidden','内藏花艺网','Concealed floral wire','A reusable floral wire cage fits beneath the rim and supports stems inside the vessel.')
   },
@@ -136,20 +136,20 @@ export const newVessels=[
   // Contemporary popular forms.
   {
     id:'modern-smoked-glass-column',name:'现代烟灰玻璃柱瓶',shortName:'烟灰玻璃柱瓶',en:'Modern smoked-glass column vase',
-    color:'烟灰透明',colorEn:'smoked transparent glass',group:'tall',style:'modern',height:31,width:238,heightPx:620,
+    color:'烟灰透明',colorEn:'smoked transparent glass',colorJa:'煙色の透明ガラス',group:'tall',style:'modern',height:31,width:238,heightPx:620,
     mouth:[0.5,0.045],openings:[ellipse([0.5,0.045],[0.275,0.018],0.075)],
     fixture:fixture('neck','hidden','瓶口支撑','Concealed neck support','The narrow smoked-glass neck itself supports the stems below the lip; do not add a visible grid, tape, foam or pin holder.')
   },
   {
     id:'modern-steel-loop-vessel',name:'现代拉丝钢环形器',shortName:'拉丝钢环形器',en:'Modern brushed-steel loop vessel',
-    color:'拉丝银钢',colorEn:'brushed silver steel',group:'low',style:'modern',height:28,width:620,heightPx:595,
+    color:'拉丝银钢',colorEn:'brushed silver steel',colorJa:'ヘアライン仕上げの銀色の鋼',group:'low',style:'modern',height:28,width:620,heightPx:595,
     mouth:[0.219,0.077],
     openings:[ellipse([0.219,0.077],[0.075,0.026],0.12,{rotation:0.38,primary:true}),ellipse([0.835,0.214],[0.07,0.024],0.255,{rotation:-0.28})],
     fixture:fixture('integrated-holes','hidden','一体式双插口','Integrated twin openings','The two sculpted steel neck openings are the complete integrated support. Stems may enter only through the two shown openings, with no visible auxiliary mechanics.')
   },
   {
     id:'modern-travertine-trough',name:'现代洞石长槽器',shortName:'洞石长槽器',en:'Modern travertine trough vessel',
-    color:'浅洞石色',colorEn:'pale travertine',group:'shallow',style:'modern',height:12,width:620,heightPx:223,
+    color:'浅洞石色',colorEn:'pale travertine',colorJa:'淡いトラバーチン',group:'shallow',style:'modern',height:12,width:620,heightPx:223,
     mouth:[0.5,0.198],openings:[rect([0.5,0.198],[0.415,0.078],0.315)],
     fixture:fixture('kenzan','partial','三枚黑化黄铜剑山','Three blackened-brass kenzan','Three low blackened-brass kenzan are aligned inside the long trough. They remain only partially visible and hold the exact existing stem insertion points without changing the composition. Still, clear water just covers the holders.',{centers:[[0.29,0.205],[0.5,0.205],[0.71,0.205]],radius:[0.07,0.024],material:'blackened-brass',water:true,lip:0.23})
   }

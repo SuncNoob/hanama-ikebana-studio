@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** DOM-free core of the editable studies and the first-run draft, shared by app.js, node tests and dev scripts.
  Callers pass their asset map and item factory, so ids and language stay with the caller. */
-import {mouthBase,solveTo,drawsStem,isKenzan,autoFront,angleCap,baseOffset,sizeRatioBounds} from './scale.js?v=hn2';
+import {mouthBase,solveTo,drawsStem,isKenzan,autoFront,angleCap,baseOffset,sizeRatioBounds} from './scale.js?v=hn3';
 import {vesselGeometry} from './geometry.js?v=28';
 
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));

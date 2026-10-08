@@ -3,7 +3,7 @@
 /** True-to-life sizing. The square stage is 100 cm tall, so one stage percent equals one centimetre. */
 import {realScale,stemFix} from './real-scale.js?v=hn2';
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage} from './geometry.js?v=28';
-import {stemMaxCm, rolesOf, stemMmOf} from './botany.js?v=hn2';
+import {stemMaxCm, rolesOf, roleOf, stemMmOf} from './botany.js?v=hn2';
 import {specimenMetrics,vesselMetrics} from './asset-metrics.js?v=hn2';
 
 export const SIZE_RANGE=[.8,1.25];
@@ -134,6 +134,16 @@ export function mouthSpan(vessel,x,spread=.55,{front=false}={}){
 export function slideBase(vessel,x0,x,{spread=.55,front=false}={}){
  const {lo,hi}=mouthSpan(vessel,x0,spread,{front});
  return clamp(x,Math.min(lo,x0),Math.max(hi,x0));
+}
+/**
+ * A base 1.5 cm to `side` (1 right, −1 left) of x along the mouth, for a duplicate. When x is at the edge of the mouth on that
+ * side (the base would land within 0.5 cm of x), the other side is taken if it lands farther away.
+ */
+export function besideBase(vessel,x,side=1,{front=false}={}){
+ const s=Math.sign(side||1),near=mouthBase(vessel,x+1.5*s,.55,{front});
+ if(Math.abs(near[0]-x)>=.5)return near;
+ const far=mouthBase(vessel,x-1.5*s,.55,{front});
+ return Math.abs(far[0]-x)>Math.abs(near[0]-x)?far:near;
 }
 
 /** Where the flower or branch focus currently sits on the stage. */
@@ -341,11 +351,24 @@ export function shinCm(vessel){
  const g=vesselGeometry(vessel),M=Math.max(g.height,g.width),f=['japanese','modern'].includes(vessel?.style||'japanese')?1.5:1.25;
  return clamp(f*M,M,g.insertion[1]-8);
 }
-/** Where a slot's focus sits for an arrangement leaning to `side` (1 right, −1 left). */
-export function slotTarget(vessel,key,side=1){
- const g=vesselGeometry(vessel),s=slotByKey[key]||SLOTS[0],r=s.frac*shinCm(vessel),t=s.lean*side*Math.PI/180;
- return [g.insertion[0]+r*Math.sin(t),g.insertion[1]-r*Math.cos(t)];
+/** The two guide styles: upright (直立, SLOTS as listed) and slanting (傾斜), where the main line leans 48° and the second
+ line stands at 14°. The accent and the fillers keep their angles. */
+export const SLOT_STYLES=['upright','slanting'];
+export const SLANTING=Object.freeze({shin:48,soe:14});
+/** A slot's lean in degrees from vertical toward the arrangement's side, for a guide style. */
+export const slotLean=(key,style='upright')=>style==='slanting'&&Object.hasOwn(SLANTING,key)?SLANTING[key]:(slotByKey[key]||SLOTS[0]).lean;
+/**
+ * A slot's ray from the insertion: its focus `target`, length `cm` (frac × the main line) and whether either the main line
+ * (shinCm hit the stage top) or this ray (kept within x 3–97 and y ≥ 3 of the stage) had to be shortened (`clamped`).
+ */
+export function slotReach(vessel,key,side=1,style='upright'){
+ const g=vesselGeometry(vessel),s=slotByKey[key]||SLOTS[0],ins=g.insertion,M=Math.max(g.height,g.width),f=['japanese','modern'].includes(vessel?.style||'japanese')?1.5:1.25;
+ const t=slotLean(s.key,style)*side*Math.PI/180,dx=Math.sin(t),dy=-Math.cos(t);let r=s.frac*shinCm(vessel);
+ const room=Math.min(dx>1e-9?(97-ins[0])/dx:dx<-1e-9?(3-ins[0])/dx:Infinity,dy<-1e-9?(3-ins[1])/dy:Infinity),fits=r<=room;if(!fits)r=Math.max(0,room);
+ return {key:s.key,slot:s.slot,target:[ins[0]+r*dx,ins[1]+r*dy],cm:r,clamped:!fits||f*M>ins[1]-8};
 }
+/** Where a slot's focus sits for an arrangement leaning to `side` (1 right, −1 left), in the upright or slanting style. */
+export function slotTarget(vessel,key,side=1,style='upright'){return slotReach(vessel,key,side,style).target}
 /** A stable 32-bit FNV-1a hash, so an arrangement keeps its side between visits. */
 export function hashId(id){let h=0x811c9dc5;for(const ch of String(id??''))h=Math.imul(h^ch.codePointAt(0),0x01000193)>>>0;return h}
 /** Base x along the mouth: low stems spread out from the centre, tall ones gather toward it (studies use the same rule). */
@@ -353,14 +376,15 @@ export const baseOffset=(dx,rise)=>dx*clamp(1-rise/40,.15,.6);
 
 /** Which slots are already taken, and the arrangement's side. A slot is taken by a focus or crown within 6 cm of it;
  the main line also by any stem rising ≥ .72 of it, the second line by a second tall stem, the accent by a low stem on the far side. */
-export function slotState({items=[],vessel,id}={},assetById={}){
+export function slotState({items=[],vessel,id}={},assetById={},{style='upright',side:hand=0}={}){
  const v=typeof vessel==='string'?assetById[vessel]:vessel,g=vesselGeometry(v),ins=g.insertion,shin=shinCm(v);
  const points=items.map(item=>{const a=assetById[item.type];if(!a)return null;const tip=tipPoint(item,a),crown=crownPoint(item,a);return {tip,crown,rise:Math.max(ins[1]-tip[1],ins[1]-crown[1])}}).filter(Boolean);
  const lead=points.filter(p=>p.rise>=.5*shin).sort((p,q)=>q.rise-p.rise)[0];
- const side=lead&&Math.abs(lead.tip[0]-ins[0])>.5?Math.sign(lead.tip[0]-ins[0]):(hashId(id)&1?1:-1);
+ // A side chosen in the guide (±1) wins; otherwise the side of the tallest stem, or the arrangement id's hash.
+ const side=hand===1||hand===-1?hand:lead&&Math.abs(lead.tip[0]-ins[0])>.5?Math.sign(lead.tip[0]-ins[0]):(hashId(id)&1?1:-1);
  const near=t=>points.some(p=>distance(p.tip,t)<=6||distance(p.crown,t)<=6);
  const taken={};
- for(const s of SLOTS)taken[s.key]=near(slotTarget(v,s.key,side));
+ for(const s of SLOTS)taken[s.key]=near(slotTarget(v,s.key,side,style));
  taken.shin||=points.some(p=>p.rise>=.72*shin);
  taken.soe||=points.filter(p=>p.rise>=.5*shin).length>=2;
  taken.hikae||=points.some(p=>ins[1]-p.tip[1]<.6*shin&&(p.tip[0]-ins[0])*side<-.2*shin);
@@ -373,20 +397,21 @@ export function slotState({items=[],vessel,id}={},assetById={}){
  * When the stem would touch the top of the stage (< 3 cm), the target is lowered first (photographed branches get cut),
  * then leaned up to 35° toward its side, then the size is reduced toward the 0.8× floor. A crown that would leave the stage
  * at the side swings back toward the centre (up to 45°), is mirrored if it still curves away, then shrinks. `template` supplies item fields (h, flip, trim…) for the new stem.
+ * `guide` ({style, side}) is the ikebana guide's choice while it is shown: slanting leans and a fixed side, so the stem lands on the drawn rays.
  */
-export function planSlot(state,a,assetById={},template={}){
+export function planSlot(state,a,assetById={},template={},guide={}){
  const v=typeof state.vessel==='string'?assetById[state.vessel]:state.vessel,g=vesselGeometry(v),ins=g.insertion;
- const {side,taken,points}=slotState({...state,vessel:v},assetById);
+ const style=guide.style==='slanting'?'slanting':'upright',{side,taken,points}=slotState({...state,vessel:v},assetById,{style,side:guide.side});
  const roles=rolesOf(a),jushiHigh=['jushi-1','jushi-2','jushi-3','jushi-4'],jushiLow=[...jushiHigh].reverse(),empty=!state.items?.length;
  const orderFor=role=>role==='line'?['shin','soe']:role==='focal'?[...(empty?['shin']:[]),'hikae','jushi-3','jushi-4','jushi-2','jushi-1']:jushiLow;
  const order=[...new Set([...roles.flatMap(orderFor),...jushiHigh])];
  let key=order.find(k=>!taken[k]);
  if(!key){
-  const spare=SLOTS.filter(s=>s.key!=='shin').map(s=>({key:s.key,gap:Math.min(Infinity,...points.map(p=>distance(p.tip,slotTarget(v,s.key,side))))}));
+  const spare=SLOTS.filter(s=>s.key!=='shin').map(s=>({key:s.key,gap:Math.min(Infinity,...points.map(p=>distance(p.tip,slotTarget(v,s.key,side,style))))}));
   key=spare.sort((p,q)=>q.gap-p.gap)[0].key;
  }
  const s=slotByKey[key],front=autoFront(v)||(roles.some(r=>r==='focal'||r==='secondary')&&lowSlot(key));
- const slotPoint=slotTarget(v,key,side),rise=ins[1]-slotPoint[1];
+ const slotPoint=slotTarget(v,key,side,style),rise=ins[1]-slotPoint[1];
  const base=mouthBase(v,ins[0]+baseOffset(slotPoint[0]-ins[0],rise),.8,{front});
  const item={type:a.id,x:base[0],y:base[1],h:a.height,angle:0,trim:0,flip:false,length:a.stemLength||1,cropAnchorY:1,cropAnchorSourceY:null,...template};
  const leanSign=Math.sign(slotPoint[0]-base[0])||side*Math.sign(s.lean)||side;
@@ -428,6 +453,17 @@ export function planSlot(state,a,assetById={},template={}){
  return {slot:s.slot,key,side,base,target:best.target,front,h:best.h,flip:best.flip,fit:best.fit,headroom:Math.round(best.top*10)/10};
 }
 
+/**
+ * Where a new stem enters an arrangement's item list (paint order): a line or foliage goes in before the first flower of its
+ * layer group (the stems drawn on the same side of the vessel, aboveVessel), so blooms stay in front of branches; anything
+ * else, or a line in a group without flowers, goes last.
+ */
+export function insertIndex(items,item,assetById){
+ const backdrop=a=>!!a&&['line','foliage'].includes(roleOf(a));
+ if(backdrop(assetById[item.type])){const k=items.findIndex(i=>!!i.aboveVessel===!!item.aboveVessel&&assetById[i.type]&&!backdrop(assetById[i.type]));if(k>=0)return k}
+ return items.length;
+}
+
 /** Whole stem height (cm) a material gets when it is the first stem in `vessel`: the size chip for library cards. */
 export function defaultCm(a,vessel){
  const plan=planSlot({items:[],vessel,id:'default'},a,{[vessel.id]:vessel});
@@ -446,6 +482,43 @@ export function arrangementMetrics(s,assetById){
   spreadCm:xs.length?round(Math.max(...xs)-Math.min(...xs)):0,
   vesselCm:round(g.height)
  };
+}
+
+/** The slots the ikebana guide draws: 真 (main line), 副 (second line), 控 (accent). */
+export const GUIDE_SLOTS=['shin','soe','hikae'];
+/**
+ * The guide's rays for a vessel, from the same slots planSlot fills: each {key, slot, from (the insertion), target, cm,
+ * clamped} in stage cm. A stem planSlot puts in one of these slots has its focus on the ray's target.
+ */
+export function guideRays(vessel,{style='upright',side=1}={}){
+ const from=[...vesselGeometry(vessel).insertion];
+ return GUIDE_SLOTS.map(key=>({...slotReach(vessel,key,side===-1?-1:1,style==='slanting'?'slanting':'upright'),from}));
+}
+/**
+ * How a stem reads against the guide: the ray whose target its focus or crown lies nearest (the points slotState counts),
+ * `reach` from the insertion to that point in cm, `gap` to the target, `filled` within 3 cm, and `ratio`, the reach as a
+ * multiple of the vessel's larger side (the length shinCm scales). Null without rays.
+ */
+export function guideReading(item,a,vessel,rays){
+ if(!rays?.length||!a)return null;
+ const g=vesselGeometry(vessel),M=Math.max(g.height,g.width),points=[tipPoint(item,a),crownPoint(item,a)];
+ let best=null;
+ for(const ray of rays)for(const p of points){const gap=distance(p,ray.target);if(!best||gap<best.gap-1e-9)best={ray,gap,p}}
+ const reach=distance(best.ray.from,best.p);
+ return {key:best.ray.key,slot:best.ray.slot,gap:Math.round(best.gap*10)/10,reach:Math.round(reach),target:Math.round(best.ray.cm),filled:best.gap<=3,ratio:Math.round(reach/Math.max(1,M)*10)/10};
+}
+/**
+ * Put a stem on a guide ray: its focus aimed at `target`. A stem standing in the vessel keeps its base; one outside it gets
+ * the base planSlot would give that target. solveTo (photographs are cut, drawn stems grow within their species' length),
+ * or reach for a stem with cuts so the cuts keep their place. Returns the item fields and `miss`, the focus error in cm.
+ */
+export function fitToSlot(item,a,vessel,target){
+ const ins=vesselGeometry(vessel).insertion;
+ const base=seatState(item,a,vessel).seated?[item.x,item.y]:mouthBase(vessel,ins[0]+baseOffset(target[0]-ins[0],ins[1]-target[1]),.8,{front:!!item.aboveVessel});
+ let fit;
+ if(item.cuts?.length||item.segments?.length||item.localCuts?.length)fit={...reach(item,a,base,target),cropAnchorSourceY:null};
+ else{const {miss:_,...solved}=solveTo(item,a,base,target);fit=solved}
+ return {...fit,miss:Math.round(distance(tipPoint({...item,...fit},a),target)*10)/10};
 }
 
 /** A detached cut piece lies where it was dropped on purpose: vessel switches leave it alone, and the seat banner does not count it. */
@@ -520,14 +593,14 @@ export function reseatPiece(item,a,vessel,head=null){
  return {x:placed.x,y:placed.y,angle,miss:round(H?distance(H2,H):distance(E2,E)),gap:round(distance(E2,M))};
 }
 /**
- * Duplicate of a seated stem, as a lower companion: its base 1.5 cm to `side` (1 right, −1 left) along the mouth, its focus
+ * Duplicate of a seated stem, as a lower companion: its base 1.5 cm to `side` (1 right, −1 left) along the mouth (besideBase), its focus
  * turned 12° toward `toward` about the base and aimed 20% lower. When that leaves the two flowers closer than `minGap` cm
  * (default: ¾ of a flower head's width, 4–9 cm; 5 cm for photographed stems), the companion turns further and drops lower,
  * up to 36° and 40% (never past 75° from upright, then toward the other side instead), so it stays visible. Photographed stems are cut (solveTo), drawn stems shortened; a stem with cuts only
  * turns, since a new length or trim would shift them. Returns the item fields to set.
  */
 export function companionFit(item,a,vessel,{side=1,toward=side,minGap=null}={}){
- const base=mouthBase(vessel,item.x+1.5*Math.sign(side||1),.55,{front:!!item.aboveVessel});
+ const base=besideBase(vessel,item.x,side,{front:!!item.aboveVessel});
  const tip=tipPoint(item,a),dx=tip[0]-item.x,dy=tip[1]-item.y,placed={...item,x:base[0],y:base[1]};
  const cut=item.cuts?.length||item.segments?.length||item.localCuts?.length,g=dimensions(item,a);
  const gap=Number.isFinite(minGap)?minGap:drawsStem(a)?clamp(.75*item.h*Math.min(g.ratio,1),4,9):5;
@@ -549,6 +622,15 @@ export function companionFit(item,a,vessel,{side=1,toward=side,minGap=null}={}){
   if(best&&best.apart>=gap)break;
  }
  return (best||first).fit;
+}
+/**
+ * companionFit that does not land on a stem already there: when the copy's focus would sit within 1 cm of one of `others`
+ * (focus points, e.g. an earlier copy when a copy is duplicated again), its base goes to the other side instead, if that clears.
+ */
+export function companionClear(item,a,vessel,{side=1,toward=side,others=[]}={}){
+ const clear=fit=>{const t=tipPoint({...item,...fit},a);return !others.some(p=>Math.hypot(p[0]-t[0],p[1]-t[1])<1)};
+ const fit=companionFit(item,a,vessel,{side,toward});if(clear(fit))return fit;
+ const alt=companionFit(item,a,vessel,{side:-side,toward});return clear(alt)?alt:fit;
 }
 /**
  * Vessel switch, pure core. Every stem moves with the insertion point as before; stems that stood in the old vessel are

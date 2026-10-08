@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {keyAction,needsCheckpoint,tolerant,repairDraftShell,canvasSignature,readStash,addToStash} from '../dist/editor-state.js?v=hn2';
+import {keyAction,needsCheckpoint,tolerant,repairDraftShell,canvasSignature,readStash,addToStash} from '../dist/editor-state.js?v=hn3';
 import {dist} from './helpers/catalog.mjs';
 
 const key=(k,mods={})=>keyAction({key:k,code:'',metaKey:false,ctrlKey:false,shiftKey:false,altKey:false,...mods});
@@ -109,9 +109,13 @@ test('app.js: leaving the page flushes the debounced save',()=>{
  assert.match(app,/visibilitychange'.*visibilityState==='hidden'\)flushPersist\(\)/);
 });
 
-test('app.js: a share link stashes the local draft before the first persist, and only local reads are lenient',()=>{
- const stash=app.indexOf('localStorage.setItem(DISPLACED_STORE'),boot=app.lastIndexOf('renderAll();refreshCount();afterBoot();');
- assert.ok(stash>0&&boot>stash,'stash is written before the boot renderAll()');
+test('app.js: a share link never replaces the local draft at boot, and only local reads are lenient',()=>{
+ // Since B6 a shared draft is decoded aside (bootShare) and offered on the arrival card after the first render; drafts that
+ // older versions stashed when their share links replaced the canvas are still filed into My Works.
+ assert.match(app,/bootShare=await decodeShare\(hash\)/);
+ assert.doesNotMatch(app,/\bstate=await decodeShare\(/,'the boot path does not assign the shared draft to state');
+ const drain=app.indexOf('readStash(localStorage.getItem(DISPLACED_STORE))'),boot=app.lastIndexOf('renderAll();refreshCount();afterBoot();');
+ assert.ok(drain>0&&boot>drain,'the old displaced-draft stash is still drained after boot');
  assert.match(app,/state=validate\(JSON\.parse\(bootRaw\),\{lenient:true,report:bootReport\}\)/);
  assert.match(app,/return validate\(JSON\.parse\(new TextDecoder\(\)\.decode\(bytes\)\)\)\}/,'share links stay strict');
  assert.match(app,/next=validate\(JSON\.parse\(await file\.text\(\)\)\)/,'imported files stay strict');
@@ -122,7 +126,7 @@ test('app.js: a share link stashes the local draft before the first persist, and
 test('app.js: one document key map, mask picking everywhere a press selects, no stage hint',()=>{
  assert.doesNotMatch(app,/\$\('#stage'\)\.addEventListener\('keydown'/,'the #stage key handler is merged into the document one');
  assert.match(app,/document\.addEventListener\('keydown',e=>\{/);
- assert.equal((app.match(/pickStem\(e\.clientX,e\.clientY/g)||[]).length,3,'move press, context menu and the cut/erase retarget');
+ assert.equal((app.match(/pickStem\(e\.clientX,e\.clientY/g)||[]).length,4,'move press, context menu, the cut/erase retarget and the Shift/Alt+wheel target');
  assert.match(app,/pickStem\(hoverAt\[0\],hoverAt\[1\]\)/);
  assert.doesNotMatch(app,/e\.target\.closest\('\.stem'\)/,'no box hit-testing left');
  assert.doesNotMatch(app,/#stage-hint/);
