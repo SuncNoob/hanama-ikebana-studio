@@ -101,7 +101,7 @@ test('paintLight paints the room tone and the patch apart, so the ground shadows
  assert.deepEqual(tone,{painted:true,modes:['multiply','multiply','soft-light'],made:0,silhouette:false});
  assert.equal(patch.painted,true);assert.deepEqual(patch.modes,['screen']);assert.ok(patch.silhouette);
  assert.deepEqual(both.modes,[...tone.modes,...patch.modes]);
- const app=readFileSync(`${dist}compositor.js`,'utf8');
+ const app=readFileSync(`${dist}compositor.js`,'utf8').replaceAll('\r\n','\n');
  assert.match(app,/\{patch:false\}\);\n paintGroundPass\(ctx,size,s,assets,images\);\n if\(lit\)paintLightPass\([^\n]*\{ambient:false\}\)/,'the draft: room tone, ground shadows, then the window patch');
 });
 
@@ -131,7 +131,7 @@ test('prompt: a window light replaces "keep the draft\'s lighting" and the mood 
  const own=buildPrompt({...s,light:'moon',intention:'Under paper lanterns.'},assetById,scenes);
  assert.match(own,/Preserve that light direction unless the creative note describes another light/);
  assert.doesNotMatch(buildPrompt({...s,light:'unknown'},assetById,scenes),/^Light:/m,'an unknown key adds nothing');
- assert.doesNotMatch(buildPrompt(initial(),assetById,scenes),/^Light:/m,'the first-run draft has no light');
+ assert.match(buildPrompt(initial(),assetById,scenes),/^Light:/m,'the first-run draft includes morning light');
 });
 
 test('app.js keeps s.light only as a known key, counts it as content, and the stage has the light layer and chip',()=>{
@@ -140,6 +140,6 @@ test('app.js keeps s.light only as a known key, counts it as content, and the st
  assert.match(app,/function hasMeaningfulCanvas\(s\)\{[^\n]*!!lightOf\(s\.light\)\}/);
  assert.match(html,/<canvas id="scene-layer"[^>]*>\s*<\/canvas>\s*<canvas id="light-layer"/,'the light layer lies right above the scene');
  for(const key of ['',...LIGHT_KEYS])assert.match(html,new RegExp(`data-light="${key}"[^>]*data-zh="[^"]+" data-en="[^"]+" data-ja="[^"]+"`),`menu entry ${key||'none'} in three languages`);
- assert.ok(!initial().light,'the first-run draft starts without a light');
+ assert.equal(initial().light,'morning','the first-run draft starts in morning light');
  for(const study of studies)assert.ok(!studyState(study).light,`${study.id} has no light`);
 });

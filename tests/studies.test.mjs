@@ -90,11 +90,11 @@ test('kenzan studies stand their stems on the pins in front of the basin unless 
  for(const study of kenzan)for(const item of studyState(study).items)assert.equal(item.aboveVessel,true,study.id);
 });
 
-test('the first-run draft is a small study in the round vase: pine, calla and a low chrysanthemum, true size, seated, three slots',()=>{
+test('the first-run draft is a small study in the round vase: pine, calla and a low red camellia, true size, seated, three slots',()=>{
  const s=initial(),vessel=assetById[s.vessel];
  assert.equal(s.vessel,'round');assert.equal(s.scene,'paper');assert.equal(demoVessel,'round');
- assert.deepEqual(s.items.map(i=>i.type),['pine-green-sparse','calla-ivory-front','photo-chrysanthemum']);
- assert.deepEqual(demoSpecs.map(d=>d.family),['pine','calla','chrysanthemum']);
+ assert.deepEqual(s.items.map(i=>i.type),['pine-green-sparse','calla-ivory-front','camellia-red-front']);
+ assert.deepEqual(demoSpecs.map(d=>d.family),['pine','calla','camellia']);
  const insertion=vesselGeometry(vessel).insertion;
  s.items.forEach((item,k)=>{
   const a=assetById[item.type],ratio=item.h/a.height,to=demoSpecs[k].to,tip=tipPoint(item,a);
@@ -104,12 +104,12 @@ test('the first-run draft is a small study in the round vase: pine, calla and a 
   assert.ok(Math.hypot(tip[0]-insertion[0]-to[0],tip[1]-insertion[1]+to[1])<=3,`${item.type}: focus off its place`);
   assert.ok(crownPoint(item,a).every(v=>v>=3&&v<=97));
  });
- assert.equal(s.items[2].h,Math.round(assetById['photo-chrysanthemum'].height*1.1*10)/10);
- assert.ok(stemCm(s.items[2],assetById['photo-chrysanthemum'])>1,'the chrysanthemum has a visible stem into the vase');
+ assert.equal(s.items[2].h,Math.round(assetById['camellia-red-front'].height*1*10)/10);
+ assert.ok(seatState(s.items[2],assetById['camellia-red-front'],vessel).seated,'the low camellia is seated in the vase');
  const {taken}=slotState(s,assetById);
  for(const slot of ['shin','soe','hikae'])assert.equal(taken[slot],true,`${slot} not filled`);
  const specimenFor=family=>({pine:{id:'pine'},calla:{id:'calla'},chrysanthemum:{id:'chrysanthemum'}})[family];
- assert.deepEqual(buildDemoItems({assetById,makeItem:(type,options)=>({type,...createItem(assetById[type],type,'x',options)}),specimenFor}).map(i=>i.type),['pine','calla','chrysanthemum']);
+ assert.deepEqual(buildDemoItems({assetById,makeItem:(type,options)=>({type,...createItem(assetById[type],type,'x',options)}),specimenFor}).map(i=>i.type),['pine','calla','camellia-red-front']);
 });
 
 test('app.js opens the first-run demo with nothing selected and swaps poses within the natural size range',()=>{

@@ -1028,3 +1028,10 @@ dialog h2 { line-height: 1.35; }
 .backup-actions .text-button svg { width: 16px; height: 16px; }
 .backup-actions .text-button:disabled { opacity: .5; }
 @media (max-width: 600px) { .backup-bar { margin-top: -8px; } .backup-actions { margin-left: 0; } }
+
+/* Light and scene studies stay visible beside the first arrangement. */
+.brand-word{white-space:nowrap}.light-scene-gallery{width:100%;max-width:760px;min-width:0;margin:0 0 14px}.light-scene-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}.light-scene-heading strong{font-family:"Noto Serif SC",serif;font-weight:500;font-size:16px;color:#47553e}.light-scene-heading>span{font-size:11px;color:#68705f}.light-scene-cases{display:flex;gap:8px;overflow-x:auto;padding:0 0 5px;scrollbar-width:thin}.light-scene-case{flex:0 0 164px;display:flex;align-items:center;gap:7px;text-align:left;background:#f9f8f1;border:1px solid #d8ddcd;border-radius:7px;padding:6px;cursor:pointer;color:#394631}.light-scene-case:hover,.light-scene-case:focus-visible{border-color:#6c7e54;background:#f0f2e6}.light-scene-case img{width:44px;height:52px;object-fit:cover;border-radius:4px}.light-scene-case span{min-width:0}.light-scene-case strong{display:block;font-size:12px;font-weight:500;white-space:nowrap}.light-scene-case small{display:block;font-size:10px;line-height:1.5;color:#6a725f;margin-top:4px}.light-scene-case>b{font-size:12px;margin-left:auto;font-weight:400}.light-scene-case:disabled{opacity:.5;cursor:wait}.light-chip{border-color:#82936b!important;background:#edf1e1!important}.scene-picker>span{font-weight:600;color:#455738}
+@media(max-width:600px){.light-scene-heading strong{font-size:14px}.light-scene-heading>span{font-size:10px}.light-scene-case{flex-basis:150px}.brand-name .brand-word{font-size:19px}.light-scene-gallery{margin-bottom:10px}}
+
+@media(min-width:901px){.workspace>.light-scene-gallery{grid-column:1;grid-row:2}.workspace>.stage-shell{grid-row:3}.workspace>.design-panel,.workspace>.layer-menu{grid-row:1/4}}
+@media(max-width:600px){.brand .brand-word{display:none}}

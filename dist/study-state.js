@@ -41,14 +41,14 @@ export function buildStudyItems(study,{assetById,makeItem}){
 /** A study as an editable draft: the caller's initial() supplies version, id and defaults; the study supplies the rest. */
 export function buildStudyState(study,{assetById,lang='zh',makeItem,initial}){
  const items=buildStudyItems(study,{assetById,makeItem});
- return {...initial(),title:study.title[localeIndex(lang)],intention:'',vessel:study.vessel,scene:study.scene,mood:study.mood,items};
+ return {...initial(),title:study.title[localeIndex(lang)],intention:'',vessel:study.vessel,scene:study.scene,light:study.light||undefined,subtitle:'',mood:study.mood,items};
 }
 
-/** The first-run draft ("Where the Wind Passed"): pine as the main line, calla as the second, a chrysanthemum low on the far side. */
+/** The first-run draft ("Where the Wind Passed"): pine as the main line, calla as the second, a red camellia low on the far side. */
 export const demoVessel='round';
-export const demoSpecs=[{family:'pine',to:[-9,46]},{family:'calla',to:[-17,31]},{family:'chrysanthemum',to:[11,9],s:1.1}];
+export const demoSpecs=[{family:'pine',to:[-9,46]},{family:'calla',to:[-17,31]},{family:'camellia',type:'camellia-red-front',to:[11,14],s:1}];
 /** The demo's three stems in the round vase, built like a study; whether they sit before the vessel follows autoFront. */
 export function buildDemoItems({assetById,makeItem,specimenFor}){
  const vessel=assetById[demoVessel],front=autoFront(vessel);
- return placeSpecs(vessel,demoSpecs.map(({family,...spec})=>({type:specimenFor(family).id,front,...spec})),{assetById,makeItem});
+ return placeSpecs(vessel,demoSpecs.map(({family,type,...spec})=>({type:type||specimenFor(family).id,front,...spec})),{assetById,makeItem});
 }

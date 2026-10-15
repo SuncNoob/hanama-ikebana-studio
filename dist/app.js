@@ -23,6 +23,7 @@ import {nameOf,colorOf,poseOf,displayPose,provenance,cardName,supportName,coverF
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints} from './geometry.js?v=28';
 import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=31';
 import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=hn2';
+import {lightScenes} from './light-scenes.js';
 import {createItem,stemVersion,buildStudyState,buildDemoItems} from './study-state.js?v=hn3';
 import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-pick.js?v=hn2';
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
@@ -74,7 +75,7 @@ Object.assign(jaUI,{'画布旁的创作工具':'キャンバスの創作ツー�
 function translateTextNodes(root,translations){const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;while((node=walker.nextNode()))for(const [from,to] of Object.entries(translations))if(node.nodeValue.includes(from))node.nodeValue=node.nodeValue.replaceAll(from,to)}
 function applyLanguage(){
  document.documentElement.lang=lang==='en'?'en':lang==='ja'?'ja':'zh-CN';
- document.title=L('花间 HANAMA · 氛围插花','HANAMA · Atmospheric Flower Arranging');
+ document.title=L('光影插花 · HANAMA','Light & Flowers · HANAMA','光と花 · HANAMA');
  $('meta[name="description"]').content=L('在花间挑选花材、修剪枝叶，亲手创作有氛围的插花作品。保存草稿与 ChatGPT 生图提示词，让灵感自然成形。','Choose flowers, shape stems, and create atmospheric floral arrangements. Save your draft and a ChatGPT image prompt.');
  $$('[data-zh][data-en]').forEach(el=>el.textContent=lang==='ja'?(el.dataset.ja||jaUI[el.dataset.zh]||el.dataset.en):el.dataset[lang]);
  $$('[data-aria-zh][data-aria-en]').forEach(el=>el.setAttribute('aria-label',lang==='ja'?(el.dataset.ariaJa||jaUI[el.dataset.ariaZh]||el.dataset.ariaEn):el.dataset[`aria${lang==='en'?'En':'Zh'}`]));
@@ -113,10 +114,10 @@ const vesselStyleName=style=>{const [zh,en,ja]=({book:['花之书','The Book','�
 const fixtureName=a=>supportName(a,lang);
 const STORE='hanama-draft-v1';const uid=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
 function makeItem(type,options={}){return createItem(assetById[type],type,uid(),options)}
-const initial=()=>({version:2,id:uid(),title:L('风经过的地方','Where the Wind Passed'),subtitle:'',vessel:'round',scene:'paper',mood:'静寂',generation:'natural',intention:L('像清晨的风掠过庭院，安静、自然，留一点不完美。','Like a morning breeze through the garden: quiet, natural, and gently imperfect.'),items:buildDemoItems({assetById,makeItem,specimenFor})});
+const initial=()=>({version:2,id:uid(),title:L('光影插花','Light & Flowers','光と花'),subtitle:L('松影 · 山茶 · 日式留白','Pine · camellia · Japanese simplicity','松影・椿・余白'),vessel:'round',scene:'paper',light:'morning',mood:'静寂',generation:'natural',intention:L('像清晨的风掠过庭院，安静、自然，留一点不完美。','Like a morning breeze through the garden: quiet, natural, and gently imperfect.'),items:buildDemoItems({assetById,makeItem,specimenFor})});
 const localeIndex=locale=>locale==='zh'?0:locale==='en'?1:2;
 const untitledTitles=['未命名作品','Untitled Arrangement','タイトルなしの作品'];
-const titlePresets=[['风经过的地方','Where the Wind Passed','風が通り過ぎた場所'],untitledTitles,...studies.map(study=>study.title)];
+const titlePresets=[['光影插花','Light & Flowers','光と花'],...lightScenes.map(s=>s.title),['风经过的地方','Where the Wind Passed','風が通り過ぎた場所'],untitledTitles,...studies.map(study=>study.title)];
 const intentionPresets=['像清晨的风掠过庭院，安静、自然，留一点不完美。','Like a morning breeze through the garden: quiet, natural, and gently imperfect.','朝の庭を風が通り抜けるように。静かで自然に、少しの不揃いを残す。'];
 function relocalizePresetFields(draft,locale){
  const titleGroup=titlePresets.find(group=>group.includes(draft.title));
@@ -505,7 +506,7 @@ function naturalLength(){
  renderStage();persist();undoToast(L('已恢复自然长度','Back to its natural length','自然な長さに戻しました'));
 }
 const generationDescriptions={zh:{natural:'保留用花、主次和整体光感，小幅整理枝条、花面与瓶口连接，让作品更真实。',creative:'保持原设计，在花面朝向、枝条节奏和前后空间上多做一点整理，不减花。',faithful:'尽量贴近原稿，仍修正悬空、穿插和不合理连接。'},en:{natural:'Keep the flowers, hierarchy and light; refine local curves, facing and insertion for realism.',creative:'Refine facing, stem rhythm and depth a little further within the same design, without fewer flowers.',faithful:'Stay closest to the draft while correcting floating stems, intersections and implausible connections.'},ja:{natural:jaUI['保留用花、主次和整体光感，小幅整理枝条、花面与瓶口连接，让作品更真实。'],creative:jaUI['保持原设计，在花面朝向、枝条节奏和前后空间上多做一点整理，不减花。'],faithful:jaUI['尽量贴近原稿，仍修正悬空、穿插和不合理连接。']}};
-function renderAll(){applyLanguage();applyCanvasZoom();setEditorTab($('.design-panel').dataset.editorTab||'shape');renderStage();renderMaterials();renderQuickMaterials();setEditMode(editMode);$('#work-title').value=untitledTitles.includes(state.title)?'':state.title;$('#work-subtitle').value=state.subtitle||'';$('#intention').value=state.intention;$$('[data-mood]').forEach(b=>{const on=b.dataset.mood===state.mood;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});$('#generation-mode').value=state.generation||'natural';$('#generation-mode-help').textContent=generationDescriptions[lang][state.generation||'natural'];persist()}
+function renderAll(){applyLanguage();renderLightScenes();applyCanvasZoom();setEditorTab($('.design-panel').dataset.editorTab||'shape');renderStage();renderMaterials();renderQuickMaterials();setEditMode(editMode);$('#work-title').value=untitledTitles.includes(state.title)?'':state.title;$('#work-subtitle').value=state.subtitle||'';$('#intention').value=state.intention;$$('[data-mood]').forEach(b=>{const on=b.dataset.mood===state.mood;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});$('#generation-mode').value=state.generation||'natural';$('#generation-mode-help').textContent=generationDescriptions[lang][state.generation||'natural'];persist()}
 /** Neutral names of the placement slots (真·副·控 and the 添え fillers) for the add toast and the guide readout. */
 const slotNames={shin:['主枝','Main line','主'],soe:['副枝','Second line','副'],hikae:['客枝','Accent','客'],jushi:['辅枝','Filler','添え']};
 const slotName=slot=>(slotNames[slot]||slotNames.jushi)[localeIndex(lang)];
@@ -1797,6 +1798,14 @@ $('#language-select').onchange=e=>{if(!['zh','en','ja'].includes(e.target.value)
 function setView(view){closeQuickMaterialDrawer();closeLayerMenu();$$('.view').forEach(el=>el.hidden=el.id!==`${view}-view`);$$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));if(view==='gallery')renderGallery().catch(err=>toast(err.message));if(view==='inspiration')renderInspiration();window.scrollTo({top:0,behavior:'instant'})}
 $$('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
 /** A study as a new canvas; it remembers which study it came from (B6 lineage), so a remix of it can say so. */
+function renderLightScenes(){
+ const host=$('#light-scene-cases');if(!host)return;const index=localeIndex(lang);
+ host.innerHTML=lightScenes.map(p=>`<button type="button" class="light-scene-case" data-light-case="${p.id}" title="${esc(p.detail[index])}"><img src="/previews/light-${p.id}.webp" alt="" width="600" height="600" loading="lazy"><span><strong>${esc(p.title[index])}</strong><small>${esc(p.detail[index])}</small></span><b aria-hidden="true">↗</b></button>`).join('');
+ host.querySelectorAll('[data-light-case]').forEach(button=>button.onclick=async()=>{
+  const p=lightScenes.find(p=>p.id===button.dataset.lightCase),study=studies.find(s=>s.id===p.study);button.disabled=true;
+  try{await activateCanvas({...studyState(study),title:p.title[localeIndex(lang)],scene:p.scene,light:p.light},{clean:true,message:({saved})=>saved?L('光影案例已打开，原草稿已存入「我的作品」。','Light study opened; your draft is in My Works.','光の作例を開き、下書きを保存しました。'):L('光影案例已打开，可继续调光、换景与摆花。','Light study opened. Adjust the light, scene and flowers.','光の作例を開きました。自由に調整できます。')})}catch(err){toast(err.message)}finally{button.disabled=false}
+ });
+}
 function studyState(study){return {...buildStudyState(study,{assetById,lang,makeItem,initial}),lineage:[{t:study.title[localeIndex(lang)],s:study.id}]}}
 /** Open a study in the studio (its card, the start card or a study link); the current canvas is filed first when it has changes. */
 function openStudy(study){

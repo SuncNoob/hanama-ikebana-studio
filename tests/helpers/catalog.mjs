@@ -36,6 +36,6 @@ let serial=0;
 /** Same defaults as app.js makeItem, with deterministic ids. */
 export const makeItem=(type,options={})=>createItem(assetById[type],type,`qa-${++serial}`,options);
 /** The first-run draft as app.js initial() builds it (English title). */
-export const initial=()=>({version:2,id:`qa-draft-${++serial}`,title:'Where the Wind Passed',subtitle:'',vessel:'round',scene:'paper',mood:'静寂',generation:'natural',intention:'Like a morning breeze through the garden: quiet, natural, and gently imperfect.',items:buildDemoItems({assetById,makeItem,specimenFor})});
+export const initial=()=>({version:2,id:`qa-draft-${++serial}`,title:'Light & Flowers',subtitle:'',vessel:'round',scene:'paper',light:'morning',mood:'静寂',generation:'natural',intention:'Like a morning breeze through the garden: quiet, natural, and gently imperfect.',items:buildDemoItems({assetById,makeItem,specimenFor})});
 export const studyState=(study,lang='en')=>buildStudyState(study,{assetById,lang,makeItem,initial});
 export {studies,scenes,bookSpecimens};
