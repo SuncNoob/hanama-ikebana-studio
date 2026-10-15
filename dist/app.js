@@ -29,7 +29,7 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './unity-stage.js?v=1';
+import {mountUnityGame} from './atelier.js?v=2';
 let gameBridge=null;
 const $ = (s,root=document) => root.querySelector(s);
 const $$ = (s,root=document) => [...root.querySelectorAll(s)];
@@ -2080,40 +2080,41 @@ function gameRaster(key,paint,size=768){
  while(gameRasterCache.size>48)gameRasterCache.delete(gameRasterCache.keys().next().value);
  return texture;
 }
-function gameFrame(){
+function gameFrame(knownTextures=new Map()){
+ const transfer=(id,key,paint,size)=>knownTextures.get(id)===key?'':gameRaster(key,paint,size);
  const sceneKey=`game-room|${sceneLayerKey}|${state.light||''}`;
  const full=(id,key,texture,order)=>({id,key,texture,x:50,y:50,width:100,height:100,px:.5,py:.5,angle:0,flip:false,interactive:false,order});
- const background=gameRaster(sceneKey,(ctx,S)=>{paintSceneBackground(ctx,S,state,scenes);paintLightAmbient(ctx,S,state.light,{night:state.scene==='night'});paintGroundPass(ctx,S,state,assetById,images);paintSceneFinish(ctx,S,state);});
+ const background=transfer('room',sceneKey,(ctx,S)=>{paintSceneBackground(ctx,S,state,scenes);paintLightAmbient(ctx,S,state.light,{night:state.scene==='night'});paintGroundPass(ctx,S,state,assetById,images);paintSceneFinish(ctx,S,state);});
  const nodes=[full('room',sceneKey,background,0)];
  // Window illumination is a cached room layer; native stem shadows move during a gesture.
  const lightKey=`game-light|${state.light||''}`;
- if(state.light){const texture=gameRaster(lightKey,(ctx,S)=>{const patch=lightPatch(state.light,180,null,(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c});if(patch){ctx.globalAlpha=LIGHTS[state.light].strength*.38;ctx.drawImage(patch,0,0,S,S*.795);patch.width=patch.height=0;}});nodes.push(full('window',lightKey,texture,2));}
+ if(state.light){const texture=transfer('window',lightKey,(ctx,S)=>{const patch=lightPatch(state.light,180,null,(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c});if(patch){ctx.globalAlpha=LIGHTS[state.light].strength*.38;ctx.drawImage(patch,0,0,S,S*.795);patch.width=patch.height=0;}});nodes.push(full('window',lightKey,texture,2));}
  state.items.forEach((item,index)=>{
   const a=assetById[item.type],src=specimenCanvas(item);if(!src?.width||!src.height)return;
   const g=dimensions(item,a),crop=src.crop||{x:0,y:0,width:src.width,height:src.height,fullWidth:src.width,fullHeight:src.height};
   const pivot=Number.isFinite(item.cropAnchorSourceY)?warpY(item.cropAnchorSourceY,g.split,g.length)/g.height:(item.cropAnchorY??1),key=`game-flower|${spriteCache.get(item.id)?.key}|${src.width}|${src.height}|${a.saturation||1}`;
-  const texture=gameRaster(key,(ctx,S)=>{if(a.saturation)ctx.filter=`saturate(${a.saturation})`;ctx.drawImage(src,0,0,S,S);},Math.min(1024,Math.max(src.width,src.height)));
+  const texture=transfer(item.id,key,(ctx,S)=>{if(a.saturation)ctx.filter=`saturate(${a.saturation})`;ctx.drawImage(src,0,0,S,S);},Math.min(1024,Math.max(src.width,src.height)));
   const [min,max]=sizeBounds(a);
-  nodes.push({id:item.id,key,texture,x:item.x,y:item.y,width:item.h*g.ratio*crop.width/crop.fullWidth,height:item.h*g.height*crop.height/crop.fullHeight,px:(g.anchor*crop.fullWidth-crop.x)/crop.width,py:(pivot*crop.fullHeight-crop.y)/crop.height,angle:item.angle,h:item.h,flip:item.flip,interactive:true,order:(item.aboveVessel?600:100)+index*2,minScale:min/item.h,maxScale:max/item.h});
+  nodes.push({id:item.id,name:assetName(a),key,texture,x:item.x,y:item.y,width:item.h*g.ratio*crop.width/crop.fullWidth,height:item.h*g.height*crop.height/crop.fullHeight,px:(g.anchor*crop.fullWidth-crop.x)/crop.width,py:(pivot*crop.fullHeight-crop.y)/crop.height,angle:item.angle,h:item.h,flip:item.flip,interactive:true,order:(item.aboveVessel?600:100)+index*2,minScale:min/item.h,maxScale:max/item.h});
  });
  const compositionKey=JSON.stringify(state.items),vesselKey=`game-vessel|${state.vessel}|${!!images[state.vessel]}`;
- nodes.push(full('vessel',vesselKey,gameRaster(vesselKey,(ctx,S)=>paintVesselLayer(ctx,S,state,assetById,images,{ground:false,fixture:false})),500));
+ nodes.push(full('vessel',vesselKey,transfer('vessel',vesselKey,(ctx,S)=>paintVesselLayer(ctx,S,state,assetById,images,{ground:false,fixture:false})),500));
  for(const [name,order] of [['fixture',isKenzan(assetById[state.vessel])?50:550],['interior',450],['rim',900]]){
   const c=$(`#${name}-layer`);if(!c?.width)continue;const key=`game-${name}|${state.vessel}|${state.scene}|${compositionKey}`;
-  nodes.push(full(name,key,gameRaster(key,(ctx,S)=>ctx.drawImage(c,0,0,S,S)),order));
+  nodes.push(full(name,key,transfer(name,key,(ctx,S)=>ctx.drawImage(c,0,0,S,S)),order));
  }
- const v=vesselGeometry(assetById[state.vessel]);return {nodes,selected:selected||'',mode:editMode,light:state.light||'',mouthX:v.insertion[0],mouthY:v.insertion[1]};
+ const v=vesselGeometry(assetById[state.vessel]);return {nodes,selected:selected||'',mode:editMode,brush:Number($('#brush-size').value)/Math.max(1,stageWidth())*50,light:state.light||'',mouthX:v.insertion[0],mouthY:v.insertion[1]};
 }
-let gameGestureMark=null;
+let gameGestureMark=null,gameGestureRedo=null,gameGestureUndo=null;
 function gameEvent(e){
  if(e.type==='select'){selectItem(e.id||null);return;}
  const item=state.items.find(i=>i.id===e.id);
- if(e.type==='begin'&&item){gameGestureMark=null;if(editMode==='move'){checkpoint();gameGestureMark=undoStack.at(-1);}selectItem(e.id);return;}
- if(e.type==='cancel'){if(gameGestureMark&&undoStack.at(-1)===gameGestureMark)undoStack.pop();gameGestureMark=null;renderStage();return;}
+ if(e.type==='begin'&&item){gameGestureMark=null;gameGestureRedo=redoStack.slice();gameGestureUndo=undoStack.slice();if(editMode==='move'){checkpoint();gameGestureMark=undoStack.at(-1);}selectItem(e.id);return;}
+ if(e.type==='cancel'){if(gameGestureMark&&undoStack.at(-1)===gameGestureMark){undoStack=gameGestureUndo||[];redoStack=gameGestureRedo||[];}gameGestureUndo=gameGestureRedo=gameGestureMark=null;renderStage();renderHistory();return;}
  if(e.type==='commit'&&item){
   if(![e.x,e.y,e.angle,e.scale].every(Number.isFinite))return;
   item.x=clamp(e.x,5,95);item.y=clamp(e.y,15,95);item.angle=clamp(e.angle,-180,180);item.h=clamp(item.h*clamp(e.scale,.25,4),...sizeBounds(assetById[item.type]));
-  selected=item.id;renderStage();persist();return;
+  gameGestureUndo=gameGestureRedo=gameGestureMark=null;selected=item.id;renderStage();persist();return;
  }
  if(e.type==='cut'&&item&&['split','brush'].includes(e.mode)&&Array.isArray(e.points)&&e.points.length>=2){
   selected=item.id;const points=e.points.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)).slice(0,512).map(p=>stageToSource([p.x/100,p.y/100],item,assetById[item.type]));
@@ -2121,4 +2122,8 @@ function gameEvent(e){
   stroke={kind:e.mode,points,radius:clamp(Number($('#brush-size').value)/stageWidth()/(item.h/100)/2,.002,.3),pointer:-777};finishPrune({pointerId:-777,pointerType:'mouse'});
  }
 }
-gameBridge=mountUnityGame({getFrame:gameFrame,onEvent:gameEvent,locale:()=>lang});
+gameBridge=mountUnityGame({getFrame:gameFrame,onEvent:gameEvent,locale:()=>lang,onAction:action=>{
+ if(action==='move'){setEditMode('move');return;}
+ if(action==='duplicate'){duplicateSelected();return;}
+ if(action==='reseat'&&current()){checkpoint();reseatItem(current(),{quiet:true});renderStage();persist();}
+}});

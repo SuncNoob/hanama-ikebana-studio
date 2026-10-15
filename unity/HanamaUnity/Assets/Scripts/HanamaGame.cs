@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Rendering;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -10,18 +11,18 @@ using UnityEngine.InputSystem;
 // The game owns rendering and gestures. The host owns the durable composition schema.
 public sealed class HanamaGame : MonoBehaviour
 {
-    [Serializable] public class Node { public string id, texture, key; public float x,y,width,height,px,py,angle,h,minScale=.8f,maxScale=1.25f; public bool flip,interactive; public int order; }
+    [Serializable] public class Node { public string id, texture, key, name; public float x,y,width,height,px,py,angle,h,minScale=.8f,maxScale=1.25f; public bool flip,interactive; public int order; }
     [Serializable] public class Frame { public Node[] nodes; public string selected,mode,light; public float mouthX,mouthY,brush=2; }
     [Serializable] public class Point { public float x,y; public Point(Vector2 p){x=p.x;y=p.y;} }
-    [Serializable] public class GameEvent { public string type,id,mode; public float x,y,angle,scale=1; public Point[] points; }
-    sealed class Piece { public Node data; public GameObject root; public Mesh mesh; public MeshRenderer renderer,shadow; public Material mat,shadowMaterial; public Texture2D tex; public string key; public float scale=1; }
+    [Serializable] public class GameEvent { public string type,id,mode,image; public bool snapped; public float x,y,angle,scale=1; public Point[] points; }
+    sealed class Piece { public Node data; public GameObject root; public Mesh mesh; public MeshRenderer renderer,shadow; public Material mat,shadowMaterial; public Texture2D tex; public string key; public float scale=1,bend,velocity,phase; public Vector3[] basis,vertices; public Vector2 previous; public float width,height,px,py,lastBend=float.NaN; }
     sealed class Mote { public Transform root; public SpriteRenderer sprite; public Vector2 velocity; public float life; }
     readonly Dictionary<string,Piece> pieces=new Dictionary<string,Piece>();
     readonly List<Mote> motes=new List<Mote>();
     readonly List<Vector2> cutPoints=new List<Vector2>();
-    Camera cameraRig; Material baseMaterial; Sprite dot; Frame frame;
-    Piece picked; Vector2 down,offset; float startAngle,startScale,turnStart,pinchDistance,pinchAngle; bool held,turning,scaling,pinching; string selected="",tool="move";
-    LineRenderer ring,cutLine,snapRing; GameObject handle; int lastWidth,lastHeight; float idle;
+    Camera cameraRig; Material baseMaterial; Shader botanical; Sprite dot; Frame frame;
+    Piece picked; Vector2 down,offset; float startAngle,startScale,turnStart,pinchDistance,pinchAngle; bool held,started,turning,scaling,pinching,nearMouth,capturing; float scaleDistance,previewAt; string hovered=""; string selected="",tool="move";
+    LineRenderer ring,cutLine,snapRing,anchorLine,brushRing; GameObject handle,scaleHandle,rootHandle; int lastWidth,lastHeight; float idle;
 #if UNITY_WEBGL && !UNITY_EDITOR
     [DllImport("__Internal")] static extern void HanamaEvent(string json);
 #endif
@@ -34,14 +35,21 @@ public sealed class HanamaGame : MonoBehaviour
 #endif
         cameraRig=Camera.main; if(!cameraRig)cameraRig=new GameObject("AtelierCamera").AddComponent<Camera>();
         cameraRig.orthographic=true;cameraRig.orthographicSize=50;cameraRig.transform.position=new Vector3(50,50,-100);cameraRig.clearFlags=CameraClearFlags.SolidColor;cameraRig.backgroundColor=new Color(.93f,.93f,.9f);
-        baseMaterial=Resources.Load<Material>("HanamaSprite"); if(!baseMaterial)baseMaterial=new Material(Shader.Find("Sprites/Default"));
+        botanical=Resources.Load<Shader>("Botanical");baseMaterial=Resources.Load<Material>("HanamaSprite"); if(!baseMaterial)baseMaterial=new Material(Shader.Find("Sprites/Default"));
         ring=MakeLine("Selection",new Color(.66f,.48f,.28f,.9f),.22f,1900);snapRing=MakeLine("Mouth",new Color(.75f,.78f,.47f,.95f),.3f,1890);cutLine=MakeLine("Scissors",new Color(.85f,.46f,.31f),.35f,1950);
+        anchorLine=MakeLine("Stem anchor",new Color(.65f,.55f,.35f,.4f),.12f,1890);brushRing=MakeLine("Brush cursor",new Color(.98f,.95f,.82f,.9f),.19f,1950);
         var tex=new Texture2D(24,24,TextureFormat.RGBA32,false);var pixels=new Color[576];for(int y=0;y<24;y++)for(int x=0;x<24;x++){float d=Vector2.Distance(new Vector2(x+.5f,y+.5f),new Vector2(12,12));pixels[y*24+x]=new Color(1,1,1,Mathf.Clamp01(12-d));}tex.SetPixels(pixels);tex.Apply();dot=Sprite.Create(tex,new Rect(0,0,24,24),new Vector2(.5f,.5f),24);
         handle=new GameObject("RotationHandle");var hr=handle.AddComponent<SpriteRenderer>();hr.sprite=dot;hr.color=new Color(.71f,.42f,.27f);hr.sortingOrder=1910;handle.transform.localScale=Vector3.one*1.8f;handle.SetActive(false);
-        for(int i=0;i<32;i++){var go=new GameObject("Petal");var sr=go.AddComponent<SpriteRenderer>();sr.sprite=dot;sr.sortingOrder=2000;go.SetActive(false);motes.Add(new Mote{root=go.transform,sprite=sr});}
+        scaleHandle=MakeHandle("Scale",new Color(.31f,.49f,.40f),1.8f);rootHandle=MakeHandle("Stem base",new Color(.91f,.86f,.69f),1.1f);
+        for(int i=0;i<28;i++){var go=new GameObject("Petal");var sr=go.AddComponent<SpriteRenderer>();sr.sprite=dot;sr.sortingOrder=2000;go.SetActive(false);motes.Add(new Mote{root=go.transform,sprite=sr});}
         Emit(new GameEvent{type="ready"});
     }
-    LineRenderer MakeLine(string name,Color color,float width,int order){var line=new GameObject(name).AddComponent<LineRenderer>();line.material=baseMaterial;line.startColor=line.endColor=color;line.startWidth=line.endWidth=width;line.sortingOrder=order;line.useWorldSpace=true;return line;}
+    GameObject MakeHandle(string name,Color color,float size)
+    {
+        var go=new GameObject(name);var sr=go.AddComponent<SpriteRenderer>();sr.sprite=dot;sr.color=color;sr.sortingOrder=1910;
+        go.transform.localScale=Vector3.one*size;go.SetActive(false);return go;
+    }
+    LineRenderer MakeLine(string name,Color color,float width,int order){var line=new GameObject(name).AddComponent<LineRenderer>();line.sharedMaterial=baseMaterial;line.startColor=line.endColor=color;line.startWidth=line.endWidth=width;line.sortingOrder=order;line.useWorldSpace=true;line.numCapVertices=4;return line;}
     void Emit(GameEvent e){
 #if UNITY_WEBGL && !UNITY_EDITOR
         HanamaEvent(JsonUtility.ToJson(e));
@@ -51,17 +59,33 @@ public sealed class HanamaGame : MonoBehaviour
     public void ReceiveFrame(string json)
     {
         try{var next=JsonUtility.FromJson<Frame>(json);if(next==null||next.nodes==null)return;frame=next;selected=next.selected??"";tool=next.mode??"move";
-            var keep=new HashSet<string>();foreach(var node in next.nodes){if(string.IsNullOrEmpty(node.id))continue;keep.Add(node.id);if(!pieces.TryGetValue(node.id,out var p)){p=new Piece{root=new GameObject(node.id),mesh=new Mesh()};p.mat=new Material(baseMaterial);p.renderer=p.root.AddComponent<MeshRenderer>();p.renderer.sharedMaterial=p.mat;p.root.AddComponent<MeshFilter>().sharedMesh=p.mesh;pieces.Add(node.id,p);}
+            var keep=new HashSet<string>();foreach(var node in next.nodes){if(string.IsNullOrEmpty(node.id))continue;keep.Add(node.id);if(!pieces.TryGetValue(node.id,out var p)){p=new Piece{root=new GameObject(node.id),mesh=new Mesh()};p.mesh.MarkDynamic();p.phase=pieces.Count*2.4f;p.mat=node.interactive?new Material(botanical):new Material(baseMaterial);p.renderer=p.root.AddComponent<MeshRenderer>();p.renderer.sharedMaterial=p.mat;p.root.AddComponent<MeshFilter>().sharedMesh=p.mesh;pieces.Add(node.id,p);}
                 p.data=node;p.scale=1;
                 if(!string.IsNullOrEmpty(node.texture)&&p.key!=node.key){var comma=node.texture.IndexOf(',');if(comma>=0){var bytes=Convert.FromBase64String(node.texture.Substring(comma+1));var tex=new Texture2D(2,2,TextureFormat.RGBA32,false);if(ImageConversion.LoadImage(tex,bytes,false)){tex.filterMode=FilterMode.Bilinear;tex.wrapMode=TextureWrapMode.Clamp;if(p.tex)Destroy(p.tex);p.tex=tex;p.mat.mainTexture=tex;p.key=node.key;}else Destroy(tex);}}
-                SetGeometry(p);p.renderer.sortingOrder=node.order;p.root.transform.position=new Vector3(node.x,100-node.y,0);p.root.transform.rotation=Quaternion.Euler(0,0,-node.angle);p.root.transform.localScale=new Vector3(node.flip?-1:1,1,1);
-                if(node.interactive){if(!p.shadow){var sh=new GameObject("Soft stem shadow");sh.transform.SetParent(p.root.transform,false);sh.AddComponent<MeshFilter>().sharedMesh=p.mesh;p.shadow=sh.AddComponent<MeshRenderer>();p.shadowMaterial=new Material(baseMaterial);p.shadowMaterial.color=new Color(.18f,.23f,.16f,.12f);p.shadow.sharedMaterial=p.shadowMaterial;}p.shadowMaterial.mainTexture=p.tex;p.shadow.sortingOrder=node.order-1;p.shadow.transform.localPosition=new Vector3(.75f,-.7f,.1f);}
+                SetGeometry(p);p.renderer.sortingOrder=node.order;p.root.transform.position=new Vector3(node.x,100-node.y,0);p.root.transform.rotation=Quaternion.Euler(0,0,-node.angle);p.root.transform.localScale=new Vector3(node.flip?-1:1,1,1);p.previous=p.root.transform.position;
+                if(node.interactive){if(!p.shadow){var sh=new GameObject("Soft stem shadow");sh.AddComponent<MeshFilter>().sharedMesh=p.mesh;p.shadow=sh.AddComponent<MeshRenderer>();p.shadowMaterial=new Material(botanical);p.shadowMaterial.SetFloat("_Shadow",1);p.shadow.sharedMaterial=p.shadowMaterial;}p.shadowMaterial.mainTexture=p.tex;p.shadow.sortingOrder=10+Mathf.Clamp(node.order%100,0,60);}
             }
-            var remove=new List<string>();foreach(var kv in pieces)if(!keep.Contains(kv.Key))remove.Add(kv.Key);foreach(var id in remove){var p=pieces[id];Destroy(p.root);Destroy(p.mesh);Destroy(p.mat);if(p.shadowMaterial)Destroy(p.shadowMaterial);if(p.tex)Destroy(p.tex);pieces.Remove(id);}
+            var remove=new List<string>();foreach(var kv in pieces)if(!keep.Contains(kv.Key))remove.Add(kv.Key);foreach(var id in remove){var p=pieces[id];Destroy(p.root);Destroy(p.mesh);Destroy(p.mat);if(p.shadow)Destroy(p.shadow.gameObject);if(p.shadowMaterial)Destroy(p.shadowMaterial);if(p.tex)Destroy(p.tex);pieces.Remove(id);}
             idle=0;DrawSelection();
         }catch(Exception e){Debug.LogWarning("Hanama frame rejected: "+e.Message);Emit(new GameEvent{type="error",mode="frame"});}
     }
-    void SetGeometry(Piece p){var n=p.data;float l=-n.width*n.px,r=l+n.width,t=n.height*n.py,b=t-n.height;p.mesh.Clear();p.mesh.vertices=new[]{new Vector3(l,b,0),new Vector3(r,b,0),new Vector3(l,t,0),new Vector3(r,t,0)};p.mesh.uv=new[]{new Vector2(0,0),new Vector2(1,0),new Vector2(0,1),new Vector2(1,1)};p.mesh.triangles=new[]{0,2,1,2,3,1};p.mesh.RecalculateBounds();}
+    void SetGeometry(Piece p)
+    {
+        var n=p.data;
+        if(p.basis!=null&&p.width==n.width&&p.height==n.height&&p.px==n.px&&p.py==n.py)return;
+        p.width=n.width;p.height=n.height;p.px=n.px;p.py=n.py;p.lastBend=float.NaN;
+        int nx=n.interactive?4:1,ny=n.interactive?16:1,k=0;
+        p.basis=new Vector3[(nx+1)*(ny+1)];p.vertices=new Vector3[p.basis.Length];
+        var uv=new Vector2[p.basis.Length];var tris=new int[nx*ny*6];
+        for(int y=0;y<=ny;y++)for(int x=0;x<=nx;x++)
+        {
+            int i=y*(nx+1)+x;float u=(float)x/nx,v=(float)y/ny;
+            p.basis[i]=new Vector3((u-n.px)*n.width,(v-1+n.py)*n.height,0);uv[i]=new Vector2(u,v);
+            if(x<nx&&y<ny){tris[k++]=i;tris[k++]=i+nx+1;tris[k++]=i+1;tris[k++]=i+nx+1;tris[k++]=i+nx+2;tris[k++]=i+1;}
+        }
+        Array.Copy(p.basis,p.vertices,p.basis.Length);p.mesh.Clear();p.mesh.vertices=p.vertices;p.mesh.uv=uv;p.mesh.triangles=tris;
+        p.mesh.RecalculateBounds();var bounds=p.mesh.bounds;bounds.Expand(8);p.mesh.bounds=bounds;
+    }
     Vector2 World(Vector2 p){var v=cameraRig.ScreenToWorldPoint(new Vector3(p.x,p.y,0));return new Vector2(v.x,v.y);}
     Vector2 Pointer(){
 #if ENABLE_INPUT_SYSTEM
@@ -106,27 +130,187 @@ public sealed class HanamaGame : MonoBehaviour
 #endif
     }
     Piece Pick(Vector2 at){Piece best=null;foreach(var p in pieces.Values){if(!p.data.interactive||!p.tex)continue;var v=p.root.transform.InverseTransformPoint(at);float u=v.x/p.data.width+p.data.px,w=v.y/p.data.height+1-p.data.py;if(u<0||u>1||w<0||w>1)continue;if(p.tex.GetPixelBilinear(u,w).a<.14f)continue;if(best==null||p.data.order>best.data.order)best=p;}return best;}
+    void BeginEdit(){if(started)return;started=true;Emit(new GameEvent{type="begin",id=selected});}
+    static float Angle(Vector2 p){return Mathf.Atan2(p.y,p.x)*Mathf.Rad2Deg;}
+    void Move(Piece p,Vector2 pos){p.root.transform.position=new Vector3(Mathf.Clamp(pos.x,5,95),Mathf.Clamp(pos.y,5,85),0);}
+    bool Alt(){return Keyboard.current!=null&&(Keyboard.current.leftAltKey.isPressed||Keyboard.current.rightAltKey.isPressed);}
     void Update()
     {
         if(Screen.width!=lastWidth||Screen.height!=lastHeight){lastWidth=Screen.width;lastHeight=Screen.height;cameraRig.aspect=1;}
-        foreach(var m in motes)if(m.life>0){m.life-=Time.unscaledDeltaTime;m.velocity+=Vector2.down*(Time.unscaledDeltaTime*8);m.root.position+=(Vector3)(m.velocity*Time.unscaledDeltaTime);var c=m.sprite.color;c.a=Mathf.Clamp01(m.life);m.sprite.color=c;if(m.life<=0)m.root.gameObject.SetActive(false);}
-        if(frame==null)return;Vector2 screen=Pointer(),at=World(screen);bool inside=screen.x>=0&&screen.y>=0&&screen.x<=Screen.width&&screen.y<=Screen.height;
-        if(Pressed()&&inside){idle=0;bool hitHandle=handle.activeSelf&&Vector2.Distance(at,handle.transform.position)<3;picked=hitHandle&&pieces.ContainsKey(selected)?pieces[selected]:Pick(at);if(picked==null&&tool!="move")pieces.TryGetValue(selected,out picked);if(picked==null){selected="";DrawSelection();Emit(new GameEvent{type="select",id=""});return;}selected=picked.data.id;down=at;offset=(Vector2)picked.root.transform.position-at;startAngle=picked.data.angle;startScale=picked.scale;turnStart=Mathf.Atan2(at.y-picked.root.transform.position.y,at.x-picked.root.transform.position.x)*Mathf.Rad2Deg;turning=hitHandle||Shift();scaling=false;held=true;cutPoints.Clear();if(tool!="move")cutPoints.Add(at);Emit(new GameEvent{type="begin",id=selected});DrawSelection();}
-        if(held&&picked!=null){idle=0;if(TwoTouches(out var a,out var b)){float d=Vector2.Distance(a,b),angle=Mathf.Atan2(b.y-a.y,b.x-a.x)*Mathf.Rad2Deg;if(!pinching){pinching=true;pinchDistance=Mathf.Max(.1f,d);pinchAngle=angle;startScale=picked.scale;startAngle=-picked.root.transform.eulerAngles.z;}ApplyScale(picked,startScale*d/pinchDistance);SetAngle(picked,startAngle-Mathf.DeltaAngle(pinchAngle,angle));}
-            else if(pinching){pinching=false;offset=(Vector2)picked.root.transform.position-at;}
-            else if(IsHeld()){if(tool!="move"){if(cutPoints.Count<512&&(cutPoints.Count==0||Vector2.Distance(cutPoints[cutPoints.Count-1],at)>.35f))cutPoints.Add(at);cutLine.positionCount=cutPoints.Count;for(int i=0;i<cutPoints.Count;i++)cutLine.SetPosition(i,cutPoints[i]);}
-                else if(turning){float angle=Mathf.Atan2(at.y-picked.root.transform.position.y,at.x-picked.root.transform.position.x)*Mathf.Rad2Deg;SetAngle(picked,startAngle-Mathf.DeltaAngle(turnStart,angle));}
-                else{var pos=at+offset;picked.root.transform.position=new Vector3(Mathf.Clamp(pos.x,5,95),Mathf.Clamp(pos.y,5,85),0);bool near=Vector2.Distance(picked.root.transform.position,new Vector2(frame.mouthX,100-frame.mouthY))<6;DrawCircle(snapRing,new Vector2(frame.mouthX,100-frame.mouthY),near?3:0);}}
-            if(!IsHeld()){held=false;pinching=false;if(tool!="move"){var points=new Point[cutPoints.Count];for(int i=0;i<points.Length;i++)points[i]=new Point(new Vector2(cutPoints[i].x,100-cutPoints[i].y));Emit(new GameEvent{type="cut",id=selected,mode=tool,points=points});cutLine.positionCount=0;Burst(at,10);}
-                else{var pos=(Vector2)picked.root.transform.position;var mouth=new Vector2(frame.mouthX,100-frame.mouthY);if(!turning&&Vector2.Distance(pos,mouth)<6){pos=mouth;picked.root.transform.position=pos;Burst(pos,12);}EmitTransform(picked);Burst(pos,5);}snapRing.positionCount=0;picked=null;}}
-        float scroll=inside?Scroll():0;if(!held&&Mathf.Abs(scroll)>.01f&&pieces.TryGetValue(selected,out var active)){Emit(new GameEvent{type="begin",id=selected});if(Shift())ApplyScale(active,active.scale*(1+scroll*.03f));else SetAngle(active,-active.root.transform.eulerAngles.z+scroll*3);EmitTransform(active);idle=0;}
-        DrawSelection();idle+=Time.unscaledDeltaTime;
+        float dt=Mathf.Min(Time.unscaledDeltaTime,.033f);Animate(dt);
+        if(frame==null||settings.paused){OnDemandRendering.renderFrameInterval=12;return;}
+        Vector2 screen=Pointer(),at=World(screen);bool inside=screen.x>=0&&screen.y>=0&&screen.x<=Screen.width&&screen.y<=Screen.height;
+        if(settings.photo){HideSelection();OnDemandRendering.renderFrameInterval=(!settings.motion||settings.reducedMotion)?4:1;return;}
+        if(Keyboard.current!=null&&Keyboard.current.escapeKey.wasPressedThisFrame){CancelGesture("");return;}
+        if(Pressed()&&inside)
+        {
+            idle=0;bool hitTurn=handle.activeSelf&&Vector2.Distance(at,handle.transform.position)<2.5f;
+            bool hitScale=scaleHandle.activeSelf&&Vector2.Distance(at,scaleHandle.transform.position)<2.5f;
+            bool hitRoot=rootHandle.activeSelf&&Vector2.Distance(at,rootHandle.transform.position)<2.4f;
+            picked=(hitTurn||hitScale||hitRoot)&&pieces.ContainsKey(selected)?pieces[selected]:Pick(at);
+            if(picked==null&&tool!="move")pieces.TryGetValue(selected,out picked);
+            if(picked==null){selected="";DrawSelection();Emit(new GameEvent{type="select",id=""});return;}
+            selected=picked.data.id;down=at;offset=(Vector2)picked.root.transform.position-at;startAngle=picked.data.angle;startScale=picked.scale;
+            turnStart=Angle(at-(Vector2)picked.root.transform.position);scaleDistance=Mathf.Max(2,Vector2.Distance(at,picked.root.transform.position));
+            turning=tool=="move"&&(hitTurn||(!hitRoot&&(settings.tool=="rotate"||Shift())));
+            scaling=tool=="move"&&(hitScale||(!hitRoot&&settings.tool=="scale"));held=true;started=false;pinching=false;cutPoints.Clear();
+            if(tool!="move")cutPoints.Add(at);Emit(new GameEvent{type="select",id=selected});DrawSelection();
+        }
+        if(held&&picked!=null)
+        {
+            idle=0;
+            if(TwoTouches(out var a,out var b)&&tool=="move")
+            {
+                BeginEdit();float d=Vector2.Distance(a,b),angle=Angle(b-a);
+                if(!pinching){pinching=true;pinchDistance=Mathf.Max(.1f,d);pinchAngle=angle;startScale=picked.scale;startAngle=-picked.root.transform.eulerAngles.z;offset=(Vector2)picked.root.transform.position-(a+b)*.5f;}
+                ApplyScale(picked,startScale*d/pinchDistance);SetAngle(picked,startAngle-Mathf.DeltaAngle(pinchAngle,angle));Move(picked,(a+b)*.5f+offset);
+            }
+            else if(pinching){pinching=false;offset=(Vector2)picked.root.transform.position-at;turnStart=Angle(at-(Vector2)picked.root.transform.position);startAngle=-picked.root.transform.eulerAngles.z;startScale=picked.scale;}
+            else if(IsHeld())
+            {
+                if(Vector2.Distance(down,at)>.25f)BeginEdit();
+                if(started)
+                {
+                    if(tool!="move")
+                    {
+                        if(cutPoints.Count<512&&Vector2.Distance(cutPoints[cutPoints.Count-1],at)>.22f)cutPoints.Add(at);
+                        cutLine.positionCount=cutPoints.Count;for(int i=0;i<cutPoints.Count;i++)cutLine.SetPosition(i,cutPoints[i]);
+                    }
+                    else if(scaling)ApplyScale(picked,startScale*Vector2.Distance(at,picked.root.transform.position)/scaleDistance);
+                    else if(turning)SetAngle(picked,startAngle-Mathf.DeltaAngle(turnStart,Angle(at-(Vector2)picked.root.transform.position)));
+                    else
+                    {
+                        Move(picked,at+offset);var mouth=new Vector2(frame.mouthX,100-frame.mouthY);bool near=Vector2.Distance(picked.root.transform.position,mouth)<5;
+                        if(near&&!nearMouth)Emit(new GameEvent{type="magnet",id=selected});nearMouth=near;DrawCircle(snapRing,mouth,near?2.4f:1.1f);
+                    }
+                }
+            }
+            if(started&&Time.unscaledTime-previewAt>.05f){previewAt=Time.unscaledTime;EmitTransform(picked,"preview");}
+            if(!IsHeld())Finish(at);
+        }
+        float scroll=inside?Scroll():0;
+        if(!held&&(Shift()||Alt())&&Mathf.Abs(scroll)>.01f&&pieces.TryGetValue(selected,out var active))
+        {
+            Emit(new GameEvent{type="begin",id=selected});if(Alt())ApplyScale(active,active.scale*(1+scroll*.03f));else SetAngle(active,-active.root.transform.eulerAngles.z+scroll*3);EmitTransform(active,"commit");idle=0;
+        }
+        if(!held&&inside&&Time.unscaledTime-previewAt>.09f)
+        {
+            previewAt=Time.unscaledTime;var hit=Pick(at);string id=hit?.data.id??"";
+            if(hovered!=id){hovered=id;Emit(new GameEvent{type="hover",id=id});}
+        }
+        DrawCircle(brushRing,at,inside&&tool=="brush"?frame.brush:0);DrawSelection();idle+=dt;
+        OnDemandRendering.renderFrameInterval=(!settings.motion||settings.reducedMotion)&&idle>2?4:1;
+    }
+    void Finish(Vector2 at)
+    {
+        held=false;pinching=false;
+        if(started)
+        {
+            if(tool!="move")
+            {
+                var points=new Point[cutPoints.Count];for(int i=0;i<points.Length;i++)points[i]=new Point(new Vector2(cutPoints[i].x,100-cutPoints[i].y));
+                Emit(new GameEvent{type="cut",id=selected,mode=tool,points=points});Burst(at,8);
+            }
+            else
+            {
+                var mouth=new Vector2(frame.mouthX,100-frame.mouthY);bool snap=!turning&&!scaling&&Vector2.Distance(picked.root.transform.position,mouth)<5;
+                if(snap){picked.root.transform.position=mouth;picked.velocity+=1.3f;Burst(mouth,10);}EmitTransform(picked,"commit",snap);
+            }
+        }
+        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;started=false;picked=null;
+    }
+    public void CancelGesture(string unused)
+    {
+        if(held&&picked!=null)
+        {
+            var n=picked.data;picked.root.transform.SetPositionAndRotation(new Vector3(n.x,100-n.y,0),Quaternion.Euler(0,0,-n.angle));ApplyScale(picked,1);
+            bool wasStarted=started;held=started=pinching=false;picked=null;if(wasStarted)Emit(new GameEvent{type="cancel"});
+        }
+        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;
     }
     void SetAngle(Piece p,float angle){p.root.transform.rotation=Quaternion.Euler(0,0,-angle);}
     void ApplyScale(Piece p,float scale){p.scale=Mathf.Clamp(scale,p.data.minScale,p.data.maxScale);p.root.transform.localScale=new Vector3((p.data.flip?-1:1)*p.scale,p.scale,1);}
-    void EmitTransform(Piece p){Emit(new GameEvent{type="commit",id=p.data.id,x=p.root.transform.position.x,y=100-p.root.transform.position.y,angle=Mathf.DeltaAngle(0,-p.root.transform.eulerAngles.z),scale=p.scale});}
+    void EmitTransform(Piece p,string type="commit",bool snapped=false){Emit(new GameEvent{type=type,snapped=snapped,id=p.data.id,x=p.root.transform.position.x,y=100-p.root.transform.position.y,angle=Mathf.DeltaAngle(0,-p.root.transform.eulerAngles.z),scale=p.scale});}
     void DrawCircle(LineRenderer line,Vector2 center,float radius){if(radius<=0){line.positionCount=0;return;}line.positionCount=49;for(int i=0;i<49;i++){float a=i*Mathf.PI/24;line.SetPosition(i,center+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*radius);}}
-    void DrawSelection(){if(!pieces.TryGetValue(selected,out var p)||tool!="move"){ring.positionCount=0;handle.SetActive(false);return;}float radius=Mathf.Clamp(Mathf.Min(p.data.width,p.data.height)*.42f,4,11)*p.scale;Vector2 center=p.root.transform.TransformPoint(new Vector3(p.data.width*(.5f-p.data.px),p.data.height*(p.data.py-.5f),0));DrawCircle(ring,center,radius);handle.transform.position=center+new Vector2(radius*.707f,radius*.707f);handle.SetActive(true);}
-    void Burst(Vector2 at,int count){foreach(var m in motes){if(count<=0)break;if(m.life>0)continue;count--;m.life=UnityEngine.Random.Range(.4f,.85f);m.root.position=at;m.root.localScale=Vector3.one*UnityEngine.Random.Range(.35f,.8f);m.velocity=UnityEngine.Random.insideUnitCircle*9+Vector2.up*4;m.sprite.color=new Color(.85f,.72f,.46f,.9f);m.root.gameObject.SetActive(true);}}
-    void OnApplicationFocus(bool focus){if(!focus&&held){held=false;pinching=false;picked=null;cutLine.positionCount=0;Emit(new GameEvent{type="cancel"});}}
+    void HideSelection(){ring.positionCount=anchorLine.positionCount=brushRing.positionCount=0;handle.SetActive(false);scaleHandle.SetActive(false);rootHandle.SetActive(false);}
+    void DrawSelection()
+    {
+        if(!handle)return;
+        if(capturing||settings.photo||!pieces.TryGetValue(selected,out var p)||tool!="move"){HideSelection();return;}
+        float radius=Mathf.Clamp(Mathf.Min(p.data.width,p.data.height)*.43f,4,11)*p.scale;
+        Vector2 center=p.root.transform.TransformPoint(new Vector3(p.data.width*(.5f-p.data.px),p.data.height*(p.data.py-.5f),0));
+        center=new Vector2(Mathf.Clamp(center.x,5,95),Mathf.Clamp(center.y,6,94));DrawCircle(ring,center,radius);
+        handle.transform.position=center+new Vector2(radius*.707f,radius*.707f);scaleHandle.transform.position=center+new Vector2(radius*.707f,-radius*.707f);rootHandle.transform.position=p.root.transform.position;
+        handle.SetActive(true);scaleHandle.SetActive(true);rootHandle.SetActive(true);anchorLine.positionCount=2;anchorLine.SetPosition(0,p.root.transform.position);anchorLine.SetPosition(1,center);
+    }
+    void Burst(Vector2 at,int count)
+    {
+        if(settings.reducedMotion||!settings.motion)return;
+        foreach(var m in motes)
+        {
+            if(count<=0)break;if(m.life>0)continue;count--;m.life=UnityEngine.Random.Range(.35f,.8f);m.root.position=at;
+            float s=UnityEngine.Random.Range(.25f,.65f);m.root.localScale=new Vector3(s,s*.6f,1);m.velocity=UnityEngine.Random.insideUnitCircle*5+Vector2.up*3;
+            m.sprite.color=new Color(.84f,.73f,.48f,.7f);m.root.gameObject.SetActive(true);
+        }
+    }
+    [Serializable] public class Presentation
+    {
+        public bool motion=true,photo,paused,reducedMotion;public float power=.65f,direction=125;public string tool="move";
+    }
+    Presentation settings=new Presentation();Color lightColor=Color.white;Vector2 lightVector;float lightPower;
+    GameEvent pendingCapture;
+    public void SetPresentation(string json)
+    {
+        settings=JsonUtility.FromJson<Presentation>(json)??new Presentation();settings.power=Mathf.Clamp01(settings.power);idle=0;
+        if(settings.paused)CancelGesture("");DrawSelection();
+    }
+    void Animate(float dt)
+    {
+        if(frame==null||settings.paused)return;
+        float radians=settings.direction*Mathf.Deg2Rad;Vector2 target=new Vector2(Mathf.Cos(radians),Mathf.Sin(radians));
+        lightVector=Vector2.Lerp(lightVector,target,1-Mathf.Exp(-dt*9));lightPower=Mathf.Lerp(lightPower,settings.power,1-Mathf.Exp(-dt*9));
+        Color tint=frame.light=="moon"?new Color(.79f,.87f,1):frame.light=="dusk"?new Color(1,.85f,.66f):frame.light=="morning"?new Color(1,.96f,.86f):Color.white;
+        lightColor=Color.Lerp(lightColor,tint,1-Mathf.Exp(-dt*9));
+        foreach(var p in pieces.Values)
+        {
+            if(!p.data.interactive)continue;
+            Vector2 pos=p.root.transform.position;float impulse=-(pos.x-p.previous.x)*.24f;p.previous=pos;
+            p.velocity=Mathf.Clamp(p.velocity+impulse,-7,7);p.velocity+=(-45*p.bend-10*p.velocity)*dt;p.bend+=p.velocity*dt;
+            float bend=settings.motion&&!settings.reducedMotion&&!settings.paused?p.bend+Mathf.Sin(Time.unscaledTime*.75f+p.phase)*.13f:0;
+            if(float.IsNaN(p.lastBend)||Mathf.Abs(bend-p.lastBend)>.0005f){for(int i=0;i<p.vertices.Length;i++){var v=p.basis[i];float weight=Mathf.Clamp01(Mathf.Abs(v.y)/Mathf.Max(1,p.data.height));v.x+=bend*weight*weight;p.vertices[i]=v;}p.mesh.vertices=p.vertices;p.lastBend=bend;}p.mat.SetVector("_LightDirection",new Vector4(lightVector.x,lightVector.y,0,0));p.mat.SetColor("_LightColor",lightColor);p.mat.SetFloat("_LightPower",lightPower);
+            p.mat.SetFloat("_Selected",!capturing&&!settings.photo&&(selected==p.data.id||hovered==p.data.id)?1:0);
+            if(p.shadow)
+            {
+                p.shadow.transform.SetPositionAndRotation(p.root.transform.position+(Vector3)(-lightVector*(1.3f+lightPower*4.3f)),p.root.transform.rotation);
+                p.shadow.transform.localScale=p.root.transform.localScale;p.shadowMaterial.SetFloat("_LightPower",lightPower);
+                p.shadowMaterial.SetVector("_Softness",new Vector4(.35f/Mathf.Max(1,p.data.width),.35f/Mathf.Max(1,p.data.height),0,0));
+            }
+        }
+        foreach(var m in motes)if(m.life>0)
+        {
+            m.life-=dt;m.velocity+=Vector2.down*(dt*5);m.root.position+=(Vector3)(m.velocity*dt);m.root.Rotate(0,0,dt*35);
+            var color=m.sprite.color;color.a=Mathf.Clamp01(m.life)*.65f;m.sprite.color=color;if(m.life<=0)m.root.gameObject.SetActive(false);
+        }
+    }
+    public void Capture(string unused)
+    {
+        if(held||capturing){Emit(new GameEvent{type="capture-error"});return;}
+        var target=RenderTexture.GetTemporary(1600,1600,24,RenderTextureFormat.ARGB32);var previous=RenderTexture.active;Texture2D tex=null;capturing=true;
+        try
+        {
+            HideSelection();cutLine.enabled=snapRing.enabled=false;
+            foreach(var p in pieces.Values)if(p.data.interactive)p.mat.SetFloat("_Selected",0);foreach(var m in motes)m.sprite.enabled=false;
+            cameraRig.targetTexture=target;cameraRig.Render();RenderTexture.active=target;
+            tex=new Texture2D(1600,1600,TextureFormat.RGB24,false);tex.ReadPixels(new Rect(0,0,1600,1600),0,0);tex.Apply();
+            pendingCapture=new GameEvent{type="capture",image=Convert.ToBase64String(tex.EncodeToPNG())};
+        }
+        catch(Exception e){Debug.LogWarning(e.Message);pendingCapture=new GameEvent{type="capture-error"};}
+        finally
+        {
+            cameraRig.targetTexture=null;RenderTexture.active=previous;RenderTexture.ReleaseTemporary(target);if(tex)Destroy(tex);
+            capturing=false;cutLine.enabled=snapRing.enabled=true;foreach(var m in motes)m.sprite.enabled=true;DrawSelection();
+        }
+    }
+    void LateUpdate(){if(pendingCapture!=null){var result=pendingCapture;pendingCapture=null;Emit(result);}}
+    void OnApplicationFocus(bool focused){if(!focused)CancelGesture("");}
 }
