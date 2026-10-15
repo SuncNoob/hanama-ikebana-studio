@@ -9,7 +9,7 @@ import {
  tipPoint,crownPoint,seatState,headroom,autoFront,isKenzan,stemCm,drawsStem,hashId
 } from '../dist/scale.js?v=hn3';
 import {stemMaxCm,roleOf} from '../dist/botany.js?v=hn2';
-import {vesselGeometry} from '../dist/geometry.js?v=28';
+import {vesselGeometry} from '../dist/geometry.js?v=organic3';
 
 const STYLES=['upright','slanting'],HANDS=[1,-1];
 const dist2=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]);
@@ -27,7 +27,8 @@ function arrange(vessel,id,types,guide={}){
 /** Two arrangement ids whose hashes lean opposite ways. */
 const SIDES=(()=>{const ids=[];for(let k=0;ids.length<2;k++){const id=`guide-${k}`;if(!ids.some(i=>(hashId(i)&1)===(hashId(id)&1)))ids.push(id)}return ids})();
 
-test('guide rays over 31 vessels × 2 styles × 2 hands: on the stage, above the rim, frac × the main line, mirrored by the hand',()=>{
+test('guide rays over every vessel × style × hand: on the stage, above the rim, frac × the main line, mirrored by the hand',()=>{
+ assert.ok(vessels.length>0,'the vessel catalogue is populated');
  let count=0;
  for(const vessel of vessels)for(const style of STYLES)for(const side of HANDS){
   const rays=guideRays(vessel,{style,side}),g=vesselGeometry(vessel),rim=primary(vessel)?.frontRimY??g.insertion[1];count++;
@@ -45,7 +46,7 @@ test('guide rays over 31 vessels × 2 styles × 2 hands: on the stage, above the
    assert.deepEqual(ray.target,slotTarget(vessel,ray.key,side,style));
   }
  }
- assert.equal(count,124);
+ assert.equal(count,vessels.length*STYLES.length*HANDS.length);
  assert.deepEqual(SLANTING,{shin:48,soe:14});
  assert.equal(slotLean('shin','slanting'),48);assert.equal(slotLean('soe','slanting'),14);assert.equal(slotLean('hikae','slanting'),-65);
  assert.equal(slotLean('shin'),12);assert.equal(slotLean('jushi-2','slanting'),-25);

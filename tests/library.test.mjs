@@ -160,10 +160,13 @@ test('names and colours: every vessel has a Japanese colour, and the sakura clos
  assert.equal(cardName(flowers.find(f=>f.id==='eucalyptus'),'ja'),'ユーカリ');
 });
 
-test('covers: the sakura card shows a branch; specimenFor keeps the first photograph',()=>{
+test('covers: the legacy sakura cover stays available; new additions prefer editorial photography',()=>{
  const poses=posesOf('sakura');
  assert.equal(coverFor('sakura',poses).id,covers.sakura);
- assert.equal(specimenFor('sakura').id,'photo-sakura','the default canvas and recent strip are unchanged');
+ assert.equal(specimenFor('sakura').id,'editorial-sakura','new additions use the editorial sakura');
+ assert.equal(specimenFor('sakura').source,'generated-editorial');
+ assert.ok(poses.some(a=>a.id==='atelier-sakura'),'the archived atelier branch remains available to saved arrangements');
+ assert.ok(poses.some(a=>a.id==='photo-sakura'),'the original photograph remains available as another pose');
  assert.notEqual(coverFor('sakura',poses,'white').id,'photo-sakura','a colour filter still prefers a branch');
  for(const f of flowers.filter(f=>f.id!=='sakura'))assert.equal(coverFor(f.family,posesOf(f.family)).id,posesOf(f.family)[0].id,f.id);
  assert.equal(coverFor('sakura',poses,'blue'),null);

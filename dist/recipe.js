@@ -6,7 +6,7 @@
  * share-cards.js paints the card. Every figure is an estimate and every text says so (约 / ≈ / 約).
  */
 import {itemCm,stemCm,drawsStem,crownPoint,seatState,seatPoint,isKenzan,isDetachedPiece} from './scale.js?v=hn3';
-import {vesselGeometry} from './geometry.js?v=28';
+import {vesselGeometry} from './geometry.js?v=organic3';
 import {stemMaxCm,rolesOf,profileOf} from './botany.js?v=hn2';
 import {nameOf,colorOf,supportName,vesselFacts} from './library.js?v=hn3';
 import {materialNoun} from './prompt.js?v=hn4';

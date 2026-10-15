@@ -1,0 +1,118 @@
+{
+  "generator": "Built-in image_gen",
+  "style": "Quiet Japanese wabi-sabi atelier, soft upper-left window light, natural realism with subtle painterly finish",
+  "assets": [
+    {
+      "name": "room-milk",
+      "source": "exec-e00780ab-ef72-4005-95b8-c8ac9ed71373.png",
+      "prompts": [
+        "Use case: stylized-concept\nAsset type: square environment backdrop for a premium Japanese ikebana arrangement editor, not a website mockup.\nPrimary request: Generate a single beautiful quiet Japanese wabi-sabi atelier interior, empty and ready for the user's flower arrangement. Morning window, milky white variant.\nStyle/medium: refined natural realism with a very subtle hand-painted / artful 3D illustration finish, tactile mineral plaster, elegant restrained composition.\nComposition/framing: square 1:1, straight-on fixed frontal camera at tabletop height with a slightly downward view of the tabletop. The broad, empty matte pale limestone / pale ash wood tabletop begins at exactly y=79% of the image and fills the bottom 21%; horizontal table-back boundary must be extremely soft. The central 80% of width and central 75% of height must remain almost empty, calm milky plaster and softly diffused light, so later flowers will read cleanly. Only far left edge may hint at a blurred shoji window frame and only far upper-right edge may hint at a far distant garden; both barely perceptible. No strong framing architecture.\nLighting/mood: giant diffused window softbox from upper left, wrapped reflected light, luminous high-key milk white and warm cream, a trace of sage grey, smooth low contrast, no spotlight or bright beam shapes. The tabletop at center is evenly lit.\nConstraints: absolutely no vase, no flowers, no plants in foreground, no objects, no people, no text, no logos, no UI, no watermark. No hard outlines or strong shadows. No dark borders. Asset must be square and fill the image edge to edge, no frame.\nThis is background 1 of a coherent family; maintain table-back horizon at y=.79, front camera, subtle stylized realism, and large negative space.",
+        "Use case: precise-object-edit. Edit target: the supplied square milky Japanese ikebana atelier background. Keep the quiet soft plaster, gentle left shoji, distant right garden, frontal camera, palette and soft painterly realism unchanged. Only adjust the tabletop composition: move its soft wall/table boundary downward to y=79% of the frame (approximately 991 pixels in a 1254-pixel image), so the tabletop's upper surface fills only the bottom 21%. The table should continue entirely out of frame at the bottom; remove any visible vertical front lip/front face. Do not add any flowers, vase, objects, words, UI or hard shadows. Keep the same square canvas. Central area remains large empty negative space."
+      ],
+      "transparent": false,
+      "original": "room-milk.original.png",
+      "file": "room-milk.webp",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 45664,
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    {
+      "name": "room-sage",
+      "source": "exec-ea8a6c22-ed4e-45dc-9dd9-0809d7aefbbb.png",
+      "prompts": [
+        "Use case: lighting-weather\nAsset type: square empty Japanese ikebana atelier game background, coherent art set variant 2, overcast sage grey.\nEdit target: provided milky Japanese atelier backdrop. Keep exactly the same camera, all architecture, negative space, surface texture, and the tabletop horizontal wall boundary position. Maintain image dimensions and full edge-to-edge square composition. No flowers or vases.\nChange only lighting, weather and palette: a beautiful cool overcast day, restrained pale sage-grey and warm pearl plaster, very soft foggy blue-grey window glow at upper left and a gently rainy blurred garden just at the extreme right. Large diffuse ambient daylight wraps the room; no hard shadows, no bright sun patch, no dark contrast or gloomy look. Tabletop remains light matte limestone with subtle warm grey and green reflections, softly and evenly lit. Refined natural realism with subtle hand-painted illustration finish. Main central 80% stays clean and empty for the player's arrangement. No objects, no people, no words, no UI, no border or watermark."
+      ],
+      "reference": "room-milk.original.png",
+      "transparent": false,
+      "original": "room-sage.original.png",
+      "file": "room-sage.webp",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 108814,
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    {
+      "name": "room-moon",
+      "source": "exec-1d6deaba-ff2a-4db6-a6ab-725e18001c0c.png",
+      "prompts": [
+        "Use case: lighting-weather\nAsset type: square empty Japanese ikebana atelier game background, coherent art set variant 3, blue-green moonlight.\nEdit target: provided milky Japanese atelier backdrop. Preserve exactly the composition, front camera, tabletop horizontal boundary height and perspective, shoji frame placement at the extreme left, distant garden hint at the extreme upper right, plaster and stone materials, and negative space. Maintain original square dimensions.\nChange only time of day, illumination and palette: a refined tranquil moonlit evening in blue-green, teal grey, muted indigo and pale sage silver. A giant diffuse cool luminous source from upper left softly wraps the interior, with delicate soft reflected moonlight on the matte stone tabletop. Low contrast smooth transitions, no black voids; keep enough soft midtone light for flowers to be read clearly. Garden barely visible beyond the small right edge. Retain natural realism with a subtle hand-painted / artful 3D illustration finish, tactile but not noisy.\nConstraints: all central area remains clean empty plaster. Absolutely no vase, no flower, no added plant or object, no candle, no bright moon disc, no stars, no people, no text, no logo, no UI. No hard shadow or strong edge light. Table continues past bottom image edge without visible front face.",
+        "Use case: lighting-weather. Edit target: this supplied square moonlit Japanese atelier backdrop. Keep EXACTLY the same front camera, tabletop boundary and shape, empty center, all architecture, crop and image dimensions. Soften illumination substantially: remove the diagonal bright streaks and all recognisable window-grid cast shadows from the wall and tabletop. Remove the plant-shaped cast shadow in the lower-left wall. Replace them with exceptionally broad, smooth, low-contrast diffused ambient blue-green moonlight, like a very large softbox. This must be a quiet soft blue-teal room, clean empty central plaster, tabletop evenly softly lit, bright enough to support a delicate flower arrangement. Preserve texture but reduce contrast of that texture. No beam shapes or hard highlights. Keep only very gentle luminous glow at far left, dark muted garden at far right. No objects, vase, flowers, characters, words, UI, border, watermark."
+      ],
+      "reference": "room-milk.original.png",
+      "transparent": false,
+      "original": "room-moon.original.png",
+      "file": "room-moon.webp",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 84236,
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    {
+      "name": "vase-smoke-celadon",
+      "source": "exec-2e7dfac1-a91a-4932-85ff-df5258a8f681.png",
+      "prompts": [
+        "Use case: product-mockup\nAsset type: single isolated transparent ceramic vessel sprite for a beautiful Japanese ikebana game.\nPrimary request: one single exquisite Japanese wabi-sabi round-bellied small-mouth ceramic vase, warm matte smoky celadon / sage blue-grey, subtly handmade asymmetric wheel-thrown silhouette. A short very narrow neck opens into a softly rolled lip, dark interior opening visible as a small ellipse. Full object isolated with actual transparent alpha, not a photographed backdrop.\nStyle/medium: high-end restrained natural product realism with a subtle hand-painted / beautiful 3D art finish, fine ceramic microtexture and delicate mottled soft glaze, smooth continuous tonal modeling, tactile expensive ceramic.\nComposition/framing: square image, front view very slightly from above so the small dark opening is visible. Centered vase occupies approximately 78% of image height, whole object including foot ring entirely visible, generous transparent margin. Round body with elegant balanced proportions; mouth width approximately 21% of maximum body width.\nLighting/mood: giant soft diffuse window from upper left, ample reflected fill from right, very gentle smooth rounded shading, matching a milky cream Japanese atelier; no hard contour highlight, no sharp shadow, no dramatic dark side.\nConstraints: exactly one vase and nothing else. TRUE transparent alpha background. No tabletop, floor, cast ground shadow, pedestal, flower, leaf, stem, branch, water, accessory, character, text, UI, watermark, border or checkerboard painted into pixels. Do not crop object."
+      ],
+      "transparent": true,
+      "original": "vase-smoke-celadon.original.png",
+      "file": "vase-smoke-celadon.webp",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 275418,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        137,
+        79,
+        1118,
+        1203
+      ]
+    }
+  ],
+  "integration": {
+    "painter": "organic-room.js",
+    "preload": "preloadOrganicRooms",
+    "coordinateNotes": "Full square image, no cover crop or camera pan. Shared table-back horizon approximately 0.81. Existing vessel contact shadow stays a separate soft pass.",
+    "selection": "ambience.light/mood override top-level light/mood; moon or night uses room-moon; overcast or stone uses room-sage; morning/noon/default uses room-milk; dusk uses room-milk plus restrained warm soft-light grade.",
+    "artNotes": "Generated with built-in image_gen as individual assets. The corrected milk image fixes the camera and tabletop; sage and moon are matched lighting edits. Moon hard window streaks were removed in a second lighting edit. No additional programmatic window grid or sharp cast shadow is layered over these rooms.",
+    "preloadNotes": "Preload all three same-origin WebP images once and wait for decode before caching Unity background raster or exported artwork. Load failures resolve and paint a diffuse gradient fallback."
+  }
+}

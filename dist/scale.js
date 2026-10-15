@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** True-to-life sizing. The square stage is 100 cm tall, so one stage percent equals one centimetre. */
 import {realScale,stemFix} from './real-scale.js?v=hn2';
-import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage} from './geometry.js?v=28';
+import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage} from './geometry.js?v=organic3';
 import {stemMaxCm, rolesOf, roleOf, stemMmOf} from './botany.js?v=hn2';
 import {specimenMetrics,vesselMetrics} from './asset-metrics.js?v=hn2';
 
@@ -312,8 +312,8 @@ export function seatClip(item,a,vessel,foot=null){
  * Unmeasured vessels get a plain estimate from their width.
  */
 export function vesselFoot(vessel){
- const g=vesselGeometry(vessel),bottom=g.top+g.height,measured=vesselMetrics[vessel?.id],foot=measured?.foot;
- if(foot){const k=g.height/Math.max(1e-6,measured.cm||g.height);return {cx:50+(foot.cx-50)*k,half:foot.half*k,arc:foot.arc*k,bottom:bottom-(86-foot.bottom)*k}}
+ const g=vesselGeometry(vessel),registered=Number.isFinite(vessel?.footY),bottom=g.top+g.height*(registered?vessel.footY:1),measured=vesselMetrics[vessel?.id],foot=measured?.foot;
+ if(foot){const k=g.height/Math.max(1e-6,measured.cm||g.height);return {cx:50+(foot.cx-50)*k,half:foot.half*k,arc:foot.arc*k,bottom:bottom-((registered?85.5:86)-foot.bottom)*k}}
  return {cx:50,half:g.width*.3,arc:Math.min(1.5,g.height*.06),bottom};
 }
 

@@ -1,11 +1,13 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
-import {dimensions,vesselGeometry,warpY} from './geometry.js?v=28';
+import {dimensions,vesselGeometry,warpY,flexExtent} from './geometry.js?v=organic3';
+import {hasFlex,createFlexChain,flexGrid} from './flex.js?v=1';
 import {applyLocalCut} from './local-cut.js?v=31';
 import {naturalStemRoutesV1,naturalStemRoutes,stemRoots,stemPath} from './natural-stems.js?v=hn2';
 import {seatClip,vesselFoot,seatState,stemWidthCm,isKenzan,isDetachedPiece,KENZAN,kenzanHolders,kenzanPins,onHolder} from './scale.js?v=hn3';
 import {stemMmOf} from './botany.js?v=hn2';
 import {lightOf,paintLight} from './ambience.js?v=hn3';
+import {paintOrganicRoom,paintOrganicGround} from './organic-room.js';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
@@ -324,8 +326,34 @@ function drawBotanical(ctx,size,item,asset,getSprite,{alpha=1,tone=1,shadow=null
  const width=fullW*crop.width/crop.fullWidth,height=fullH*crop.height/crop.fullHeight;
  ctx.save();ctx.translate(item.x/100*size,item.y/100*size);ctx.rotate(item.angle*Math.PI/180);ctx.scale(item.flip?-1:1,1);ctx.globalAlpha=alpha;
  if(shadow){ctx.shadowColor=shadow.color;ctx.shadowBlur=shadow.blur;ctx.shadowOffsetX=shadow.x;ctx.shadowOffsetY=shadow.y}
- if(tone<1)drawToned(ctx,src,tone,left,top,width,height,createCanvas);else ctx.drawImage(src,left,top,width,height);
+ if(hasFlex(item.flex))drawFlexImage(ctx,src,{left,top,width,height},createFlexChain(item.flex,flexExtent(item,asset,g)*size),tone,createCanvas);
+ else if(tone<1)drawToned(ctx,src,tone,left,top,width,height,createCanvas);else ctx.drawImage(src,left,top,width,height);
  ctx.restore();
+}
+
+/** Rasterize once before shadow/tone: triangle edges must never cast individual shadows. */
+function drawFlexImage(ctx,src,rect,chain,tone,createCanvas){
+ const mesh=flexGrid(rect,chain),xs=mesh.vertices.map(v=>v.point[0]),ys=mesh.vertices.map(v=>v.point[1]);
+ const left=Math.floor(Math.min(...xs))-2,top=Math.floor(Math.min(...ys))-2,width=Math.ceil(Math.max(...xs))-left+2,height=Math.ceil(Math.max(...ys))-top+2;
+ const k=Math.min(1,4096/Math.max(width,height)),out=createCanvas(Math.max(1,Math.ceil(width*k)),Math.max(1,Math.ceil(height*k)));
+ try{
+  const c=context2d(out);c.scale(k,k);c.translate(-left,-top);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+  for(const indices of mesh.triangles){
+   const [v0,v1,v2]=indices.map(i=>mesh.vertices[i]),[p0,p1,p2]=[v0,v1,v2].map(v=>v.point);
+   const [s0,s1,s2]=[v0,v1,v2].map(v=>[v.uv[0]*src.width,v.uv[1]*src.height]);
+   const sx1=s1[0]-s0[0],sy1=s1[1]-s0[1],sx2=s2[0]-s0[0],sy2=s2[1]-s0[1],det=sx1*sy2-sx2*sy1;
+   if(Math.abs(det)<1e-10)continue;
+   const dx1=p1[0]-p0[0],dy1=p1[1]-p0[1],dx2=p2[0]-p0[0],dy2=p2[1]-p0[1];
+   const a=(dx1*sy2-dx2*sy1)/det,b=(dy1*sy2-dy2*sy1)/det,cx=(sx1*dx2-sx2*dx1)/det,d=(sx1*dy2-sx2*dy1)/det;
+   // Canvas clips antialias each side separately. Subpixel overlap keeps shared triangle edges from turning into seams.
+   const center=[(p0[0]+p1[0]+p2[0])/3,(p0[1]+p1[1]+p2[1])/3],area=Math.abs(dx1*dy2-dx2*dy1);
+   const edge=Math.max(Math.hypot(dx1,dy1),Math.hypot(dx2,dy2),Math.hypot(p2[0]-p1[0],p2[1]-p1[1]));
+   const expand=1+.6/k/Math.max(.01,area/(3*edge)),clip=[p0,p1,p2].map(p=>[center[0]+(p[0]-center[0])*expand,center[1]+(p[1]-center[1])*expand]);
+   c.save();c.beginPath();c.moveTo(...clip[0]);c.lineTo(...clip[1]);c.lineTo(...clip[2]);c.closePath();c.clip();
+   c.transform(a,b,cx,d,p0[0]-a*s0[0]-cx*s0[1],p0[1]-b*s0[0]-d*s0[1]);c.drawImage(src,0,0);c.restore();
+  }
+  if(tone<1)drawToned(ctx,out,tone,left,top,width,height,createCanvas);else ctx.drawImage(out,left,top,width,height);
+ }finally{release(out)}
 }
 
 /** Add an opening's outline to the current path as its own closed subpath, so several openings form a union. */
@@ -476,10 +504,7 @@ export function paintFixture(ctx,size,asset,{guide=false,night=false,createCanva
 }
 /** These shared passes keep a layered export pixel-for-pixel aligned with the editor draft. */
 export function paintSceneBackground(ctx,size,s,scenes){
- const colors=scenes[s.scene],night=s.scene==='night';
- const wall=ctx.createLinearGradient(0,0,size,size);wall.addColorStop(0,colors[0]);wall.addColorStop(.56,colors[0]);wall.addColorStop(1,colors[1]);ctx.fillStyle=wall;ctx.fillRect(0,0,size,size);
- const light=ctx.createRadialGradient(size*.18,size*.12,0,size*.23,size*.18,size*.72);light.addColorStop(0,night?'#dfe9dc18':'#ffffff78');light.addColorStop(.48,night?'#b6c8b512':'#ffffff24');light.addColorStop(1,'#ffffff00');ctx.fillStyle=light;ctx.fillRect(0,0,size,size);
- const horizon=size*HORIZON,floor=ctx.createLinearGradient(0,horizon,0,size);floor.addColorStop(0,night?'#202b25':'#d8d8cf');floor.addColorStop(1,night?'#141c18':'#bfc1b7');ctx.fillStyle=floor;ctx.fillRect(0,horizon,size,size-horizon);ctx.fillStyle=night?'#0d130f22':'#72796d16';ctx.fillRect(0,horizon,size,Math.max(1,size*.002));
+ paintOrganicRoom(ctx,size,s);
 }
 /** A botanical with its LIGHT shadow: stems in front cast a tight one, stems behind the vessel a soft, distant one. */
 export function paintBotanicalLayer(ctx,size,s,item,assets,getSprite){
@@ -499,6 +524,7 @@ function softEllipse(ctx,x,y,rx,ry,blur,color){
  */
 export function paintGroundPass(ctx,size,s,assets,images){
  const vessel=assets[s.vessel];if(!vessel)return;
+ if(['generated-atelier','generated-editorial'].includes(vessel.source)){paintOrganicGround(ctx,size,vessel,s.scene==='night');return;}
  const night=s.scene==='night',k=size/100,foot=vesselFoot(vessel);
  softEllipse(ctx,(foot.cx+1.2)*k,(foot.bottom-.4)*k,foot.half*1.15*k,Math.max(.8,foot.arc*1.3)*k,size*.024,night?'#07100b2e':'#2f332b1f');
  // The foot ring seen from above the table is an ellipse whose front edge is the vessel's lowest point: centred a little
@@ -718,6 +744,7 @@ export function paintLightSilhouette(ctx,size,s,assets,getSprite,images){
  the arrangement's shadow cut out of it. `{ambient, patch}` pick the parts: the draft paints the room tone under the ground
  shadows and the patch over them, as the stage does. Returns whether a light was painted. */
 export function paintLightPass(ctx,size,s,assets,getSprite,images,createCanvas=browserCanvas,{ambient=true,patch=true}={}){
+ if(['generated-atelier','generated-editorial'].includes(assets[s.vessel]?.source))return false;
  if(!lightOf(s.light))return false;
  return paintLight(ctx,size,s,{createCanvas,horizon:HORIZON,ambient,patch,paintSilhouette:(c,S)=>paintLightSilhouette(c,S,s,assets,getSprite,images)});
 }

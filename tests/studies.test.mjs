@@ -3,11 +3,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {assetById,studies,studyState,initial,specimenOrder,vesselOrder,dist} from './helpers/catalog.mjs';
+import {assetById,studies,studyState,initial,specimenOrder,vesselOrder,specimenFor,assetFile,dist} from './helpers/catalog.mjs';
+import {atelierSpecimens,atelierVessels} from '../dist/editorial-catalog.js?v=1';
+import {atelierSpecimens as legacyAtelierSpecimens,atelierVessels as legacyAtelierVessels} from '../dist/atelier-catalog.js?v=1';
 import {legacyFlowers,legacyVessels,scenes,saturationTune} from '../dist/legacy-catalog.js?v=hn2';
 import {createItem,buildStudyItems,buildDemoItems,placeSpecs,demoSpecs,demoVessel} from '../dist/study-state.js?v=hn3';
 import {sizeBounds,mouthBase,tipPoint,crownPoint,drawsStem,stemCm,isKenzan,autoFront,seatState,baseOffset,angleCap,slotState,PHOTO_LENGTH} from '../dist/scale.js?v=hn3';
-import {vesselGeometry,sourceToStage} from '../dist/geometry.js?v=28';
+import {vesselGeometry,sourceToStage} from '../dist/geometry.js?v=organic3';
 import {specimenMetrics} from '../dist/asset-metrics.js?v=hn2';
 import {stemMaxCm} from '../dist/botany.js';
 
@@ -36,6 +38,24 @@ test('createItem has every field validate() rebuilds, and options override them'
  assert.deepEqual(Object.keys(item),['id','type','x','y','h','angle','trim','flip','length','cuts','segments','localCuts','pieceLabel','aboveVessel','cropAnchorY','cropAnchorSourceY','sv']);
  assert.equal(item.h,28);assert.equal(item.length,1.2);assert.equal(item.aboveVessel,true);assert.equal(item.sv,2,'new items draw stems with renderer v2');
  assert.equal(createItem({},'x','x2').h,48);
+});
+
+test('the photographic editorial assets have complete source files and botanical focus; archived art keeps its independent IDs',()=>{
+ assert.equal(atelierSpecimens.length,12);assert.equal(atelierVessels.length,3);assert.ok(atelierVessels.some(v=>v.id==='editorial-aubergine'));
+ for(const a of atelierSpecimens){
+  assert.equal(a.source,'generated-editorial');assert.equal(a.format,'webp');assert.equal(a.width,1024);assert.equal(a.heightPx,1536);
+  assert.ok(Number.isFinite(a.anchor)&&a.anchor>0&&a.anchor<1);assert.equal(a.split,.94);assert.ok(a.tip.length===2&&a.tip.every(n=>n>=0&&n<=1));
+  assert.ok(a.name&&a.en&&a.ja);assert.ok(readFileSync(assetFile(a.id)).length>1000);assert.ok(readFileSync(`${dist}${a.original.slice(1)}`).length>1000);
+  assert.equal(specimenFor(a.family).id,a.id,'new additions choose the photographic material before archived collections');
+ }
+ for(const vase of atelierVessels){
+  assert.equal(vase.source,'generated-editorial');
+  assert.equal(vase.fixture.kind,vase.group==='shallow'?'chicken-wire':'neck',`${vase.id}: support must fit the opening`);
+  assert.equal(vase.fixture.visibility,'hidden',`${vase.id}: no exposed support in the generated vessel`);
+  assert.ok(readFileSync(assetFile(vase.id)).length>1000);
+ }
+ assert.equal(legacyAtelierSpecimens.length,9);assert.equal(legacyAtelierVessels.length,1);
+ for(const a of [...legacyAtelierSpecimens,...legacyAtelierVessels]){assert.equal(assetById[a.id],a);assert.ok(readFileSync(assetFile(a.id)).length>1000);assert.ok(!atelierSpecimens.some(n=>n.id===a.id),'new photography must not silently replace a saved archived asset')}
 });
 
 /** Study items allowed to miss their `to` focus by more than 8 cm (none today; at most five may ever be listed). */
@@ -90,11 +110,12 @@ test('kenzan studies stand their stems on the pins in front of the basin unless 
  for(const study of kenzan)for(const item of studyState(study).items)assert.equal(item.aboveVessel,true,study.id);
 });
 
-test('the first-run draft is a small study in the round vase: pine, calla and a low red camellia, true size, seated, three slots',()=>{
+test('the first-run editorial garden has five naturally sized, seated materials and three structural slots',()=>{
  const s=initial(),vessel=assetById[s.vessel];
- assert.equal(s.vessel,'round');assert.equal(s.scene,'paper');assert.equal(demoVessel,'round');
- assert.deepEqual(s.items.map(i=>i.type),['pine-green-sparse','calla-ivory-front','camellia-red-front']);
- assert.deepEqual(demoSpecs.map(d=>d.family),['pine','calla','camellia']);
+ assert.equal(s.vessel,'editorial-aubergine');assert.equal(s.scene,'paper');assert.equal(demoVessel,'editorial-aubergine');
+ const expectedFamilies=['sakura','calla','eucalyptus','rose','camellia'],expectedIds=expectedFamilies.map(f=>`editorial-${f}`);
+ assert.deepEqual(s.items.map(i=>i.type),expectedIds);
+ assert.deepEqual(demoSpecs.map(d=>d.family),expectedFamilies);
  const insertion=vesselGeometry(vessel).insertion;
  s.items.forEach((item,k)=>{
   const a=assetById[item.type],ratio=item.h/a.height,to=demoSpecs[k].to,tip=tipPoint(item,a);
@@ -104,12 +125,12 @@ test('the first-run draft is a small study in the round vase: pine, calla and a 
   assert.ok(Math.hypot(tip[0]-insertion[0]-to[0],tip[1]-insertion[1]+to[1])<=3,`${item.type}: focus off its place`);
   assert.ok(crownPoint(item,a).every(v=>v>=3&&v<=97));
  });
- assert.equal(s.items[2].h,Math.round(assetById['camellia-red-front'].height*1*10)/10);
- assert.ok(seatState(s.items[2],assetById['camellia-red-front'],vessel).seated,'the low camellia is seated in the vase');
+ const camellia=s.items.find(i=>i.type==='editorial-camellia');
+ assert.equal(camellia.h,Math.round(assetById['editorial-camellia'].height*1*10)/10);
+ assert.ok(seatState(camellia,assetById['editorial-camellia'],vessel).seated,'the low camellia is seated in the vase');
  const {taken}=slotState(s,assetById);
  for(const slot of ['shin','soe','hikae'])assert.equal(taken[slot],true,`${slot} not filled`);
- const specimenFor=family=>({pine:{id:'pine'},calla:{id:'calla'},chrysanthemum:{id:'chrysanthemum'}})[family];
- assert.deepEqual(buildDemoItems({assetById,makeItem:(type,options)=>({type,...createItem(assetById[type],type,'x',options)}),specimenFor}).map(i=>i.type),['pine','calla','camellia-red-front']);
+ assert.deepEqual(buildDemoItems({assetById,makeItem:(type,options)=>({type,...createItem(assetById[type],type,'x',options)}),specimenFor}).map(i=>i.type),expectedIds);
 });
 
 test('app.js opens the first-run demo with nothing selected and swaps poses within the natural size range',()=>{

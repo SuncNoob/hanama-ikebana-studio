@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-15",
+  "generator": "OpenAI built-in imagegen",
+  "record_kind": "Normalized generation briefs; per-call phrasing is summarized here, not a verbatim transcript.",
+  "shared_art_direction": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94.",
+  "assets": [
+    {
+      "id": "atelier-camellia",
+      "path": "dist/assets/atelier/camellia.webp",
+      "original": "dist/assets/atelier/camellia.original.png",
+      "prompt_brief": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94. One rich red camellia, partially opened layered bloom, a small bud and about five deep matte leaves on a long gently curved woody stem.",
+      "transparent_background": true
+    },
+    {
+      "id": "atelier-calla",
+      "path": "dist/assets/atelier/calla.webp",
+      "original": "dist/assets/atelier/calla.original.png",
+      "prompt_brief": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94. One ivory calla lily with a delicate warm yellow spadix, two sage green leaves and a long graceful curved stem.",
+      "transparent_background": true
+    },
+    {
+      "id": "atelier-pine",
+      "path": "dist/assets/atelier/pine.webp",
+      "original": "dist/assets/atelier/pine.original.png",
+      "prompt_brief": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94. One sparse asymmetrical Japanese pine branch with three distinct needle clusters and one new candle, expressive long woody lower branch.",
+      "transparent_background": true
+    },
+    {
+      "id": "atelier-iris",
+      "path": "dist/assets/atelier/iris.webp",
+      "original": "dist/assets/atelier/iris.original.png",
+      "prompt_brief": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94. One violet Japanese iris with yellow and pale veining, one bud and slender sword-like leaves on a long stem.",
+      "transparent_background": true
+    },
+    {
+      "id": "atelier-pampas",
+      "path": "dist/assets/atelier/pampas.webp",
+      "original": "dist/assets/atelier/pampas.original.png",
+      "prompt_brief": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94. One airy warm ivory pampas plume with fine soft fibers, a long slender curved stem and one narrow leaf.",
+      "transparent_background": true
+    },
+    {
+      "id": "atelier-sakura",
+      "path": "dist/assets/atelier/sakura.webp",
+      "original": "dist/assets/atelier/sakura.original.png",
+      "prompt_brief": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94. One airy Japanese cherry blossom branch with sparse pale pink flowers and small buds, long fine woody lower branch and generous negative space.",
+      "transparent_background": true
+    },
+    {
+      "id": "atelier-chrysanthemum",
+      "path": "dist/assets/atelier/chrysanthemum.webp",
+      "original": "dist/assets/atelier/chrysanthemum.original.png",
+      "prompt_brief": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94. One ivory chrysanthemum with loose irregular layered petals, warm cream center, a few natural matte leaves and long stem.",
+      "transparent_background": true
+    },
+    {
+      "id": "atelier-maple",
+      "path": "dist/assets/atelier/maple.webp",
+      "original": "dist/assets/atelier/maple.original.png",
+      "prompt_brief": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94. One airy Japanese maple branch with around seven individually articulated copper-red autumn leaves, a long curved lower branch.",
+      "transparent_background": true
+    },
+    {
+      "id": "atelier-rose",
+      "path": "dist/assets/atelier/rose.webp",
+      "original": "dist/assets/atelier/rose.original.png",
+      "prompt_brief": "High-end Japanese ikebana botanical cutout; coherent softly realistic, slightly 3D-to-2D painterly treatment with matte natural materials and fine petal detail. A broad diffuse daylight source at upper left, gentle tonal transitions, sage green foliage, no hard cast shadow, outline, text, pot, floor or background. True transparent background. Portrait 1024 x 1536, the entire specimen visible with breathing room; long natural stem, cut end approximately x=.50 y=.94. One antique peach-coral rose with softly curled layered petals, one bud and natural matte sage green leaves on a long stem.",
+      "transparent_background": true
+    }
+  ],
+  "processing": "Original generated PNG retained. WebP quality 90, method 6; transparency preserved. Thumbnails are delivery derivatives. No botanical painting or style conversion was performed with scripts."
+}

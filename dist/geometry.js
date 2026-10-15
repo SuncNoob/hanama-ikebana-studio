@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** A specimen's original pixels are its editing coordinates. Only its lower stem stretches. */
+import {hasFlex,createFlexChain,bendPoint,unbendPoint} from './flex.js?v=1';
 export const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 const vesselBounds=asset=>{
   const height=asset.height, width=height*asset.width/asset.heightPx;
-  return {height,width,left:(100-width)/2,top:86-height};
+  return {height,width,left:(100-width)/2,top:Number.isFinite(asset.footY)?85.5-height*asset.footY:86-height};
 };
 /** Vessel-local normalized coordinates -> square-stage percent coordinates. */
 export function vesselLocalToStage(asset,point) {
@@ -39,18 +40,33 @@ export function warpY(y, split = .5, length = 1) {
 export function unwarpY(y, split = .5, length = 1) {
   return y <= split ? y : split + (y - split) / length;
 }
+function stemAnchor(asset,y){
+ const path=asset.stemAnchors;if(!path?.length)return asset.anchor??.5;
+ if(y<=path[0][0])return path[0][1];
+ for(let n=1;n<path.length;n++)if(y<=path[n][0]){const [y0,x0]=path[n-1],[y1,x1]=path[n];return x0+(x1-x0)*(y-y0)/(y1-y0)}
+ return path.at(-1)[1];
+}
 export function dimensions(item, asset) {
   const split = asset.split ?? .5;
   const length = item.length ?? 1;
   const end = 1 - item.trim / 100;
   const height=warpY(end, split, length);
   const pivotY=Number.isFinite(item.cropAnchorSourceY)?warpY(item.cropAnchorSourceY,split,length):(item.cropAnchorY??1)*height;
-  return {split, length, end, height, ratio:asset.width / asset.heightPx, anchor:asset.anchor ?? .5, pivotY};
+  return {split, length, end, height, ratio:asset.width / asset.heightPx, anchor:stemAnchor(asset,unwarpY(pivotY,split,length)), pivotY};
+}
+/** Only the stem bends; a large flower head turns as one intact photographic surface. Stage-normalized length. */
+export function flexExtent(item,asset,g=dimensions(item,asset)){
+ return Math.max(.06,g.pivotY-warpY(asset.bendLimit??0,g.split,g.length))*item.h/100;
 }
 /** Source UV -> square stage UV, including clipping, length, pivot, mirror, rotation. */
 export function sourceToStage(point, item, asset) {
   const g = dimensions(item, asset);
   const scale = item.h / 100;
+  if(hasFlex(item.flex)){
+    const [bx,by]=bendPoint([(point[0]-g.anchor)*g.ratio*scale,(g.pivotY-warpY(point[1],g.split,g.length))*scale],createFlexChain(item.flex,flexExtent(item,asset,g)));
+    const dx=bx*(item.flip?-1:1),dy=-by,a=item.angle*Math.PI/180;
+    return [item.x/100+dx*Math.cos(a)-dy*Math.sin(a),item.y/100+dx*Math.sin(a)+dy*Math.cos(a)];
+  }
   const dx = (point[0] - g.anchor) * g.ratio * scale * (item.flip ? -1 : 1);
   const dy = (warpY(point[1], g.split, g.length) - g.pivotY) * scale;
   const a = item.angle * Math.PI / 180;
@@ -62,6 +78,10 @@ export function stageToSource(point, item, asset) {
   const a=item.angle*Math.PI/180;
   const localX=(dx*Math.cos(a)+dy*Math.sin(a))*(item.flip?-1:1);
   const localY=-dx*Math.sin(a)+dy*Math.cos(a);
+  if(hasFlex(item.flex)){
+    const [x,y]=unbendPoint([localX,-localY],createFlexChain(item.flex,flexExtent(item,asset,g)));
+    return [x/(scale*g.ratio)+g.anchor,unwarpY(g.pivotY-y/scale,g.split,g.length)];
+  }
   return [localX/(scale*g.ratio)+g.anchor, unwarpY(localY/scale+g.pivotY,g.split,g.length)];
 }
 export function simplifyPoints(points, max=128) {

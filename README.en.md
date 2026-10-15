@@ -1,21 +1,27 @@
-# HANAMA · Atmospheric Flower Arranging
+# HANAMA · Light & Flowers
 
 [中文](README.md) · [English](README.en.md) · [日本語](README.ja.md)
 
 A hands-on flower-arranging studio for placing botanicals, pruning stems, choosing vessels, and shaping the mood of a composition. Try it at [flowerist.org](https://flowerist.org/).
 
+## Unity WebGL atelier
+
+Pull a botanical to bend its stem while the root stays fixed and the crown moves as one form; drag the base to move the whole piece. Amber and green handles rotate and scale, with two-finger gestures on mobile. An eight-segment, fixed-length chain uses constrained FABRIK, material-specific bend limits and damped wind/inertia to preserve flower-head shape. Curves follow pruning, mirroring, undo and saved works.
+
+The main library offers **12 transparent botanicals with a photographic finish, three room backgrounds and three vessels**. These are AI-generated photographic artworks directed from one original generated master still life, with shared broad upper-left light, translucent petals and glazed reflections; they are not photographs of physical specimens. Blush, warm ivory and plum rooms support the collection. The opening arrangement pairs an apricot garden rose, burgundy camellia, cherry branch, calla lily and eucalyptus with a dark-glazed round vase. Add presents the new series; More retains earlier catalogs, separate IDs keep saved works on their original images, and all 50 editable studies remain. Original PNG, runtime WebP and exact prompts are recorded in `dist/assets/editorial/art-direction.json` and `environment-art-direction.json`.
+
+The workbench groups main actions into Add, Atmosphere and Keep. Scissors and eraser stay beside the canvas; detailed adjustments open for the selection. Window, Overcast, Evening and Moon are the four presets. Stems can remain away from a vase without persistent reseating reminders. Keep saves, shares and exports; Take a photo downloads the current Unity view as a 1600 × 1600 PNG. Breeze, optional sound and system reduced-motion preferences are supported.
+
+The interactive buffer's longest edge is capped at 720 pixels on desktop and 640 on narrow viewports; photos keep a separate 1600-pixel output. Two renderer-stage software-GPU comparisons at an equal 598 × 598 buffer reduced mean frame-scheduling intervals by approximately 21–26%. Those samples predate the current 12-material photographic collection and do not establish its full workload or guarantee a frame rate across devices. Source is in `unity/HanamaUnity`; see [UnityWebGL.md](docs/UnityWebGL.md) for implementation, measurement conditions and building.
+
 ## Create an arrangement
 
-1. Browse by material type, color, or name. Color filtering checks every pose of a botanical family and shows matching variants.
-2. Choose a vessel and place materials on the canvas. Move, rotate, scale, flip, and reorder layers. On mobile, use two fingers to rotate and scale. Dragging a flower swings its stem around the vessel mouth; drag the base dot to move the whole stem. Stems that leave the vessel are marked and can be seated again in one step, and a cut-off piece goes back in by its real cut end.
-3. Cut a stem into two independently movable layers, or refine a detail with the eraser. Adjust stem length separately from the size of the flower or foliage.
-4. Name the work and choose its light and setting; the Light chip adds morning, midday, evening or moonlight through a window, with the arrangement's shadow on the wall following every change. Then export a generation pack. Use its draft and short prompt in your own image-generation tool; import the result into your gallery afterward.
+1. Open Add, choose a curated botanical or browse the full library by type, colour or name, and select a vessel.
+2. Pull the flower to bend, drag its base to place it, and use handles or two fingers for rotation and scale. Adjust opens detailed controls.
+3. Use scissors to separate a local attachment into an independent piece, or refine details with the eraser. Unbend restores the resting shape.
+4. Choose the setting in Atmosphere, then name, save or photograph it in Keep. The AI image pack and secondary actions remain in expanded controls.
 
-Every material appears at its true size (the canvas is a 100 cm square), and size stays within 80–125% of life. Drawn stems follow each species' real thickness, colour and cut length, and enter the vessel mouth, kenzan or opening; shallow basins show their water. New stems land in a shin / soe / hikae position with automatic depth, and the Ikebana proportion guide in the toolbar draws the three lines and targets for the chosen vessel (upright or slanting, left- or right-handed), with a one-tap "Put on this line". An empty canvas offers three ways to start.
-
-Zoom the canvas with a trackpad pinch, Ctrl+scroll or the buttons beside it, or double-tap the paper on a phone; Shift+scroll turns the selected stem and Alt+scroll sizes it. In the library, In season filters by the current season and Recent re-adds the exact pose.
-
-The canvas supports up to 24 material layers. The current library has **78 botanical families, 171 poses, and 31 vessels**. The inspiration book contains **50 editable studies**, browsable by arrangement scale, season, and school influence; each one opens directly in the atelier. The interface supports Chinese, English, and Japanese.
+The stage represents a 100 cm square, with material size constrained to real scale and stem length adjustable separately. It supports up to 24 material layers. Existing poses, vessels, pruning, recipes, sharing, backups and import remain available. The interface supports Chinese, English and Japanese.
 
 ## Run locally
 

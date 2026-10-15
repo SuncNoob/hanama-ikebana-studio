@@ -3,6 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+const readSource=(file,encoding)=>readFileSync(file,encoding).replace(/\r\n/g,'\n');
 import {
  displayPose,poseOf,provenance,provenanceOf,currentSeason,southernZone,shiftSeason,seasonShiftOf,matchesSeason,allYear,seasonMark,
  seasonChip,sortByRole,roleGroups
@@ -99,7 +100,7 @@ test('sortByRole puts in-season families first within each role and keeps one ru
 });
 
 test('app.js, index.html and the stylesheets: season chips, the recent strip by pose, layer thumbnails, the tablet grid, panel context',()=>{
- const app=readFileSync(`${dist}app.js`,'utf8'),html=readFileSync(`${dist}index.html`,'utf8'),css=readFileSync(`${dist}ui-polish.css`,'utf8'),style=readFileSync(`${dist}style.css`,'utf8');
+ const app=readSource(`${dist}app.js`,'utf8'),html=readSource(`${dist}index.html`,'utf8'),css=readSource(`${dist}ui-polish.css`,'utf8'),style=readSource(`${dist}style.css`,'utf8');
  assert.match(html,/data-family-group="season"[^>]*><span data-zh="当季" data-en="In season" data-ja="旬">/);
  assert.match(html,/data-quick-family-group="season"[^>]*><span data-zh="当季" data-en="In season" data-ja="旬">/);
  assert.match(app,/try\{seasonShift=seasonShiftOf\(localStorage\.getItem\(SEASON_STORE\)\)\}catch\{\}/);

@@ -9,13 +9,13 @@ using UnityEngine.InputSystem;
 #endif
 
 // The game owns rendering and gestures. The host owns the durable composition schema.
-public sealed class HanamaGame : MonoBehaviour
+public sealed partial class HanamaGame : MonoBehaviour
 {
-    [Serializable] public class Node { public string id, texture, key, name; public float x,y,width,height,px,py,angle,h,minScale=.8f,maxScale=1.25f; public bool flip,interactive; public int order; }
+    [Serializable] public class Node { public string id, texture, key, name; public float x,y,width,height,px,py,angle,h,minScale=.8f,maxScale=1.25f; public bool flip,interactive,seated; public float extent,flexibility=.6f; public float[] flex; public int order; }
     [Serializable] public class Frame { public Node[] nodes; public string selected,mode,light; public float mouthX,mouthY,brush=2; }
     [Serializable] public class Point { public float x,y; public Point(Vector2 p){x=p.x;y=p.y;} }
-    [Serializable] public class GameEvent { public string type,id,mode,image; public bool snapped; public float x,y,angle,scale=1; public Point[] points; }
-    sealed class Piece { public Node data; public GameObject root; public Mesh mesh; public MeshRenderer renderer,shadow; public Material mat,shadowMaterial; public Texture2D tex; public string key; public float scale=1,bend,velocity,phase; public Vector3[] basis,vertices; public Vector2 previous; public float width,height,px,py,lastBend=float.NaN; }
+    [Serializable] public class GameEvent { public string type,id,mode,image; public bool snapped; public float x,y,angle,scale=1; public Point[] points; public float[] flex; }
+    sealed class Piece { public Node data; public GameObject root; public Mesh mesh; public MeshRenderer renderer,shadow; public Material mat,shadowMaterial; public Texture2D tex; public string key; public float scale=1,bend,velocity,phase; public Vector3[] basis,vertices; public Vector2 previous; public float width,height,px,py,lastBend=float.NaN; public StemChain chain; public Mesh shadowMesh; public Texture2D shadowTex; public Vector3[] shadowBasis,shadowVertices; }
     sealed class Mote { public Transform root; public SpriteRenderer sprite; public Vector2 velocity; public float life; }
     readonly Dictionary<string,Piece> pieces=new Dictionary<string,Piece>();
     readonly List<Mote> motes=new List<Mote>();
@@ -61,11 +61,11 @@ public sealed class HanamaGame : MonoBehaviour
         try{var next=JsonUtility.FromJson<Frame>(json);if(next==null||next.nodes==null)return;frame=next;selected=next.selected??"";tool=next.mode??"move";
             var keep=new HashSet<string>();foreach(var node in next.nodes){if(string.IsNullOrEmpty(node.id))continue;keep.Add(node.id);if(!pieces.TryGetValue(node.id,out var p)){p=new Piece{root=new GameObject(node.id),mesh=new Mesh()};p.mesh.MarkDynamic();p.phase=pieces.Count*2.4f;p.mat=node.interactive?new Material(botanical):new Material(baseMaterial);p.renderer=p.root.AddComponent<MeshRenderer>();p.renderer.sharedMaterial=p.mat;p.root.AddComponent<MeshFilter>().sharedMesh=p.mesh;pieces.Add(node.id,p);}
                 p.data=node;p.scale=1;
-                if(!string.IsNullOrEmpty(node.texture)&&p.key!=node.key){var comma=node.texture.IndexOf(',');if(comma>=0){var bytes=Convert.FromBase64String(node.texture.Substring(comma+1));var tex=new Texture2D(2,2,TextureFormat.RGBA32,false);if(ImageConversion.LoadImage(tex,bytes,false)){tex.filterMode=FilterMode.Bilinear;tex.wrapMode=TextureWrapMode.Clamp;if(p.tex)Destroy(p.tex);p.tex=tex;p.mat.mainTexture=tex;p.key=node.key;}else Destroy(tex);}}
+                if(!string.IsNullOrEmpty(node.texture)&&p.key!=node.key){var comma=node.texture.IndexOf(',');if(comma>=0){var bytes=Convert.FromBase64String(node.texture.Substring(comma+1));var tex=new Texture2D(2,2,TextureFormat.RGBA32,false);if(ImageConversion.LoadImage(tex,bytes,false)){tex.filterMode=FilterMode.Bilinear;tex.wrapMode=TextureWrapMode.Clamp;if(p.tex)Destroy(p.tex);p.tex=tex;p.mat.mainTexture=tex;p.key=node.key;if(p.shadowTex){Destroy(p.shadowTex);p.shadowTex=null;}}else Destroy(tex);}}
                 SetGeometry(p);p.renderer.sortingOrder=node.order;p.root.transform.position=new Vector3(node.x,100-node.y,0);p.root.transform.rotation=Quaternion.Euler(0,0,-node.angle);p.root.transform.localScale=new Vector3(node.flip?-1:1,1,1);p.previous=p.root.transform.position;
-                if(node.interactive){if(!p.shadow){var sh=new GameObject("Soft stem shadow");sh.AddComponent<MeshFilter>().sharedMesh=p.mesh;p.shadow=sh.AddComponent<MeshRenderer>();p.shadowMaterial=new Material(botanical);p.shadowMaterial.SetFloat("_Shadow",1);p.shadow.sharedMaterial=p.shadowMaterial;}p.shadowMaterial.mainTexture=p.tex;p.shadow.sortingOrder=10+Mathf.Clamp(node.order%100,0,60);}
+                if(node.interactive){if(!p.shadow){var sh=new GameObject("Soft stem shadow");sh.AddComponent<MeshFilter>().sharedMesh=p.mesh;p.shadow=sh.AddComponent<MeshRenderer>();p.shadowMaterial=new Material(botanical);p.shadowMaterial.SetFloat("_Shadow",1);p.shadow.sharedMaterial=p.shadowMaterial;}p.shadow.sortingOrder=10+Mathf.Clamp(node.order%100,0,60);if(!p.shadowMesh)MakeShadowMesh(p);SyncOrganic(p);p.shadowMaterial.mainTexture=p.shadowTex;}
             }
-            var remove=new List<string>();foreach(var kv in pieces)if(!keep.Contains(kv.Key))remove.Add(kv.Key);foreach(var id in remove){var p=pieces[id];Destroy(p.root);Destroy(p.mesh);Destroy(p.mat);if(p.shadow)Destroy(p.shadow.gameObject);if(p.shadowMaterial)Destroy(p.shadowMaterial);if(p.tex)Destroy(p.tex);pieces.Remove(id);}
+            var remove=new List<string>();foreach(var kv in pieces)if(!keep.Contains(kv.Key))remove.Add(kv.Key);foreach(var id in remove){var p=pieces[id];Destroy(p.root);Destroy(p.mesh);Destroy(p.mat);if(p.shadow)Destroy(p.shadow.gameObject);if(p.shadowMaterial)Destroy(p.shadowMaterial);if(p.tex)Destroy(p.tex);if(p.shadowTex)Destroy(p.shadowTex);if(p.shadowMesh)Destroy(p.shadowMesh);pieces.Remove(id);}
             idle=0;DrawSelection();
         }catch(Exception e){Debug.LogWarning("Hanama frame rejected: "+e.Message);Emit(new GameEvent{type="error",mode="frame"});}
     }
@@ -84,7 +84,7 @@ public sealed class HanamaGame : MonoBehaviour
             if(x<nx&&y<ny){tris[k++]=i;tris[k++]=i+nx+1;tris[k++]=i+1;tris[k++]=i+nx+1;tris[k++]=i+nx+2;tris[k++]=i+1;}
         }
         Array.Copy(p.basis,p.vertices,p.basis.Length);p.mesh.Clear();p.mesh.vertices=p.vertices;p.mesh.uv=uv;p.mesh.triangles=tris;
-        p.mesh.RecalculateBounds();var bounds=p.mesh.bounds;bounds.Expand(8);p.mesh.bounds=bounds;
+        p.mesh.RecalculateBounds();var bounds=p.mesh.bounds;bounds.Expand(8);p.mesh.bounds=bounds;if(n.interactive&&p.shadow)MakeShadowMesh(p);
     }
     Vector2 World(Vector2 p){var v=cameraRig.ScreenToWorldPoint(new Vector3(p.x,p.y,0));return new Vector2(v.x,v.y);}
     Vector2 Pointer(){
@@ -129,7 +129,7 @@ public sealed class HanamaGame : MonoBehaviour
         if(Input.touchCount<2)return false;a=World(Input.GetTouch(0).position);b=World(Input.GetTouch(1).position);return true;
 #endif
     }
-    Piece Pick(Vector2 at){Piece best=null;foreach(var p in pieces.Values){if(!p.data.interactive||!p.tex)continue;var v=p.root.transform.InverseTransformPoint(at);float u=v.x/p.data.width+p.data.px,w=v.y/p.data.height+1-p.data.py;if(u<0||u>1||w<0||w>1)continue;if(p.tex.GetPixelBilinear(u,w).a<.14f)continue;if(best==null||p.data.order>best.data.order)best=p;}return best;}
+    Piece Pick(Vector2 at){Piece best=null;foreach(var p in pieces.Values){if(!p.data.interactive||!p.tex)continue;var v=UnbendLocal(p,p.root.transform.InverseTransformPoint(at));float u=v.x/p.data.width+p.data.px,w=v.y/p.data.height+1-p.data.py;if(u<0||u>1||w<0||w>1)continue;if(p.tex.GetPixelBilinear(u,w).a<.14f)continue;if(best==null||p.data.order>best.data.order)best=p;}return best;}
     void BeginEdit(){if(started)return;started=true;Emit(new GameEvent{type="begin",id=selected});}
     static float Angle(Vector2 p){return Mathf.Atan2(p.y,p.x)*Mathf.Rad2Deg;}
     void Move(Piece p,Vector2 pos){p.root.transform.position=new Vector3(Mathf.Clamp(pos.x,5,95),Mathf.Clamp(pos.y,5,85),0);}
@@ -153,7 +153,10 @@ public sealed class HanamaGame : MonoBehaviour
             selected=picked.data.id;down=at;offset=(Vector2)picked.root.transform.position-at;startAngle=picked.data.angle;startScale=picked.scale;
             turnStart=Angle(at-(Vector2)picked.root.transform.position);scaleDistance=Mathf.Max(2,Vector2.Distance(at,picked.root.transform.position));
             turning=tool=="move"&&(hitTurn||(!hitRoot&&(settings.tool=="rotate"||Shift())));
-            scaling=tool=="move"&&(hitScale||(!hitRoot&&settings.tool=="scale"));held=true;started=false;pinching=false;cutPoints.Clear();
+            scaling=tool=="move"&&(hitScale||(!hitRoot&&settings.tool=="scale"));
+            var flat=UnbendLocal(picked,picked.root.transform.InverseTransformPoint(at));
+            bending=tool=="move"&&!turning&&!scaling&&!hitRoot&&picked.chain!=null&&flat.y>picked.chain.extent*.16f;
+            if(bending)BeginBend(picked,at);held=true;started=false;pinching=false;cutPoints.Clear();
             if(tool!="move")cutPoints.Add(at);Emit(new GameEvent{type="select",id=selected});DrawSelection();
         }
         if(held&&picked!=null)
@@ -161,7 +164,7 @@ public sealed class HanamaGame : MonoBehaviour
             idle=0;
             if(TwoTouches(out var a,out var b)&&tool=="move")
             {
-                BeginEdit();float d=Vector2.Distance(a,b),angle=Angle(b-a);
+                BeginEdit();bending=false;float d=Vector2.Distance(a,b),angle=Angle(b-a);
                 if(!pinching){pinching=true;pinchDistance=Mathf.Max(.1f,d);pinchAngle=angle;startScale=picked.scale;startAngle=-picked.root.transform.eulerAngles.z;offset=(Vector2)picked.root.transform.position-(a+b)*.5f;}
                 ApplyScale(picked,startScale*d/pinchDistance);SetAngle(picked,startAngle-Mathf.DeltaAngle(pinchAngle,angle));Move(picked,(a+b)*.5f+offset);
             }
@@ -178,6 +181,7 @@ public sealed class HanamaGame : MonoBehaviour
                     }
                     else if(scaling)ApplyScale(picked,startScale*Vector2.Distance(at,picked.root.transform.position)/scaleDistance);
                     else if(turning)SetAngle(picked,startAngle-Mathf.DeltaAngle(turnStart,Angle(at-(Vector2)picked.root.transform.position)));
+                    else if(bending)SolveBend(picked,at);
                     else
                     {
                         Move(picked,at+offset);var mouth=new Vector2(frame.mouthX,100-frame.mouthY);bool near=Vector2.Distance(picked.root.transform.position,mouth)<5;
@@ -213,24 +217,24 @@ public sealed class HanamaGame : MonoBehaviour
             }
             else
             {
-                var mouth=new Vector2(frame.mouthX,100-frame.mouthY);bool snap=!turning&&!scaling&&Vector2.Distance(picked.root.transform.position,mouth)<5;
-                if(snap){picked.root.transform.position=mouth;picked.velocity+=1.3f;Burst(mouth,10);}EmitTransform(picked,"commit",snap);
+                var mouth=new Vector2(frame.mouthX,100-frame.mouthY);bool snap=!turning&&!scaling&&!bending&&Vector2.Distance(picked.root.transform.position,mouth)<5;
+                if(snap){picked.root.transform.position=mouth;Burst(mouth,4);}EmitTransform(picked,"commit",snap);
             }
         }
-        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;started=false;picked=null;
+        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;started=false;bending=false;picked=null;
     }
     public void CancelGesture(string unused)
     {
         if(held&&picked!=null)
         {
-            var n=picked.data;picked.root.transform.SetPositionAndRotation(new Vector3(n.x,100-n.y,0),Quaternion.Euler(0,0,-n.angle));ApplyScale(picked,1);
+            var n=picked.data;picked.root.transform.SetPositionAndRotation(new Vector3(n.x,100-n.y,0),Quaternion.Euler(0,0,-n.angle));ApplyScale(picked,1);SyncOrganic(picked);if(picked.chain!=null){Array.Copy(picked.chain.rest,picked.chain.angles,Bones);Forward(picked.chain,picked.chain.angles,picked.chain.joints);UpdateOrganicMesh(picked);}
             bool wasStarted=started;held=started=pinching=false;picked=null;if(wasStarted)Emit(new GameEvent{type="cancel"});
         }
-        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;
+        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;bending=false;
     }
     void SetAngle(Piece p,float angle){p.root.transform.rotation=Quaternion.Euler(0,0,-angle);}
     void ApplyScale(Piece p,float scale){p.scale=Mathf.Clamp(scale,p.data.minScale,p.data.maxScale);p.root.transform.localScale=new Vector3((p.data.flip?-1:1)*p.scale,p.scale,1);}
-    void EmitTransform(Piece p,string type="commit",bool snapped=false){Emit(new GameEvent{type=type,snapped=snapped,id=p.data.id,x=p.root.transform.position.x,y=100-p.root.transform.position.y,angle=Mathf.DeltaAngle(0,-p.root.transform.eulerAngles.z),scale=p.scale});}
+    void EmitTransform(Piece p,string type="commit",bool snapped=false){Emit(new GameEvent{type=type,snapped=snapped,id=p.data.id,x=p.root.transform.position.x,y=100-p.root.transform.position.y,angle=Mathf.DeltaAngle(0,-p.root.transform.eulerAngles.z),scale=p.scale,flex=p.chain?.rest});}
     void DrawCircle(LineRenderer line,Vector2 center,float radius){if(radius<=0){line.positionCount=0;return;}line.positionCount=49;for(int i=0;i<49;i++){float a=i*Mathf.PI/24;line.SetPosition(i,center+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*radius);}}
     void HideSelection(){ring.positionCount=anchorLine.positionCount=brushRing.positionCount=0;handle.SetActive(false);scaleHandle.SetActive(false);rootHandle.SetActive(false);}
     void DrawSelection()
@@ -238,10 +242,10 @@ public sealed class HanamaGame : MonoBehaviour
         if(!handle)return;
         if(capturing||settings.photo||!pieces.TryGetValue(selected,out var p)||tool!="move"){HideSelection();return;}
         float radius=Mathf.Clamp(Mathf.Min(p.data.width,p.data.height)*.43f,4,11)*p.scale;
-        Vector2 center=p.root.transform.TransformPoint(new Vector3(p.data.width*(.5f-p.data.px),p.data.height*(p.data.py-.5f),0));
-        center=new Vector2(Mathf.Clamp(center.x,5,95),Mathf.Clamp(center.y,6,94));DrawCircle(ring,center,radius);
+        Vector2 center=p.root.transform.TransformPoint(BendLocal(p,new Vector2(p.data.width*(.5f-p.data.px),p.data.height*(p.data.py-.5f))));
+        center=new Vector2(Mathf.Clamp(center.x,5,95),Mathf.Clamp(center.y,6,94));ring.positionCount=0;
         handle.transform.position=center+new Vector2(radius*.707f,radius*.707f);scaleHandle.transform.position=center+new Vector2(radius*.707f,-radius*.707f);rootHandle.transform.position=p.root.transform.position;
-        handle.SetActive(true);scaleHandle.SetActive(true);rootHandle.SetActive(true);anchorLine.positionCount=2;anchorLine.SetPosition(0,p.root.transform.position);anchorLine.SetPosition(1,center);
+        handle.SetActive(true);scaleHandle.SetActive(true);rootHandle.SetActive(true);anchorLine.positionCount=0;
     }
     void Burst(Vector2 at,int count)
     {
@@ -255,7 +259,7 @@ public sealed class HanamaGame : MonoBehaviour
     }
     [Serializable] public class Presentation
     {
-        public bool motion=true,photo,paused,reducedMotion;public float power=.65f,direction=125;public string tool="move";
+        public bool motion=true,photo,paused,reducedMotion;public float power=.35f,direction=125;public string tool="move";
     }
     Presentation settings=new Presentation();Color lightColor=Color.white;Vector2 lightVector;float lightPower;
     GameEvent pendingCapture;
@@ -264,34 +268,7 @@ public sealed class HanamaGame : MonoBehaviour
         settings=JsonUtility.FromJson<Presentation>(json)??new Presentation();settings.power=Mathf.Clamp01(settings.power);idle=0;
         if(settings.paused)CancelGesture("");DrawSelection();
     }
-    void Animate(float dt)
-    {
-        if(frame==null||settings.paused)return;
-        float radians=settings.direction*Mathf.Deg2Rad;Vector2 target=new Vector2(Mathf.Cos(radians),Mathf.Sin(radians));
-        lightVector=Vector2.Lerp(lightVector,target,1-Mathf.Exp(-dt*9));lightPower=Mathf.Lerp(lightPower,settings.power,1-Mathf.Exp(-dt*9));
-        Color tint=frame.light=="moon"?new Color(.79f,.87f,1):frame.light=="dusk"?new Color(1,.85f,.66f):frame.light=="morning"?new Color(1,.96f,.86f):Color.white;
-        lightColor=Color.Lerp(lightColor,tint,1-Mathf.Exp(-dt*9));
-        foreach(var p in pieces.Values)
-        {
-            if(!p.data.interactive)continue;
-            Vector2 pos=p.root.transform.position;float impulse=-(pos.x-p.previous.x)*.24f;p.previous=pos;
-            p.velocity=Mathf.Clamp(p.velocity+impulse,-7,7);p.velocity+=(-45*p.bend-10*p.velocity)*dt;p.bend+=p.velocity*dt;
-            float bend=settings.motion&&!settings.reducedMotion&&!settings.paused?p.bend+Mathf.Sin(Time.unscaledTime*.75f+p.phase)*.13f:0;
-            if(float.IsNaN(p.lastBend)||Mathf.Abs(bend-p.lastBend)>.0005f){for(int i=0;i<p.vertices.Length;i++){var v=p.basis[i];float weight=Mathf.Clamp01(Mathf.Abs(v.y)/Mathf.Max(1,p.data.height));v.x+=bend*weight*weight;p.vertices[i]=v;}p.mesh.vertices=p.vertices;p.lastBend=bend;}p.mat.SetVector("_LightDirection",new Vector4(lightVector.x,lightVector.y,0,0));p.mat.SetColor("_LightColor",lightColor);p.mat.SetFloat("_LightPower",lightPower);
-            p.mat.SetFloat("_Selected",!capturing&&!settings.photo&&(selected==p.data.id||hovered==p.data.id)?1:0);
-            if(p.shadow)
-            {
-                p.shadow.transform.SetPositionAndRotation(p.root.transform.position+(Vector3)(-lightVector*(1.3f+lightPower*4.3f)),p.root.transform.rotation);
-                p.shadow.transform.localScale=p.root.transform.localScale;p.shadowMaterial.SetFloat("_LightPower",lightPower);
-                p.shadowMaterial.SetVector("_Softness",new Vector4(.35f/Mathf.Max(1,p.data.width),.35f/Mathf.Max(1,p.data.height),0,0));
-            }
-        }
-        foreach(var m in motes)if(m.life>0)
-        {
-            m.life-=dt;m.velocity+=Vector2.down*(dt*5);m.root.position+=(Vector3)(m.velocity*dt);m.root.Rotate(0,0,dt*35);
-            var color=m.sprite.color;color.a=Mathf.Clamp01(m.life)*.65f;m.sprite.color=color;if(m.life<=0)m.root.gameObject.SetActive(false);
-        }
-    }
+    void Animate(float dt){AnimateOrganic(dt);}
     public void Capture(string unused)
     {
         if(held||capturing){Emit(new GameEvent{type="capture-error"});return;}

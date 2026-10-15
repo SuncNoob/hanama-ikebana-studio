@@ -9,7 +9,7 @@ import {
  mouthBase,mouthSpan,slideBase,besideBase,seatState,seatPoint,cutEnd,cutEndSource,anchorAt,pieceHead,reseatPiece,companionFit,companionClear,
  tipPoint,isKenzan,isDetachedPiece
 } from '../dist/scale.js?v=hn3';
-import {vesselGeometry,dimensions,sourceToStage,warpY} from '../dist/geometry.js?v=28';
+import {vesselGeometry,dimensions,sourceToStage,warpY} from '../dist/geometry.js?v=organic3';
 
 const near=(p,q,eps=1e-6)=>Math.hypot(p[0]-q[0],p[1]-q[1])<=eps;
 const distance=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]);
@@ -164,7 +164,7 @@ test('companionClear: duplicating a copy again does not stack it on an earlier c
  assert.deepEqual(companionClear(item,a,v,{side:1,toward:-1}),companionFit(item,a,v,{side:1,toward:-1}));
 });
 
-test('app.js: steer, seat cues, vessel switch and duplicate are wired, with zh/en/ja strings',()=>{
+test('app.js: steer, manual reseating, vessel switch and duplicate are wired; placement stays quiet',()=>{
  const app=readFileSync(`${dist}app.js`,'utf8'),html=readFileSync(`${dist}index.html`,'utf8');
  // Steer: the angle every frame through stemStyle, a drawn stem's length in 0.5 cm steps at ≤12 Hz, the exact value on release.
  assert.match(app,/function steerTo\(d,e\)\{/);
@@ -180,11 +180,25 @@ test('app.js: steer, seat cues, vessel switch and duplicate are wired, with zh/e
   "L('拖动花头转向，拖根部圆点移动','Drag the flower to swing it; drag the base dot to move','花を引いて向きを変え、根元の点で移動')",
   "L('已在花器中','Already in the vessel','すでに花器に入っています')",
   "L('够不到原来的位置，已插回并保持方向','Too short to reach that spot — inserted, direction kept','届かないため、向きを保って挿し直しました')",
-  "L('枝梗离开了花器口','The stem left the vessel','茎が花器から外れました')",
-  "label:L('插回花器','Put back','挿し直す')",
-  "L(`${n} 枝没有插进花器`,`${n} stem${n>1?'s':''} not in the vessel`,`${n}本が花器に入っていません`)",
   "L(' · 成组花材底部较宽，窄口瓶里可能露在瓶外',' · Grouped stems spread wider than this neck',' · 束の根元が口より広がります')"
  ])assert.ok(app.includes(text),text);
+ assert.doesNotMatch(app,/枝梗离开了花器口|The stem left the vessel|茎が花器から外れました/,'moving a stem away must not trigger an automatic warning');
+ assert.doesNotMatch(app,/枝没有插进花器|not in the vessel`,|本が花器に入っていません/,'an unseated-count warning is no longer part of the editor');
+ assert.match(app,/\$\('#reseat-button'\)\.onclick=reseatSelected/,'the explicit reseat control is still wired');
+ assert.match(app,/function reseatSelected\(\)\{const item=current\(\);if\(item\)reseatItem\(item\)\}/,'manual reseating still calls the placement API');
+ const seatCues=app.match(/function renderSeatCues\(\)\{([\s\S]*?)\n\}/);
+ assert.ok(seatCues,'the selected-stem handle renderer exists');
+ assert.match(seatCues[1],/if\(banner\)banner\.hidden=true/,'the automatic seating banner stays hidden');
+ assert.doesNotMatch(seatCues[1],/\b(?:toast|undoToast)\s*\(|banner\.hidden\s*=\s*false/,'rendering handles never warns about placement');
+ // Execute the real renderer for empty, selected and pruning states: only the selected handle may appear.
+ const renderCues=new Function('editMode','$','$$','current','baseMark',seatCues[1]);
+ for(const [mode,item] of [['move',null],['move',{id:'loose-stem'}],['brush',{id:'loose-stem'}]]){
+  const marks={innerHTML:'old handles'},banner={hidden:false},removed=[];
+  renderCues(mode,selector=>selector==='#seat-marks'?marks:selector==='#seat-banner'?banner:null,()=>[{classList:{remove:name=>removed.push(name)}}],()=>item,(_,kind)=>`handle:${kind}`);
+  assert.equal(banner.hidden,true,`${mode}: no placement banner`);
+  assert.equal(marks.innerHTML,mode==='move'&&item?'handle:selected':'',`${mode}: only the selected handle`);
+  assert.deepEqual(removed,['floating'],'unseated warning rings are removed');
+ }
  assert.match(html,/<div id="seat-marks" class="seat-marks" aria-hidden="true">/);
  assert.match(html,/id="seat-all"[^>]*data-zh="全部插回" data-en="Seat all" data-ja="すべて挿し直す"/);
  assert.match(html,/id="seat-banner-close"[^>]*data-aria-zh="关闭提示" data-aria-en="Dismiss" data-aria-ja="閉じる"/);

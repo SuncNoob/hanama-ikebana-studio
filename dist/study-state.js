@@ -3,13 +3,13 @@
 /** DOM-free core of the editable studies and the first-run draft, shared by app.js, node tests and dev scripts.
  Callers pass their asset map and item factory, so ids and language stay with the caller. */
 import {mouthBase,solveTo,drawsStem,isKenzan,autoFront,angleCap,baseOffset,sizeRatioBounds} from './scale.js?v=hn3';
-import {vesselGeometry} from './geometry.js?v=28';
+import {vesselGeometry} from './geometry.js?v=organic3';
 
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
 const localeIndex=lang=>lang==='zh'?0:lang==='en'?1:2;
 
 /** A fresh item with every field the editor and validate() expect; `options` override the defaults. New items draw stems with renderer v2. */
-export function createItem(a,type,id,options={}){return {id,type,x:50,y:65,h:a.height||48,angle:0,trim:0,flip:false,length:a.stemLength||1,cuts:[],segments:[],localCuts:[],pieceLabel:'',aboveVessel:false,cropAnchorY:1,cropAnchorSourceY:null,sv:2,...options}}
+export function createItem(a,type,id,options={}){const cutout=['generated-atelier','generated-editorial'].includes(a.source);return {id,type,x:50,y:65,h:a.height||48,angle:0,trim:cutout?6:0,flip:false,length:a.stemLength||1,cuts:[],segments:[],localCuts:[],pieceLabel:'',aboveVessel:false,cropAnchorY:1,cropAnchorSourceY:cutout?.94:null,sv:2,...options}}
 /**
  * Drawn-stem renderer for an item (compositor.js composeSpecimen): 2, except for an item saved before renderer 2 existed
  * (no `sv`) that carries cuts, segments or local cuts. Those were made on renderer 1's pixels, so it keeps renderer 1.
@@ -44,10 +44,10 @@ export function buildStudyState(study,{assetById,lang='zh',makeItem,initial}){
  return {...initial(),title:study.title[localeIndex(lang)],intention:'',vessel:study.vessel,scene:study.scene,light:study.light||undefined,subtitle:'',mood:study.mood,items};
 }
 
-/** The first-run draft ("Where the Wind Passed"): pine as the main line, calla as the second, a red camellia low on the far side. */
-export const demoVessel='round';
-export const demoSpecs=[{family:'pine',to:[-9,46]},{family:'calla',to:[-17,31]},{family:'camellia',type:'camellia-red-front',to:[11,14],s:1}];
-/** The demo's three stems in the round vase, built like a study; whether they sit before the vessel follows autoFront. */
+/** The first-run editorial garden: airy woody line, sculptural ivory, lush apricot and a dark accent. */
+export const demoVessel='editorial-aubergine';
+export const demoSpecs=[{family:'sakura',to:[-18,44],s:1.1},{family:'calla',to:[17,39]},{family:'eucalyptus',to:[-24,22],s:.9},{family:'rose',to:[-6,23]},{family:'camellia',to:[17,16]}];
+/** The welcome composition is built like an editable study. */
 export function buildDemoItems({assetById,makeItem,specimenFor}){
  const vessel=assetById[demoVessel],front=autoFront(vessel);
  return placeSpecs(vessel,demoSpecs.map(({family,type,...spec})=>({type:type||specimenFor(family).id,front,...spec})),{assetById,makeItem});

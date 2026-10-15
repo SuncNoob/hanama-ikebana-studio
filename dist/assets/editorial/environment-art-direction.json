@@ -1,0 +1,402 @@
+{
+  "generator": "Built-in image_gen, each asset a separate call",
+  "reference": "/assets/editorial/master.original.png",
+  "style": "Luxury editorial photoreal floral photography, warm upper-left raking light, tactile fine physical material; no illustration or CGI finish.",
+  "research": {
+    "requestedPage": "https://www.magnific.com/free-photos-vectors/flower-vibe/2#uuid=fb3f015a-bdc3-43f1-ac15-8e61af8dd551",
+    "requestedPageAccess": "Collection page requests returned 403 in browser checks; collection pixels were not inspected or copied. Public photo metadata was readable but linked pixels did not load.",
+    "publicMetadataPages": [
+      "https://www.magnific.com/free-photo/close-up-petals-roses-with-copy-space_6344755.htm",
+      "https://www.magnific.com/free-photo/delicate-bouquet-spring-flowers-vase-windowsill_38844841.htm",
+      "https://www.magnific.com/free-photo/flowers-vase-baroque-like-photography_31261950.htm"
+    ],
+    "limitation": "Public photo page descriptions were readable but linked image pixels failed to load in web tools. Visual analysis uses the locally viewed generated master, not unseen Magnific images."
+  },
+  "rooms": {
+    "blush": {
+      "path": "/assets/editorial/room-blush.webp",
+      "prompts": [
+        "Use case: product-mockup\nAsset type: square empty photographic studio background plate for a premium interactive ikebana editor.\nReference image: the attached floral photograph is a STYLE AND LIGHTING reference only. Match its luxury editorial botanical photography, raking warm upper-left window light, real material microtexture and dusty-blush palette, but generate an EMPTY environment with no vase or flowers.\nScene/backdrop: quiet warm dusty-blush mineral limewash wall above a pink-beige blush limestone tabletop, nuanced natural chalk/mineral surface and very subtle realistic variations, no decoration.\nComposition/framing: square 1:1, fixed straight front camera slightly above the tabletop, 85mm product-photography perspective, no wide-angle distortion. The very soft wall/table boundary runs perfectly horizontal at y=82% of image height; only the bottom 18% is the tabletop upper surface. Table continues out of the bottom edge; NO visible vertical front edge or front face. The middle 80% of image width and upper 80% of image height are empty clean wall for later flower compositing. Full-frame image edge to edge, no frame.\nLighting/mood: the same beautiful warm raking light from upper left as the reference, a large window-sized soft source giving tactile fine physical surface detail, smooth natural tonal falloff, soft right-side reflected fill, no blown highlights. Restrained elegant low saturation, cinematic editorial still-life realism.\nConstraints: actual photographic realism, not illustration, no hand-painted look, no CGI/3D rendering appearance, no decorative shapes. Absolutely no flowers, no branches, no greenery, no vase, no pottery, no furniture detail, no props, no window frame, no window grid shadows, no tree or leaf shadow, no pattern or text, no logo, watermark, UI or borders.",
+        "Use case: precise-object-edit. Edit the supplied empty dusty-blush photographic background. Preserve the warm raking upper-left light, physically fine natural plaster and limestone textures, palette, camera and empty composition exactly. Change ONLY the wall/table boundary height: shift the horizontal tabletop back line downward from its current roughly 76% position to 82% of the image height (approximately 1028 pixels in this 1254-pixel square). Extend the plain blush wall downward to that line; table upper surface must occupy only the bottom 18%, continue beyond bottom frame, and have no vertical front edge. Keep no object, no vase, no flower, no decorative shadow. Maintain photographic realism and exact square dimensions."
+      ],
+      "horizon": 0.808,
+      "status": "ready",
+      "transparent": false,
+      "size": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        255,
+        255
+      ],
+      "alphaBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "bytes": 197554,
+      "generationOutput": "exec-f60da883-f2b6-49c3-879a-80210d7bb2b1.png",
+      "original": "/assets/editorial/room-blush.original.png",
+      "alphaExact": true
+    },
+    "ivory": {
+      "path": "/assets/editorial/room-ivory.webp",
+      "prompts": [
+        "Use case: lighting-weather\nAsset type: empty square luxury editorial still-life photography background plate for the same ikebana editor.\nReference image 1 is the lighting/material/photographic realism master, not content to reproduce. Reference image 2 is the EMPTY room composition that MUST remain fixed.\nPrimary request: create the ivory-milk version of this empty environment, replacing dusty-blush wall and tabletop with softly warm ivory mineral limewash and warm beige travertine. Match the second reference's precise camera, horizontal tabletop back line at about y=.82, empty space and no-front-edge crop. The wall/table horizon must stay at the same pixel height; tabletop occupies only the bottom ~18-19% and continues beyond the lower image boundary.\nMaterials: genuine finely tactile warm ivory limewash wall, natural porous pale travertine upper surface, subtle beautiful imperfections at real scale. No decorative plaster painting or exaggerated texture.\nLighting/mood: luxury editorial photoreal product photography, warm upper-left raking light from a large source, smooth three-dimensional physical shading and gentle right-side fill, warm cream neutrals, balanced soft contrast.\nComposition: square 1:1, straight frontal camera slightly above tabletop, 85mm look. Central 80% stays empty and visually quiet for compositing flowers.\nConstraints: NO illustration, NO CGI/render appearance, NO flowers, vase, bowl, branch, leaf, object, decoration, frame, text, logo, UI or watermark; no window grid shadows, no tree/leaf shadows, no visible tabletop front edge or vertical front face.",
+        "Use case: precise-object-edit. Edit this supplied EMPTY ivory wall / travertine photographic background. Preserve everything about the photographic materials, light, colour, perspective and empty composition. Make ONLY one geometric correction: move the horizontal wall/table boundary downward from its current 76% image height to 81% image height (approximately 1016 pixels in a 1254-pixel square). Extend the ivory limewash wall down to the new boundary. Only the bottom 19% remains travertine tabletop upper surface; no front face or edge is visible at the bottom. No object, vase, flower, decoration or shadows from objects. Keep original square dimensions. Preserve photorealism."
+      ],
+      "horizon": 0.808,
+      "status": "ready",
+      "transparent": false,
+      "size": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        255,
+        255
+      ],
+      "alphaBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "bytes": 169520,
+      "generationOutput": "exec-99345930-d903-41e0-9b22-0bf41e248794.png",
+      "original": "/assets/editorial/room-ivory.original.png",
+      "alphaExact": true
+    },
+    "plum": {
+      "path": "/assets/editorial/room-plum.webp",
+      "prompts": [
+        "Use case: lighting-weather\nAsset type: photographic empty studio backdrop, dark plum-charcoal variant of the supplied empty background.\nEdit target: the supplied EMPTY dusty-blush wall and stone tabletop photograph. Preserve camera, exact geometry, tabletop-back horizon and pixel composition; the horizontal wall/table seam stays at its present near-81% height and tabletop fills only the bottom ~19%. Keep full square image edge to edge with NO front lip or vertical table face.\nChange only materials' colour and the light mood: deep muted plum-charcoal limewash wall and dark plum-grey limestone tabletop, luxury editorial floral photography. Warm raking large window light from upper left softly brushes the real fine mineral texture, leaving rich subtle dimensional variations and adequate midtone visibility through the center. Beautiful dark warm purple-brown neutrals, never saturated violet, no vignette, no harsh spotlight or blown highlights. Gentle reflected fill from right. True photoreal physical material, tactile and elegant.\nConstraints: absolutely no flowers, no vessel, no object, no decoration, no branches, no greenery, no window frame or grid, no window/tree/leaf cast shadows, no text, UI, logo, border or watermark. No illustrated/painted/CGI finish. Central 80% stays empty for flower composition."
+      ],
+      "horizon": 0.808,
+      "status": "ready",
+      "transparent": false,
+      "size": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        255,
+        255
+      ],
+      "alphaBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "bytes": 324592,
+      "generationOutput": "exec-c4860d2c-9f6e-46d6-996c-1cfb50455d92.png",
+      "original": "/assets/editorial/room-plum.original.png",
+      "alphaExact": true
+    }
+  },
+  "vases": {
+    "aubergine": {
+      "id": "editorial-aubergine",
+      "path": "/assets/editorial/vase-aubergine.webp",
+      "prompts": [
+        "Use case: background-extraction\nAsset type: one transparent photographic product sprite, vessel only, for the matching editorial ikebana scene.\nEdit target: isolate and reproduce ONLY THE DARK AUBERGINE CERAMIC VASE from the supplied master photograph, with the same rounded body, small narrow neck, tiny rolled lip, deep plum-brown glaze, varied iron speckling and real glossy glaze micro-reflections. Remove ALL flowers, greenery and stems completely, leaving the vase empty with its dark opening visible.\nComposition: one complete vase, front camera slightly from above as in the master, centered on an actual transparent background. Scale and reframe the entire isolated vase so the mouth/top sits around y=.10 and its foot sits at y=.94 of the square image, with transparent side margins. Nothing cropped. Preserve the master vase's physical proportions and handmade irregularities.\nLighting: same luxury editorial photoreal still-life photography as master, raking warm upper-left light from a large studio window, physically believable broad specular highlights with fine tactile glaze variations, gentle reflected fill on right, naturally dimensional shading. It should look like a real photographed object, never a painted illustration, plastic toy or CGI render.\nConstraints: TRUE alpha transparency, no opaque backdrop, no painted checkerboard. No tabletop, no floor, no ground cast shadow, no object shadow outside the vase silhouette, no support, no flowers, no foliage, no stems, no decorative objects, no lettering, no logo, border or watermark. Preserve transparent edges cleanly. Exactly one isolated vase."
+      ],
+      "approximateGeometry": {
+        "mouth": [
+          0.5,
+          0.14
+        ],
+        "radius": [
+          0.108,
+          0.023
+        ],
+        "frontRimY": 0.177,
+        "footY": 0.9258373205741627
+      },
+      "status": "ready",
+      "transparent": true,
+      "size": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        131,
+        136,
+        1125,
+        1161
+      ],
+      "bytes": 352850,
+      "generationOutput": "exec-f5ac1037-a6ba-4733-9367-8ede310b40f1.png",
+      "original": "/assets/editorial/vase-aubergine.original.png",
+      "alphaExact": true,
+      "geometryNote": "Mouth/radius/front rim are visual estimates in the original unshifted square PNG. footY is the measured alpha >12 lower bound. Texture pixels were not shifted, stretched or cropped.",
+      "registeredAsset": {
+        "name": "茄紫釉圆瓶",
+        "shortName": "茄紫圆瓶",
+        "en": "Aubergine glazed round vase",
+        "ja": "茄子紫釉の丸壺",
+        "color": "茄紫棕",
+        "colorEn": "aubergine brown",
+        "colorJa": "茄子紫褐色",
+        "swatch": "#3e2228",
+        "height": 22,
+        "id": "editorial-aubergine",
+        "group": "low",
+        "style": "japanese",
+        "width": 1254,
+        "heightPx": 1254,
+        "source": "generated-editorial",
+        "format": "webp",
+        "path": "/assets/editorial/vase-aubergine.webp",
+        "original": "/assets/editorial/vase-aubergine.original.png",
+        "thumbnail": true,
+        "footY": 0.9258373205741627,
+        "mouth": [
+          0.5,
+          0.14
+        ],
+        "openings": [
+          {
+            "shape": "ellipse",
+            "center": [
+              0.5,
+              0.14
+            ],
+            "radius": [
+              0.108,
+              0.023
+            ],
+            "frontRimY": 0.177,
+            "primary": true
+          }
+        ],
+        "fixture": {
+          "kind": "neck",
+          "visibility": "hidden",
+          "name": "瓶口支撑",
+          "en": "Concealed neck support",
+          "prompt": "The short ceramic neck supports each stem below its rim; no separate support is visible."
+        }
+      }
+    },
+    "fluted": {
+      "id": "editorial-fluted",
+      "path": "/assets/editorial/vase-fluted.webp",
+      "prompts": [
+        "Use case: product-mockup\nAsset type: a single isolated real ceramic vase photographed on TRUE transparent alpha, matching an editorial flower-arranging game.\nReference: attached master photograph sets ONLY the warm raking upper-left studio light, physical realism, sophisticated tactile material and camera perspective. Do not copy its flowers or background.\nPrimary subject: one muted warm-ivory handmade round-bellied vase with subtle vertical hand-carved flutes. Elegant organic irregularities, a short narrowed neck, gently uneven small circular rim, empty dark warm interior opening visible as a modest ellipse. Fine eggshell matte ceramic glaze, softly imperfect light-catching ridges, subtle stone flecks and natural off-white tonal variations. Refined Japanese-influenced luxury ceramic, no painted decoration.\nComposition: square, one whole vase centered, front camera very slightly above so opening and front lip are visible. Top lip near y=.10, foot near y=.94, about 68-75% image width at broadest part, clean transparent margin all around. Full foot visible, nothing cropped. Real physical proportions.\nLight/camera: luxury editorial PHOTOREAL product photography, 85mm lens look, raking warm upper-left large-window light, broad smooth highlights down the fluting, genuine fine material relief, generous soft right fill, physically dimensional. No illustration, no drawn/painterly finish, no CGI, no plastic or cartoon.\nConstraints: TRUE alpha transparency. NO flowers, leaves, stems, water, arrangements, props, floor, table, cast ground shadow, background, painted checkerboard, border, UI, writing, logo or watermark. Exactly one empty vase."
+      ],
+      "approximateGeometry": {
+        "mouth": [
+          0.5,
+          0.138
+        ],
+        "radius": [
+          0.133,
+          0.03
+        ],
+        "frontRimY": 0.181,
+        "footY": 0.9433811802232854
+      },
+      "status": "ready",
+      "transparent": true,
+      "size": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        114,
+        127,
+        1139,
+        1183
+      ],
+      "bytes": 192886,
+      "generationOutput": "exec-dabc9d8e-6ff7-46cf-8951-23aab7568a44.png",
+      "original": "/assets/editorial/vase-fluted.original.png",
+      "alphaExact": true,
+      "geometryNote": "Mouth/radius/front rim are visual estimates in the original unshifted square PNG. footY is the measured alpha >12 lower bound. Texture pixels were not shifted, stretched or cropped.",
+      "registeredAsset": {
+        "name": "象牙白手作棱纹瓶",
+        "shortName": "象牙棱纹瓶",
+        "en": "Handmade ivory fluted vase",
+        "ja": "象牙色の鎬丸壺",
+        "color": "象牙白",
+        "colorEn": "warm ivory",
+        "colorJa": "象牙色",
+        "swatch": "#dfd0b7",
+        "height": 24,
+        "id": "editorial-fluted",
+        "group": "low",
+        "style": "japanese",
+        "width": 1254,
+        "heightPx": 1254,
+        "source": "generated-editorial",
+        "format": "webp",
+        "path": "/assets/editorial/vase-fluted.webp",
+        "original": "/assets/editorial/vase-fluted.original.png",
+        "thumbnail": true,
+        "footY": 0.9433811802232854,
+        "mouth": [
+          0.5,
+          0.138
+        ],
+        "openings": [
+          {
+            "shape": "ellipse",
+            "center": [
+              0.5,
+              0.138
+            ],
+            "radius": [
+              0.133,
+              0.03
+            ],
+            "frontRimY": 0.181,
+            "primary": true
+          }
+        ],
+        "fixture": {
+          "kind": "neck",
+          "visibility": "hidden",
+          "name": "瓶口支撑",
+          "en": "Concealed neck support",
+          "prompt": "The short ceramic neck supports each stem below its rim; no separate support is visible."
+        }
+      }
+    },
+    "terracotta": {
+      "id": "editorial-terracotta",
+      "path": "/assets/editorial/vase-terracotta.webp",
+      "prompts": [
+        "Use case: product-mockup\nAsset type: single isolated photographic low wide ceramic bowl, transparent alpha sprite for ikebana.\nReference: attached master photograph is only a reference for authentic luxury editorial product photography, warm raking upper-left light, material detail and camera realism. Do not reproduce flowers or the room.\nSubject: one real handmade WARM TERRACOTTA LOW WIDE BOWL for ikebana, shallow rounded basin with broad open mouth and subtly rolled uneven rim, low quiet foot ring, earthy warm red-clay/cinnamon-brown tones, fine porous fired-clay surface with a few natural kiln flecks, no decorative pattern. Empty visible dark warm-brown interior, opening is a wide elliptical basin in the slightly elevated front view. The vessel must clearly read as a low, wide bowl, not a tall vase.\nComposition: whole isolated bowl centered horizontally on a square transparent canvas, maximum width about 84% of canvas, whole foot near y=.93, transparent margins. The natural bowl proportions determine the top/mouth height; do not make it unnaturally tall just to fill the square. Front camera a little above rim height to see the entire interior opening and front lip. No cropping.\nLighting/material: luxury editorial PHOTOREAL still-life photography, warm upper-left large-window raking light giving gentle physical surface relief, smooth natural fill at right, fine tactile real clay, refined colour. Not illustration, painted art, plastic, or CGI.\nConstraints: exactly one EMPTY bowl. TRUE transparent alpha, no opaque background or painted checkerboard. No flowers, no stems, leaves, water, moss, kenzan, props, table, ground or cast ground shadow. No writing, logo, UI, border or watermark."
+      ],
+      "approximateGeometry": {
+        "mouth": [
+          0.5,
+          0.422
+        ],
+        "radius": [
+          0.426,
+          0.082
+        ],
+        "frontRimY": 0.514,
+        "footY": 0.7599681020733652
+      },
+      "notes": "Wide low bowl keeps its physical low silhouette; it occupies the middle/lower square, so its source-coordinate mouth and foot differ from the tall vases. Use measured alpha bounds when cropping/registering.",
+      "status": "ready",
+      "transparent": true,
+      "size": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        50,
+        414,
+        1209,
+        953
+      ],
+      "bytes": 214618,
+      "generationOutput": "exec-8abe24e8-6e6d-4bfa-bdce-93d88e713a48.png",
+      "original": "/assets/editorial/vase-terracotta.original.png",
+      "alphaExact": true,
+      "geometryNote": "Mouth/radius/front rim are visual estimates in the original unshifted square PNG. footY is the measured alpha >12 lower bound. Texture pixels were not shifted, stretched or cropped.",
+      "registeredAsset": {
+        "name": "暖陶土宽浅钵",
+        "shortName": "暖陶浅钵",
+        "en": "Warm terracotta low bowl",
+        "ja": "テラコッタの浅鉢",
+        "color": "陶土棕",
+        "colorEn": "warm terracotta",
+        "colorJa": "テラコッタ",
+        "swatch": "#a45c37",
+        "height": 24,
+        "id": "editorial-terracotta",
+        "group": "shallow",
+        "style": "japanese",
+        "width": 1254,
+        "heightPx": 1254,
+        "source": "generated-editorial",
+        "format": "webp",
+        "path": "/assets/editorial/vase-terracotta.webp",
+        "original": "/assets/editorial/vase-terracotta.original.png",
+        "thumbnail": true,
+        "footY": 0.7599681020733652,
+        "mouth": [
+          0.5,
+          0.422
+        ],
+        "openings": [
+          {
+            "shape": "ellipse",
+            "center": [
+              0.5,
+              0.422
+            ],
+            "radius": [
+              0.426,
+              0.082
+            ],
+            "frontRimY": 0.514,
+            "primary": true
+          }
+        ],
+        "fixture": {
+          "kind": "chicken-wire",
+          "visibility": "hidden",
+          "name": "隐形花艺网",
+          "en": "Concealed floral mesh",
+          "prompt": "A fitted floral chicken-wire support sits completely below the terracotta rim; the mesh remains invisible."
+        }
+      }
+    }
+  },
+  "integration": {
+    "format": "WebP quality 91, method 6; original PNG retained, alpha verified pixel-for-pixel",
+    "roomHorizon": 0.808,
+    "vaseTopFormula": "85.5 - asset.height * asset.footY",
+    "measurementRule": "Alpha >12 in original for footY; alpha >110 after at-most-512px-wide Lanczos probe for foot envelope, matching existing measurements.",
+    "vaseMetrics": {
+      "editorial-aubergine": {
+        "cm": 22,
+        "foot": {
+          "cx": 50.02,
+          "half": 5.56,
+          "arc": 1.98,
+          "bottom": 85.5
+        }
+      },
+      "editorial-fluted": {
+        "cm": 24,
+        "foot": {
+          "cx": 49.88,
+          "half": 5.32,
+          "arc": 1.97,
+          "bottom": 85.5
+        }
+      },
+      "editorial-terracotta": {
+        "cm": 24,
+        "foot": {
+          "cx": 50.0,
+          "half": 7.5,
+          "arc": 1.97,
+          "bottom": 85.5
+        }
+      }
+    }
+  }
+}

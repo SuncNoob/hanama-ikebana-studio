@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import {specimenMetrics,vesselMetrics,assetMetrics} from '../dist/asset-metrics.js';
 import {specimens,browseSpecimens,vessels,dist} from './helpers/catalog.mjs';
 import {drawsStem} from '../dist/scale.js?v=hn3';
-import {vesselGeometry} from '../dist/geometry.js?v=28';
+import {vesselGeometry} from '../dist/geometry.js?v=organic3';
 
 const stale='re-run: CANVAS_MODULE=… node qa/measure-assets.mjs';
 const inUnit=v=>Number.isFinite(v)&&v>=0&&v<=1;
@@ -41,7 +41,7 @@ test('every vessel has a foot inside its own outline, resting on the table',()=>
   assert.equal(cm,v.height,`${v.id}: ${stale}`);
   assert.ok(foot.half>0&&foot.cx-foot.half>=g.left-.05&&foot.cx+foot.half<=g.left+g.width+.05,`${v.id}: foot ${JSON.stringify(foot)}`);
   assert.ok(foot.arc>=0&&foot.arc<=2.05,`${v.id}: arc`);
-  assert.ok(foot.bottom>g.top+g.height*.8&&foot.bottom<=86.01,`${v.id}: bottom ${foot.bottom}`);
+  assert.ok(foot.bottom>g.top+g.height*(v.footY?v.footY-.02:.8)&&foot.bottom<=86.01,`${v.id}: bottom ${foot.bottom}`);
  }
  assert.ok(vesselMetrics['celadon-shallow-suiban'].foot.half*2>20,'the suiban foot ring spans about 22 cm');
 });

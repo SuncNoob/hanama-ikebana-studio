@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {LIGHTS,LIGHT_KEYS,lightOf,lightWorkSize,paintLightAmbient,lightPatch,screenLightPatch,paintLight} from '../dist/ambience.js?v=hn3';
-import {HORIZON,LIGHT} from '../dist/compositor.js?v=hn3';
+import {HORIZON,LIGHT} from '../dist/compositor.js?v=organic3';
 import {compositorLayerPlan} from '../dist/compositor-project.js?v=hn3';
 import {buildPrompt,LIGHT_PROMPT} from '../dist/prompt.js?v=hn4';
 import {assetById,studies,studyState,initial,scenes,dist} from './helpers/catalog.mjs';

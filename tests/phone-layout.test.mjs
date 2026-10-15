@@ -4,10 +4,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+const readSource=(file,encoding)=>readFileSync(file,encoding).replace(/\r\n/g,'\n');
 import {dist} from './helpers/catalog.mjs';
 
-const app=readFileSync(`${dist}app.js`,'utf8'),html=readFileSync(`${dist}index.html`,'utf8');
-const style=readFileSync(`${dist}style.css`,'utf8'),polish=readFileSync(`${dist}ui-polish.css`,'utf8'),drawer=readFileSync(`${dist}material-drawer.css`,'utf8');
+const app=readSource(`${dist}app.js`,'utf8'),html=readSource(`${dist}index.html`,'utf8');
+const style=readSource(`${dist}style.css`,'utf8'),polish=readSource(`${dist}ui-polish.css`,'utf8'),drawer=readSource(`${dist}material-drawer.css`,'utf8');
 const css=style+drawer+polish;
 /** The body of the first `@media <query> {` block whose query matches (balanced braces). */
 function mediaBlock(source,query){

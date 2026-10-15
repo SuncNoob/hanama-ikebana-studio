@@ -4,9 +4,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {assetById,vessels,studies,studyState,makeItem} from './helpers/catalog.mjs';
 import {seatClip,seatState,stemWidthCm,vesselFoot,isKenzan,INTERIOR_MIN_RX} from '../dist/scale.js?v=hn3';
-import {LIGHT,lightShadow,HORIZON,filterSupported,seatedClips} from '../dist/compositor.js?v=hn3';
+import {LIGHT,lightShadow,HORIZON,filterSupported,seatedClips} from '../dist/compositor.js?v=organic3';
 import {vesselMetrics} from '../dist/asset-metrics.js?v=hn2';
-import {vesselGeometry} from '../dist/geometry.js?v=28';
+import {vesselGeometry} from '../dist/geometry.js?v=organic3';
 
 const NECK='matte-black-long-neck';
 const length=clip=>Math.hypot(clip.tip[0]-clip.base[0],clip.tip[1]-clip.base[1]);
@@ -88,7 +88,9 @@ test('stem width estimates stay within 0.25–2.5 cm and drawn bundles are wider
 test('vessel feet come from the measured footprint, scale with the vessel and fall back to an estimate',()=>{
  for(const v of vessels){
   const foot=vesselFoot(v),g=vesselGeometry(v);
-  assert.ok(foot.half>0&&foot.half<=g.width/2+.5&&foot.arc>=0&&foot.bottom<=g.top+g.height+1e-9&&foot.bottom>g.top+g.height-2,v.id);
+  const actualBottom=g.top+g.height*(v.footY??1);
+  assert.ok(foot.half>0&&foot.half<=g.width/2+.5&&foot.arc>=0&&foot.bottom<=actualBottom+1e-9&&foot.bottom>actualBottom-2,v.id);
+  if(v.footY)assert.ok(Math.abs(foot.bottom-85.5)<.05,`${v.id}: shadow and real pottery foot must meet the tabletop, including padded low bowls`);
   if(vesselMetrics[v.id])assert.ok(Math.abs(foot.half-vesselMetrics[v.id].foot.half)<1e-9,`${v.id} measured at its own height`);
  }
  const v=assetById['celadon-shallow-suiban'],taller={...v,height:v.height*1.5,width:v.width},foot=vesselFoot(v),grown=vesselFoot(taller);

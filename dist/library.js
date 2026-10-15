@@ -6,7 +6,7 @@
  */
 import {ROLES,SEASONS,rolesOf,roleOf,hasRole,roleLabel,roleLabels,roleAliases,profiles,searchForm,seasonsOf,seasonLabel} from './botany.js?v=hn2';
 import {materialColorGroups,matchesMaterialColor} from './material-colors.js?v=1';
-import {vesselGeometry} from './geometry.js?v=28';
+import {vesselGeometry} from './geometry.js?v=organic3';
 import {planSlot,itemCm,stemCm,drawsStem} from './scale.js?v=hn3';
 
 const LANG_INDEX={zh:0,en:1,ja:2};

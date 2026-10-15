@@ -8,7 +8,7 @@ import {
  defaultCm,arrangementMetrics,remapSeated,drawsStem,stemCm,lengthBounds,lengthForStem,itemCm,PHOTO_LENGTH,angleCap,sizeBounds,isDetachedPiece
 } from '../dist/scale.js?v=hn3';
 import {stemMaxCm} from '../dist/botany.js';
-import {vesselGeometry} from '../dist/geometry.js?v=28';
+import {vesselGeometry} from '../dist/geometry.js?v=organic3';
 
 const KENZAN=['ink-black-low-bowl','charcoal-square-basin','celadon-shallow-suiban','indigo-oval-suiban','sand-wide-pottery-bowl','french-charcoal-compote','modern-travertine-trough'];
 const RECIPES=[['pine','calla','photo-chrysanthemum','photo-gypsophila','photo-rose'],['photo-anemone','photo-ranunculus','photo-tulip','photo-muscari','photo-narcissus']];
@@ -99,8 +99,10 @@ test('solveTo: photographed stems are cut, never squashed, and only slightly str
    }else{
     assert.ok(fit.length>=PHOTO_LENGTH[0]-1e-9&&fit.length<=PHOTO_LENGTH[1]+1e-9,`${a.id}: length ${fit.length}`);
     assert.ok(Number.isInteger(fit.trim)&&fit.trim>=0&&fit.trim<=60,`${a.id}: trim ${fit.trim}`);
-    if(fit.trim>0){
-     // Cut only as deep as needed: one percent less would still be too long at the shortest allowed length.
+    assert.ok(fit.trim>=item.trim,`${a.id}: an existing cut or transparent bottom margin is preserved`);
+    if(fit.trim>item.trim){
+     // When the solver makes an additional cut, one percent less would still be too long at the shortest allowed length.
+     // The catalogue's initial trim may instead remove transparent bottom padding and must not be undone.
      const shallower=tipPoint({...placed,trim:fit.trim-1,length:PHOTO_LENGTH[0]},a);
      assert.ok(dist(shallower,base)>=rise*Math.hypot(.3,1)-.05||fit.trim===60,`${a.id}: cut ${fit.trim}% deeper than needed`);
     }
@@ -133,7 +135,8 @@ test('slots: the main line is 1.5× (Japanese, modern) or 1.25× the vessel’s 
  assert.equal(hashId('abc'),hashId('abc'));
 });
 
-test('planSlot over 31 vessels × 2 sides × two recipes: seated, on stage, apart, honest lengths',()=>{
+test('planSlot over every vessel × side × recipe: seated, on stage, apart, honest lengths',()=>{
+ assert.ok(vessels.length>0&&RECIPES.length>0&&SIDES.length>0,'placement covers nonempty catalogues and recipes');
  let count=0;
  for(const types of RECIPES)for(const vessel of vessels)for(const id of SIDES){
   const {s,plans}=arrange(vessel,id,types);count++;
@@ -156,7 +159,7 @@ test('planSlot over 31 vessels × 2 sides × two recipes: seated, on stage, apar
   const {taken}=slotState(s,assetById);
   for(const p of plans)assert.equal(taken[p.key],true,`${vessel.id}/${id}: ${p.key} not seen as taken after placing it`);
  }
- assert.equal(count,124);
+ assert.equal(count,vessels.length*SIDES.length*RECIPES.length);
 });
 
 test('planSlot roles: line → main and second lines, focal → accent once a line stands, fillers → low; low blooms go in front',()=>{
@@ -199,6 +202,7 @@ test('defaultCm is the whole stem a material gets as the first stem, and arrange
 });
 
 test('remapSeated over every study × every vessel: no stem that stood in the old vessel is left outside the new one',()=>{
+ assert.ok(studies.length>0&&vessels.length>1,'remapping covers populated studies and alternative vessels');
  let switches=0,moved=0;
  for(const study of studies){
   const s=studyState(study),from=assetById[s.vessel];
@@ -216,7 +220,7 @@ test('remapSeated over every study × every vessel: no stem that stood in the ol
    assert.deepEqual(s.items.map(i=>i.x),studyState(study).items.map(i=>i.x),'input untouched');
   }
  }
- assert.equal(switches,50*30);assert.ok(moved>0);
+ assert.equal(switches,studies.length*(vessels.length-1));assert.ok(moved>0);
  // Detached cut pieces and stems that were already off the mouth only move with the vessel.
  const round=assetById.round,bottle=assetById.bottle,a=assetById['photo-rose'];
  const piece=makeItem(a.id,{x:30,y:40,localCuts:[{part:'detached',cut:{}}]}),loose=makeItem(a.id,{x:20,y:30});
