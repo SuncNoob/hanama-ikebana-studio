@@ -91,7 +91,7 @@ test('the displaced-draft stash is a capped list of raw strings and survives jun
  assert.deepEqual(addToStash(JSON.stringify(['a','b']),'a'),['b','a'],'a repeat moves to the end');
 });
 
-const app=readFileSync(`${dist}app.js`,'utf8'),html=readFileSync(`${dist}index.html`,'utf8');
+const app=readFileSync(`${dist}app.js`,'utf8'),html=readFileSync(`${dist}index.html`,'utf8').replaceAll('\r\n','\n');
 
 test('app.js: undo toasts compare undo entries, not the stack length',()=>{
  const body=app.match(/function undoToast\(msg\)\{[^\n]*\}/)?.[0]||'';

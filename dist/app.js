@@ -29,6 +29,8 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
+import {mountUnityGame} from './unity-stage.js?v=1';
+let gameBridge=null;
 const $ = (s,root=document) => root.querySelector(s);
 const $$ = (s,root=document) => [...root.querySelectorAll(s)];
 const LANGUAGE_STORE='hanama-language';
@@ -340,7 +342,7 @@ function updateStem(item){
  const el=$(`.stem[data-id="${item.id}"]`);if(!el){renderStage();return}
  el.style.cssText=stemStyle(item);drawStemCanvas(el,item);scheduleVesselLayers();
  if(item.id===selected)syncSelectionReadouts(item);
- renderSeatCues();queueGuide();
+ renderSeatCues();queueGuide();gameBridge?.schedule();
 }
 const pendingStems=new Set();let stemFrame=0;
 function queueStemUpdate(item){pendingStems.add(item.id);if(!stemFrame)stemFrame=requestAnimationFrame(()=>{stemFrame=0;const ids=[...pendingStems];pendingStems.clear();for(const id of ids){const item=state.items.find(i=>i.id===id);if(item)updateStem(item)}if(vesselLayersFrame)renderVesselLayers()})}
@@ -377,7 +379,7 @@ function renderVesselLayers(){
  const rim=layerContext($('#rim-layer'),(clips.rim.length||seats.front.length)&&vesselReady?size:0);
  if(rim){paintKenzanPass(rim,size,state,assetById,images,{seats,side:'front',getSprite:specimenCanvas});paintRimPass(rim,size,state,assetById,images,specimenCanvas,{clips:clips.rim})}
  setStemShadows(stageEl);
- queueLightLayer();
+ queueLightLayer();gameBridge?.schedule();
 }
 function scheduleVesselLayers(){if(!vesselLayersFrame)vesselLayersFrame=requestAnimationFrame(()=>{vesselLayersFrame=0;renderVesselLayers()})}
 /**
@@ -403,7 +405,7 @@ function renderLightLayer(){
   const ctx=layerContext(canvas,patch?S:0);if(ctx)ctx.drawImage(patch,0,0);
   canvas.style.opacity=String(LIGHTS[key].strength);
  }catch{layerContext(canvas,0)}
- finally{for(const c of [silhouette,patch])if(c)c.width=c.height=0}
+ finally{for(const c of [silhouette,patch])if(c)c.width=c.height=0;gameBridge?.schedule()}
 }
 function queueLightLayer(){
  if(!lightOf(state.light)){if($('#light-layer')?.width||$('#stage')?.classList.contains('has-light'))renderLightLayer();return}
@@ -451,6 +453,7 @@ function renderStage(){
  for(const id of [...spriteCache.keys()]){if(!state.items.some(i=>i.id===id))dropSprite(id)}
  $('#vessel').src=assetPath(state.vessel);$('#vessel').alt=assetName(assetById[state.vessel]);const vg=vesselGeometry(assetById[state.vessel]);$('#vessel').style.height=vg.height+'%';$('#vessel').style.width=vg.width+'%';$('#stage').dataset.scene=state.scene;renderVesselLayers();
  $$('button[data-scene]').forEach(b=>{const on=b.dataset.scene===state.scene;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});renderLightControls();$('#study-count').textContent=String(new Set(state.items.map(i=>i.originId||i.id)).size).padStart(3,'0');renderSelection();renderHistory();renderLayerList();renderCutChoice();drawPruneOverlay();renderSeatCues();renderStartCard();renderGuide();
+ gameBridge?.schedule();
  if(focusedStemId){restoringStemFocus=true;try{$(`.stem[data-id="${focusedStemId}"]`)?.focus({preventScroll:true})}finally{restoringStemFocus=false}}
 }
 /** #selected-empty: its own sentence on an empty canvas, else the usual "select a stem". */
@@ -928,7 +931,7 @@ function pickStem(clientX,clientY,{touch=false,radius=touch?12:6,keep=radius,sel
  return {id:choosePick(hits,selected,{radius,keep,selectedFirst}),hits};
 }
 /** Select a stem by id; null deselects (the panel shows #selected-empty). */
-function selectItem(id){selected=id??null;$$('.stem').forEach(n=>{const on=n.dataset.id===id;n.classList.toggle('selected',on);n.setAttribute('aria-pressed',String(on))});renderSelection();renderCutChoice();renderSeatCues();queueGuide();if(!$('#layer-menu').hidden)renderLayerList()}
+function selectItem(id){selected=id??null;gameBridge?.schedule();$$('.stem').forEach(n=>{const on=n.dataset.id===id;n.classList.toggle('selected',on);n.setAttribute('aria-pressed',String(on))});renderSelection();renderCutChoice();renderSeatCues();queueGuide();if(!$('#layer-menu').hidden)renderLayerList()}
 function renderCutChoice(){
  const choice=$('#cut-choice');if(!choice)return;
  if(cutSession&&!cutSession.ids.every(id=>state.items.some(i=>i.id===id)))cutSession=null;
@@ -1258,7 +1261,7 @@ stage.addEventListener('pointerleave',()=>{hoverAt=null;stage.classList.remove('
 function setEditMode(mode){
  if(drag||gesture||canvasPan||movePointers.size)finishMoveInteraction(true);
  if(mode!=='move'&&!current()){toast(L('先选中要修剪的那一枝。','Select a material to cut first.','先に切る花材を選んでください。'));return}
- editMode=mode;if(mode!=='move'){setEditorTab('shape');$('#stem-details').open=true}stroke=null;$('#stage').dataset.tool=mode;
+ editMode=mode;gameBridge?.schedule();if(mode!=='move'){setEditorTab('shape');$('#stem-details').open=true}stroke=null;$('#stage').dataset.tool=mode;
  $('#move-tool').setAttribute('aria-pressed',String(mode==='move'));$('#prune-tool').setAttribute('aria-pressed',String(mode==='split'));$('#erase-tool').setAttribute('aria-pressed',String(mode==='brush'));
  $$('[data-prune]').forEach(b=>b.classList.toggle('active',b.dataset.prune===mode));$('#brush-setting').hidden=mode!=='brush';
  renderModePill();renderSeatCues();
@@ -1767,7 +1770,7 @@ const dbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open('hanama-
 async function dbAction(mode,fn){const db=await dbPromise;return new Promise((resolve,reject)=>{const tx=db.transaction('works',mode);const req=fn(tx.objectStore('works'));let result;req.onsuccess=()=>result=req.result;tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(Error(L('本机存储空间不足或不可用，请导出文件保存。','Local storage is full or unavailable. Export a file to keep your work.')));tx.onabort=()=>reject(Error(L('保存未完成，请导出文件备份。','Saving did not finish. Export a backup file.')))})}
 const listWorks=()=>dbAction('readonly',store=>store.getAll());
 async function refreshCount(){try{$('#gallery-count').textContent=(await listWorks()).length}catch{}}
-async function saveDraft(s=state,{notify=true}={}){const snapshot=clone(s),preview=await canvasBlob(await draftCanvas(snapshot,600,{report:notify}),'image/jpeg',.86);const prev=await dbAction('readonly',store=>store.get(snapshot.id));await dbAction('readwrite',store=>store.put({...prev,id:snapshot.id,state:snapshot,title:snapshot.title||L('未命名作品','Untitled Arrangement'),updated:Date.now(),preview,art:prev?.art||null}));if(snapshot.id===state.id)markClean(snapshot);await refreshCount();if(notify)toast(L('草稿已收进「我的作品」','Draft saved to My Works'));return snapshot.id}
+async function saveDraft(s=state,{notify=true}={}){const snapshot=clone(s),preview=await canvasBlob(await draftCanvas(snapshot,600,{report:notify}),'image/jpeg',.86);const prev=await dbAction('readonly',store=>store.get(snapshot.id));await dbAction('readwrite',store=>store.put({...prev,id:snapshot.id,state:snapshot,title:snapshot.title||L('未命名作品','Untitled Arrangement'),updated:Date.now(),preview,art:prev?.art||null}));if(snapshot.id===state.id)markClean(snapshot);await refreshCount();if(notify)document.dispatchEvent(new Event('hanama-saved'));if(notify)toast(L('草稿已收进「我的作品」','Draft saved to My Works'));return snapshot.id}
 $('#save-button').onclick=async e=>{e.currentTarget.disabled=true;askPersistentStorage();try{await saveDraft()}catch(err){toast(err.message)}finally{$('#save-button').disabled=false}};
 /** Ask the browser to keep this site's storage (Safari otherwise may clear it after a week without a visit). Call it inside a
  tap; the answer is not needed. */
@@ -2067,3 +2070,55 @@ window.addEventListener('hashchange',async()=>{
  let imported;try{imported=await decodeShare(location.hash)}catch{return toast(L('草稿链接无法打开，请用导出的 JSON 文件恢复。','The draft link could not be opened. Restore it from an exported JSON file.'))}
  clearLinkFromAddress();relocalizePresetFields(imported,lang);arriveShare(imported).catch(err=>toast(err.message));
 });
+
+
+const gameRasterCache=new Map();
+function gameRaster(key,paint,size=768){
+ if(gameRasterCache.has(key))return gameRasterCache.get(key);
+ const c=document.createElement('canvas');c.width=c.height=size;const ctx=c.getContext('2d');paint(ctx,size);
+ const texture=c.toDataURL('image/png');c.width=c.height=0;gameRasterCache.set(key,texture);
+ while(gameRasterCache.size>48)gameRasterCache.delete(gameRasterCache.keys().next().value);
+ return texture;
+}
+function gameFrame(){
+ const sceneKey=`game-room|${sceneLayerKey}|${state.light||''}`;
+ const full=(id,key,texture,order)=>({id,key,texture,x:50,y:50,width:100,height:100,px:.5,py:.5,angle:0,flip:false,interactive:false,order});
+ const background=gameRaster(sceneKey,(ctx,S)=>{paintSceneBackground(ctx,S,state,scenes);paintLightAmbient(ctx,S,state.light,{night:state.scene==='night'});paintGroundPass(ctx,S,state,assetById,images);paintSceneFinish(ctx,S,state);});
+ const nodes=[full('room',sceneKey,background,0)];
+ // Window illumination is a cached room layer; native stem shadows move during a gesture.
+ const lightKey=`game-light|${state.light||''}`;
+ if(state.light){const texture=gameRaster(lightKey,(ctx,S)=>{const patch=lightPatch(state.light,180,null,(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c});if(patch){ctx.globalAlpha=LIGHTS[state.light].strength*.38;ctx.drawImage(patch,0,0,S,S*.795);patch.width=patch.height=0;}});nodes.push(full('window',lightKey,texture,2));}
+ state.items.forEach((item,index)=>{
+  const a=assetById[item.type],src=specimenCanvas(item);if(!src?.width||!src.height)return;
+  const g=dimensions(item,a),crop=src.crop||{x:0,y:0,width:src.width,height:src.height,fullWidth:src.width,fullHeight:src.height};
+  const pivot=Number.isFinite(item.cropAnchorSourceY)?warpY(item.cropAnchorSourceY,g.split,g.length)/g.height:(item.cropAnchorY??1),key=`game-flower|${spriteCache.get(item.id)?.key}|${src.width}|${src.height}|${a.saturation||1}`;
+  const texture=gameRaster(key,(ctx,S)=>{if(a.saturation)ctx.filter=`saturate(${a.saturation})`;ctx.drawImage(src,0,0,S,S);},Math.min(1024,Math.max(src.width,src.height)));
+  const [min,max]=sizeBounds(a);
+  nodes.push({id:item.id,key,texture,x:item.x,y:item.y,width:item.h*g.ratio*crop.width/crop.fullWidth,height:item.h*g.height*crop.height/crop.fullHeight,px:(g.anchor*crop.fullWidth-crop.x)/crop.width,py:(pivot*crop.fullHeight-crop.y)/crop.height,angle:item.angle,h:item.h,flip:item.flip,interactive:true,order:(item.aboveVessel?600:100)+index*2,minScale:min/item.h,maxScale:max/item.h});
+ });
+ const compositionKey=JSON.stringify(state.items),vesselKey=`game-vessel|${state.vessel}|${!!images[state.vessel]}`;
+ nodes.push(full('vessel',vesselKey,gameRaster(vesselKey,(ctx,S)=>paintVesselLayer(ctx,S,state,assetById,images,{ground:false,fixture:false})),500));
+ for(const [name,order] of [['fixture',isKenzan(assetById[state.vessel])?50:550],['interior',450],['rim',900]]){
+  const c=$(`#${name}-layer`);if(!c?.width)continue;const key=`game-${name}|${state.vessel}|${state.scene}|${compositionKey}`;
+  nodes.push(full(name,key,gameRaster(key,(ctx,S)=>ctx.drawImage(c,0,0,S,S)),order));
+ }
+ const v=vesselGeometry(assetById[state.vessel]);return {nodes,selected:selected||'',mode:editMode,light:state.light||'',mouthX:v.insertion[0],mouthY:v.insertion[1]};
+}
+let gameGestureMark=null;
+function gameEvent(e){
+ if(e.type==='select'){selectItem(e.id||null);return;}
+ const item=state.items.find(i=>i.id===e.id);
+ if(e.type==='begin'&&item){gameGestureMark=null;if(editMode==='move'){checkpoint();gameGestureMark=undoStack.at(-1);}selectItem(e.id);return;}
+ if(e.type==='cancel'){if(gameGestureMark&&undoStack.at(-1)===gameGestureMark)undoStack.pop();gameGestureMark=null;renderStage();return;}
+ if(e.type==='commit'&&item){
+  if(![e.x,e.y,e.angle,e.scale].every(Number.isFinite))return;
+  item.x=clamp(e.x,5,95);item.y=clamp(e.y,15,95);item.angle=clamp(e.angle,-180,180);item.h=clamp(item.h*clamp(e.scale,.25,4),...sizeBounds(assetById[item.type]));
+  selected=item.id;renderStage();persist();return;
+ }
+ if(e.type==='cut'&&item&&['split','brush'].includes(e.mode)&&Array.isArray(e.points)&&e.points.length>=2){
+  selected=item.id;const points=e.points.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)).slice(0,512).map(p=>stageToSource([p.x/100,p.y/100],item,assetById[item.type]));
+  if((e.mode==='split'&&(item.localCuts?.length||0)>=8)||(e.mode==='brush'&&item.cuts.length>=24))return;
+  stroke={kind:e.mode,points,radius:clamp(Number($('#brush-size').value)/stageWidth()/(item.h/100)/2,.002,.3),pointer:-777};finishPrune({pointerId:-777,pointerType:'mouse'});
+ }
+}
+gameBridge=mountUnityGame({getFrame:gameFrame,onEvent:gameEvent,locale:()=>lang});

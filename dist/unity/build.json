@@ -1,0 +1,7 @@
+{
+  "frameworkUrl": "/unity/Build/unity.framework.js.unityweb",
+  "dataUrl": "/unity/Build/unity.data.unityweb",
+  "codeUrl": "/unity/Build/unity.wasm.unityweb",
+  "streamingAssetsUrl": "/unity/StreamingAssets",
+  "loader": "/unity/Build/unity.loader.js"
+}
