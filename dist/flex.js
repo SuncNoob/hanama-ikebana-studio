@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** Eight absolute stem directions, in radians from local +Y. Units are chosen by the caller. */
 export const FLEX_SEGMENTS=8;
-const limit=n=>Math.max(-.6,Math.min(.6,Number.isFinite(n)?n:0));
+export const FLEX_MAX_ANGLE=1.1;
+const limit=n=>Math.max(-FLEX_MAX_ANGLE,Math.min(FLEX_MAX_ANGLE,Number.isFinite(n)?n:0));
 export function normalizeFlex(value){return Array.isArray(value)&&value.length?Array.from({length:FLEX_SEGMENTS},(_,i)=>limit(value[i])):[]}
 export function hasFlex(value){return Array.isArray(value)&&value.some(n=>Number.isFinite(n)&&Math.abs(n)>1e-8)}
 /** Fixed-length forward kinematics. The uncropped source-to-pivot distance defines its extent. */

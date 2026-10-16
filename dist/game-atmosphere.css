@@ -178,7 +178,7 @@ body.atelier-simple{background:#f0f1ea;color:var(--atelier-ink)}
 }
 
 /* Keep the full editing kit within reach without covering the flowers. */
-.atelier-simple #studio-view .atelier-tool-slot .stage-tools :is(#atelier-length,#undo-button,#redo-button){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
+.atelier-simple #studio-view .atelier-tool-slot .stage-tools :is(#atelier-length,#flip-button,#duplicate-button,#layers-tool,#undo-button,#redo-button){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
 .atelier-tool-slot .atelier-tool-name,.atelier-length-label,.atelier-simple .atelier-tool-slot .prune-tool-label{display:block;max-width:42px;font-size:10px;line-height:1.2;white-space:nowrap}
 .atelier-length-icon{font-size:20px;line-height:18px}
 .atelier-simple #studio-view .atelier-tool-slot #atelier-length[aria-expanded=true]{background:#405b3e;color:white}
@@ -211,4 +211,23 @@ body.atelier-simple{background:#f0f1ea;color:var(--atelier-ink)}
 @media(orientation:landscape) and (max-height:540px){
  :root{--atelier-size:min(78vw,max(150px,calc(100dvh - 170px)))}
  .atelier-length-panel{position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);margin:0;width:min(440px,calc(100vw - 24px));box-shadow:0 10px 35px #30472a1c}
+}
+
+/* The original flip, copy and layer controls share the same primary tool strip. */
+.game-session{min-width:min(610px,calc(100vw - 40px));align-self:center}
+@media(max-width:900px){.game-session{min-width:min(460px,calc(100vw - 24px))}}
+@media(max-width:600px){
+ :root{--atelier-size:min(1040px,max(200px,calc(100dvh - 236px)))}
+ .game-session{min-width:0}
+ .atelier-simple #studio-view .atelier-tool-slot>.stage-tools{display:grid!important;grid-template-columns:repeat(4,44px);grid-auto-rows:44px;justify-content:center;gap:6px 14px;width:max-content}
+ .atelier-bench{row-gap:5px}
+}
+@media(max-width:900px) and (max-height:660px){
+ .atelier-length-panel{position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);margin:0;width:min(440px,calc(100vw - 24px));box-shadow:0 10px 35px #30472a1c}
+}
+@media(orientation:landscape) and (max-height:540px){
+ :root{--atelier-size:min(78vw,max(90px,calc(100dvh - 170px)))}
+ .game-session{min-width:min(480px,calc(100vw - 24px))}
+ .atelier-simple #studio-view .atelier-tool-slot>.stage-tools{display:flex!important;gap:6px;width:auto}
+ .atelier-bench{row-gap:2px}
 }

@@ -7,7 +7,7 @@
  * mode names, file names and readme (A17).
  */
 import {arrangementMetrics,isKenzan} from './scale.js?v=hn3';
-import {vesselGeometry} from './geometry.js?v=restore1';
+import {vesselGeometry} from './geometry.js?v=soft2';
 import {profileOf,rolesOf,unitNoun} from './botany.js?v=hn2';
 
 const hashText=text=>{let h=2166136261;for(const c of String(text)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};

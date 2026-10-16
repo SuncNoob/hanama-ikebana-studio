@@ -4,23 +4,24 @@ using UnityEngine;
 public sealed partial class HanamaGame
 {
     const int Bones=8;
+    const float MaxFlexAngle=1.1f;
     sealed class StemChain
     {
         public readonly float[] rest=new float[Bones],angles=new float[Bones],speed=new float[Bones],start=new float[Bones];
         public readonly Vector2[] joints=new Vector2[Bones+1],solve=new Vector2[Bones+1];
         public float extent,length,phase,stiffness,limit,windBlend;public bool dirty=true;
     }
-    bool bending;int grip;Vector2 gripOffset;
+    bool bending;int grip,gripSegment;Vector2 gripOffset;
     float lastOrganicTime;
     void SyncOrganic(Piece p)
     {
         if(!p.data.interactive)return;
         bool fresh=p.chain==null;if(fresh)p.chain=new StemChain();var c=p.chain;
         c.extent=Mathf.Max(1,p.data.extent);c.length=c.extent/Bones;
-        c.phase=StablePhase(p.data.id);c.stiffness=Mathf.Lerp(70,32,p.data.flexibility);c.limit=Mathf.Lerp(.055f,.16f,p.data.flexibility);
+        c.phase=StablePhase(p.data.id);c.stiffness=Mathf.Lerp(70,32,p.data.flexibility);c.limit=Mathf.Lerp(.12f,.28f,Mathf.Clamp01(p.data.flexibility));
         for(int i=0;i<Bones;i++)
         {
-            c.rest[i]=p.data.flex!=null&&i<p.data.flex.Length?Mathf.Clamp(p.data.flex[i],-.6f,.6f):0;
+            c.rest[i]=p.data.flex!=null&&i<p.data.flex.Length?Mathf.Clamp(p.data.flex[i],-MaxFlexAngle,MaxFlexAngle):0;
             if(fresh)c.angles[i]=c.rest[i];
         }
         if(tool!="move"||!settings.motion||settings.reducedMotion||settings.paused){Array.Copy(c.rest,c.angles,Bones);Array.Clear(c.speed,0,Bones);c.windBlend=0;}
@@ -68,32 +69,49 @@ public sealed partial class HanamaGame
         var c=p.chain;Array.Copy(c.rest,c.start,Bones);
         Vector2 local=p.root.transform.InverseTransformPoint(at),flat=UnbendLocal(p,local);
         grip=Mathf.Clamp(Mathf.RoundToInt(flat.y/c.length),2,Bones);
-        gripOffset=local-c.joints[grip];
+        gripSegment=Mathf.Clamp(Mathf.FloorToInt(flat.y/c.length),0,Bones-1);
+        gripOffset=new Vector2(flat.x,flat.y-grip*c.length);
     }
-    // FABRIK: two forward/backward passes, fixed lengths, fixed root, botanical angle limits.
+    // Bounded FABRIK with distributed curvature: fixed root/lengths and a rigid terminal crown.
     void SolveBend(Piece p,Vector2 at)
     {
-        var c=p.chain;var target=(Vector2)p.root.transform.InverseTransformPoint(at)-gripOffset;
-        float cap=Mathf.Lerp(.22f,.55f,p.data.flexibility);
-        target.x=Mathf.Clamp(target.x,-c.extent*cap,c.extent*cap);target.y=Mathf.Max(c.extent*.35f,target.y);
+        var c=p.chain;var pointer=(Vector2)p.root.transform.InverseTransformPoint(at);
+        float flexibility=Mathf.Clamp01(p.data.flexibility),cap=Mathf.Lerp(.52f,.9f,flexibility);
         Array.Copy(c.joints,c.solve,Bones+1);
-        for(int pass=0;pass<3;pass++)
+        for(int pass=0;pass<6;pass++)
         {
+            // Keep the same point on a rotating flower under the pointer, including off-axis petals.
+            float contactAngle=pass==0?c.angles[gripSegment]:c.rest[gripSegment];
+            var tangent=new Vector2(Mathf.Sin(contactAngle),Mathf.Cos(contactAngle));
+            var target=pointer-new Vector2(tangent.y,-tangent.x)*gripOffset.x-tangent*gripOffset.y;
+            target.x=Mathf.Clamp(target.x,-c.extent*cap,c.extent*cap);target.y=Mathf.Max(c.extent*.08f,target.y);
+            target=Vector2.ClampMagnitude(target,c.length*grip*.999f);
             c.solve[grip]=target;
             for(int i=grip-1;i>=0;i--){var d=(c.solve[i]-c.solve[i+1]).normalized;c.solve[i]=c.solve[i+1]+d*c.length;}
             c.solve[0]=Vector2.zero;float previous=0;
             for(int i=0;i<grip;i++)
             {
                 Vector2 d=c.solve[i+1]-c.solve[i];float a=Mathf.Atan2(d.x,d.y);
-                float limit=i==0?c.limit*.7f:c.limit;float max=Mathf.Lerp(.22f,.58f,p.data.flexibility);
+                if(i>0&&i<grip-1)
+                {
+                    Vector2 next=c.solve[i+2]-c.solve[i+1];float nextAngle=Mathf.Atan2(next.x,next.y);
+                    a=Mathf.Lerp(a,(previous+nextAngle)*.5f,.18f);
+                }
+                float limit=i==0?c.limit*.8f:c.limit;float max=Mathf.Lerp(.72f,1.05f,flexibility);
                 a=Mathf.Clamp(a,Mathf.Max(-max,previous-limit),Mathf.Min(max,previous+limit));
                 // The crown moves as one form; petals are never individually stretched.
                 if(i>=6)a=previous;
                 c.rest[i]=a;c.solve[i+1]=c.solve[i]+new Vector2(Mathf.Sin(a),Mathf.Cos(a))*c.length;previous=a;
             }
-            for(int i=grip;i<Bones;i++){c.rest[i]=c.rest[grip-1]+(c.start[i]-c.start[grip-1])*.5f;c.rest[i]=Mathf.Clamp(c.rest[i],-.6f,.6f);}
+            for(int i=grip;i<Bones;i++)
+            {
+                float prior=c.rest[i-1],a=c.rest[grip-1]+(c.start[i]-c.start[grip-1])*.7f;
+                a=Mathf.Clamp(a,prior-c.limit,prior+c.limit);
+                c.rest[i]=i>=6?prior:Mathf.Clamp(a,-MaxFlexAngle,MaxFlexAngle);
+            }
         }
-        for(int i=0;i<Bones;i++){c.angles[i]=Mathf.Lerp(c.angles[i],c.rest[i],.65f);c.speed[i]=0;}
+        float follow=1-Mathf.Exp(-16*Mathf.Min(.1f,Time.unscaledDeltaTime));
+        for(int i=0;i<Bones;i++){c.angles[i]=i>=6?c.angles[i-1]:Mathf.Lerp(c.angles[i],c.rest[i],follow);c.speed[i]=0;}
         Forward(c,c.angles,c.joints);c.dirty=true;UpdateOrganicMesh(p);
     }
     void UpdateOrganicMesh(Piece p)

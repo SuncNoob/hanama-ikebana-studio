@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** True-to-life sizing. The square stage is 100 cm tall, so one stage percent equals one centimetre. */
 import {realScale,stemFix} from './real-scale.js?v=hn2';
-import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage} from './geometry.js?v=restore1';
+import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage} from './geometry.js?v=soft2';
 import {stemMaxCm, rolesOf, roleOf, stemMmOf} from './botany.js?v=hn2';
 import {specimenMetrics,vesselMetrics} from './asset-metrics.js?v=hn2';
 

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
-import {dimensions,vesselGeometry,warpY,flexExtent} from './geometry.js?v=restore1';
-import {hasFlex,createFlexChain,flexGrid} from './flex.js?v=1';
+import {dimensions,vesselGeometry,warpY,flexExtent} from './geometry.js?v=soft2';
+import {hasFlex,createFlexChain,flexGrid} from './flex.js?v=2';
 import {applyLocalCut} from './local-cut.js?v=31';
 import {naturalStemRoutesV1,naturalStemRoutes,stemRoots,stemPath} from './natural-stems.js?v=hn2';
 import {seatClip,vesselFoot,seatState,stemWidthCm,isKenzan,isDetachedPiece,KENZAN,kenzanHolders,kenzanPins,onHolder} from './scale.js?v=hn3';

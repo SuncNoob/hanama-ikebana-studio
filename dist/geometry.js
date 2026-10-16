@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** A specimen's original pixels are its editing coordinates. Only its lower stem stretches. */
-import {hasFlex,createFlexChain,bendPoint,unbendPoint} from './flex.js?v=1';
+import {hasFlex,createFlexChain,bendPoint,unbendPoint} from './flex.js?v=2';
 import {normalizeStemSplit} from './stem-length.js';
 export const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 const vesselBounds=asset=>{

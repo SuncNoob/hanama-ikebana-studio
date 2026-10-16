@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import {specimenMetrics,vesselMetrics,assetMetrics} from '../dist/asset-metrics.js';
 import {specimens,browseSpecimens,vessels,dist} from './helpers/catalog.mjs';
 import {drawsStem} from '../dist/scale.js?v=hn3';
-import {vesselGeometry} from '../dist/geometry.js?v=restore1';
+import {vesselGeometry} from '../dist/geometry.js?v=soft2';
 
 const stale='re-run: CANVAS_MODULE=… node qa/measure-assets.mjs';
 const inUnit=v=>Number.isFinite(v)&&v>=0&&v<=1;

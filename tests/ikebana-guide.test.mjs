@@ -9,7 +9,7 @@ import {
  tipPoint,crownPoint,seatState,headroom,autoFront,isKenzan,stemCm,drawsStem,hashId
 } from '../dist/scale.js?v=hn3';
 import {stemMaxCm,roleOf} from '../dist/botany.js?v=hn2';
-import {vesselGeometry} from '../dist/geometry.js?v=restore1';
+import {vesselGeometry} from '../dist/geometry.js?v=soft2';
 
 const STYLES=['upright','slanting'],HANDS=[1,-1];
 const dist2=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]);

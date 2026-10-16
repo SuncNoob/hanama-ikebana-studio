@@ -218,6 +218,7 @@ public sealed partial class HanamaGame : MonoBehaviour
             else
             {
                 var mouth=new Vector2(frame.mouthX,100-frame.mouthY);bool snap=!turning&&!scaling&&!bending&&Vector2.Distance(picked.root.transform.position,mouth)<5;
+                if(bending&&picked.chain!=null)Array.Copy(picked.chain.angles,picked.chain.rest,Bones);
                 if(snap){picked.root.transform.position=mouth;Burst(mouth,4);}EmitTransform(picked,"commit",snap);
             }
         }

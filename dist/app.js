@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
-import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow,paintLightPass,paintLightSilhouette} from './compositor.js?v=restore1';
+import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow,paintLightPass,paintLightSilhouette} from './compositor.js?v=soft2';
 import {LIGHTS,lightOf,lightPatch,lightWorkSize,paintLightAmbient} from './ambience.js?v=hn3';
 import {zipFiles,backupFiles,backupName,readBackup,keepIncoming,withTimeout,failedIds,BackupError,MAX_BACKUP_FILE} from './my-works.js?v=hn3';
 import {compositorLayerPlan,compositorManifest} from './compositor-project.js?v=hn3';
@@ -22,7 +22,7 @@ import {studies,studySeasons} from './studies.js?v=hn3';
 import {applyRealScale,sizeBounds,sizeRatioBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,besideBase,tipPoint,reach,stemUnit,stemTrimmed,spriteScale,stageCanvasSize,isKenzan,seatState,seatPoint,solveTo,slideBase,remapSeated,isDetachedPiece,cutEndSource,anchorAt,pieceHead,reseatPiece,companionClear,planSlot,slotState,guideRays,guideReading,fitToSlot,insertIndex} from './scale.js?v=hn3';
 import {stemMaxCm,roleOf,rolesOf,roleTip,roleLabel} from './botany.js?v=hn2';
 import {nameOf,colorOf,poseOf,displayPose,provenance,cardName,supportName,coverFor,matchesRole,sortByRole,roleGroups,sizeOf,sizeText,cardMeta,buildSearchIndex,emptyText,clearFiltersLabel,currentSeason,shiftSeason,seasonShiftOf,matchesSeason,seasonMark,seasonChip} from './library.js?v=hn3';
-import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints,flexExtent} from './geometry.js?v=restore1';
+import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints,flexExtent} from './geometry.js?v=soft2';
 import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=31';
 import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=restore1';
 import {lightScenes} from './light-scenes.js';
@@ -32,8 +32,8 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=5';
-import {normalizeFlex} from './flex.js?v=1';
+import {mountUnityGame} from './atelier.js?v=6';
+import {normalizeFlex} from './flex.js?v=2';
 import {stemLengthRatio,setStemLength,normalizeStemSplit,supportsStemStretch,stemStretchSplit} from './stem-length.js';
 import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene} from './organic-room.js?v=restore1';
 let gameBridge=null;
@@ -472,6 +472,7 @@ function renderStage(){
 const emptyLines={canvas:['画布还空着。先放一枝线条，定下高度与方向。','The canvas is empty. Start with a line to set the height and direction.','キャンバスはまだ空です。まず線になる枝で、高さと向きを決めましょう。'],pick:['点选一枝花材，调整它的姿态。','Select a material to adjust its pose.','花材を選んで姿を調整します。']};
 function renderEmptySelection(){const el=$('#selected-empty');if(!el)return;const [zh,en,ja]=emptyLines[state.items.length?'pick':'canvas'];el.dataset.zh=zh;el.dataset.en=en;el.dataset.ja=ja;el.textContent=L(zh,en,ja)}
 function renderSelection(){
+ $('#flip-button').disabled=!state.items.length;$('#duplicate-button').disabled=!state.items.length||state.items.length>=24;
  let i=current();$('#selected-empty').hidden=!!i;$('#selection-controls').hidden=!i;renderEditingChip();if(!i){renderEmptySelection();setEditMode('move');return;}
  renderModePill();
  const a=assetById[i.type];$('#selected-thumb').src=assetPath(i.type);$('#selected-thumb').style.filter=a.saturation?`saturate(${a.saturation})`:'';$('#selected-thumb').alt=assetName(a);$('#selected-name').textContent=assetName(a);$('#variant-label').textContent=`${assetColor(a)} · ${displayPose(a,lang)}`;$('#botanical-note').textContent=botanicalDescription(a.family,a);
@@ -1015,7 +1016,7 @@ function mountLayerDock(){
  if(menu.parentElement!==host||menu.nextElementSibling!==after)host.insertBefore(menu,after);
 }
 function openLayerMenu(){
- closeQuickMaterialDrawer();setEditMode('move');mountLayerDock();const menu=$('#layer-menu');menu.hidden=false;document.body.classList.add('layer-list-open');$('.design-panel').hidden=true;$('#layers-tool').setAttribute('aria-expanded','true');renderLayerList();if(mediaMatches(COMPACT_STUDIO))menu.scrollIntoView({block:getComputedStyle($('.stage-frame')).position==='sticky'?'start':'nearest',behavior:'smooth'});
+ closeQuickMaterialDrawer();setEditMode('move');mountLayerDock();const menu=$('#layer-menu');menu.hidden=false;document.body.classList.add('layer-list-open');$('.design-panel').hidden=true;$('#layers-tool').setAttribute('aria-expanded','true');renderLayerList();if(!document.body.classList.contains('atelier-simple')&&mediaMatches(COMPACT_STUDIO))menu.scrollIntoView({block:getComputedStyle($('.stage-frame')).position==='sticky'?'start':'nearest',behavior:'smooth'});
 }
 mountLayerDock();
 window.addEventListener('resize',mountLayerDock);
@@ -1453,7 +1454,13 @@ function moveSelectedToRandomMiddle(){
  const choices=pool.filter(index=>item.aboveVessel||index!==original);if(!choices.length)return;
  checkpoint();item.aboveVessel=false;back.splice(choices[Math.floor(Math.random()*choices.length)],0,item);state.items=[...back,...front];selected=item.id;renderStage();persist();undoToast(L('已随机放在花器后方','Placed behind the vase','花器の後ろに配置しました'));
 }
-$('#delete-button').onclick=removeSelected;$('#reseat-button').onclick=reseatSelected;$('#scale-reset').onclick=resetRealSize;$('#stem-cap-reset').onclick=naturalLength;$('#flip-button').onclick=()=>{const item=current();if(!item)return;const seated=isSeated(item);checkpoint();aboutCutEnd(item,i=>{i.flip=!i.flip;if(seated)i.angle=-i.angle||0});renderStage();persist()};$('#seat-all').onclick=seatAll;$('#seat-banner-close').onclick=()=>{seatBannerClosed=floatingItems().map(i=>i.id).sort().join(',');renderSeatCues()};$('#duplicate-button').onclick=duplicateSelected;$('#layer-button').onclick=moveSelectedToFront;$('#layer-back-button').onclick=moveSelectedToBack;
+/** First-screen actions follow the selected stem, or the frontmost stem when none is selected. */
+function toolbarItem(){
+ if(!current()&&state.items.length)selectItem((state.items.filter(i=>i.aboveVessel).at(-1)||state.items.at(-1)).id);
+ if(current())setEditMode('move');
+ return current();
+}
+$('#delete-button').onclick=removeSelected;$('#reseat-button').onclick=reseatSelected;$('#scale-reset').onclick=resetRealSize;$('#stem-cap-reset').onclick=naturalLength;$('#flip-button').onclick=()=>{const item=toolbarItem();if(!item)return;const seated=isSeated(item);checkpoint();aboutCutEnd(item,i=>{i.flip=!i.flip;if(seated)i.angle=-i.angle||0});renderStage();persist()};$('#seat-all').onclick=seatAll;$('#seat-banner-close').onclick=()=>{seatBannerClosed=floatingItems().map(i=>i.id).sort().join(',');renderSeatCues()};$('#duplicate-button').onclick=()=>{if(toolbarItem())duplicateSelected()};$('#layer-button').onclick=moveSelectedToFront;$('#layer-back-button').onclick=moveSelectedToBack;
 $('#undo-button').onclick=()=>{finishMoveInteraction(true);if(!undoStack.length)return;redoStack.push({state:clone(state),selected});const previous=undoStack.pop();state=previous.state;selected=previous.selected;cutSession=null;setEditMode('move');renderAll()};$('#redo-button').onclick=()=>{finishMoveInteraction(true);if(!redoStack.length)return;undoStack.push({state:clone(state),selected});const next=redoStack.pop();state=next.state;selected=next.selected;cutSession=null;setEditMode('move');renderAll()};
 $('#guide-button').onclick=()=>setGuide($('#guide').hidden);$('#reset-button').onclick=()=>{if(!state.items.length)return toast(L('花器里还没有花材。','There are no materials to clear.','まだ花材がありません。'));checkpoint();state.items=[];selected=null;cutSession=null;setEditMode('move');renderStage();persist();undoToast(L('已清空花材','All materials cleared','花材をすべて外しました'))};
 $$('button[data-scene]').forEach(b=>b.onclick=()=>{checkpoint();state.scene=b.dataset.scene;renderStage();persist()});

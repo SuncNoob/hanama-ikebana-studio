@@ -7,7 +7,7 @@
  * (an evicted or failed sprite, or an image still loading) the crop rectangle stands in, as the old box hit did.
  * DOM-free, so node --test covers it.
  */
-import {dimensions,warpY,stageToSource} from './geometry.js?v=restore1';
+import {dimensions,warpY,stageToSource} from './geometry.js?v=soft2';
 
 /** A mask pixel with alpha above this is part of the plant (the crop probe uses 12; picking ignores faint fringes). */
 export const PICK_ALPHA=24;

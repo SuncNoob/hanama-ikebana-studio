@@ -6,7 +6,7 @@ import {readFileSync,readdirSync,existsSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
-/** Splits allowed for now (none: scale.js now imports geometry.js?v=restore1 like everyone else). */
+/** Splits allowed for now (none: scale.js now imports geometry.js?v=soft2 like everyone else). */
 const tolerated={};
 
 function importers(){

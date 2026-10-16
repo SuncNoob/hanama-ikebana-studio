@@ -9,7 +9,7 @@ import {atelierSpecimens as legacyAtelierSpecimens,atelierVessels as legacyAteli
 import {legacyFlowers,legacyVessels,scenes,saturationTune} from '../dist/legacy-catalog.js?v=restore1';
 import {createItem,buildStudyItems,buildDemoItems,placeSpecs,demoSpecs,demoVessel} from '../dist/study-state.js?v=hn3';
 import {sizeBounds,mouthBase,tipPoint,crownPoint,drawsStem,stemCm,isKenzan,autoFront,seatState,baseOffset,angleCap,slotState,PHOTO_LENGTH} from '../dist/scale.js?v=hn3';
-import {vesselGeometry,sourceToStage} from '../dist/geometry.js?v=restore1';
+import {vesselGeometry,sourceToStage} from '../dist/geometry.js?v=soft2';
 import {specimenMetrics} from '../dist/asset-metrics.js?v=hn2';
 import {stemMaxCm} from '../dist/botany.js';
 

@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {PICK_ALPHA,pickOrder,stemDistance,stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from '../dist/stem-pick.js?v=hn2';
-import {sourceToStage} from '../dist/geometry.js?v=restore1';
+import {sourceToStage} from '../dist/geometry.js?v=soft2';
 
 /** A 100×200 px specimen (ratio 0.5) standing 40% of the stage tall with its base at (50%, 80%). */
 const asset={width:100,heightPx:200,anchor:.5,split:.5};

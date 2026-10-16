@@ -3,8 +3,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {normalizeFlex,hasFlex,createFlexChain,bendPoint,unbendPoint,flexGrid} from '../dist/flex.js?v=1';
-import {dimensions,warpY,unwarpY,clamp,sourceToStage,stageToSource} from '../dist/geometry.js?v=restore1';
+import {normalizeFlex,hasFlex,createFlexChain,bendPoint,unbendPoint,flexGrid} from '../dist/flex.js?v=2';
+import {dimensions,warpY,unwarpY,clamp,sourceToStage,stageToSource} from '../dist/geometry.js?v=soft2';
 const close=(actual,expected,tolerance=1e-9)=>actual.forEach((n,i)=>assert.ok(Math.abs(n-expected[i])<tolerance,`${actual} differs from ${expected}`));
 const asset={width:100,heightPx:240,anchor:.46,split:.55};
 const base={x:52,y:79,h:48,trim:10,length:1.3,angle:0,flip:false,cropAnchorY:1};
@@ -12,7 +12,7 @@ const flex=[.01,.04,.08,.14,.20,.26,.31,.34];
 
 test('saved flex is finite, bounded, eight segments, and absent/zero flex stays inactive',()=>{
  assert.deepEqual(normalizeFlex(null),[]);assert.deepEqual(normalizeFlex([]),[]);
- assert.deepEqual(normalizeFlex([Infinity,NaN,-2,2]),[0,0,-.6,.6,0,0,0,0]);
+ assert.deepEqual(normalizeFlex([Infinity,NaN,-2,2]),[0,0,-1.1,1.1,0,0,0,0]);
  assert.equal(hasFlex([]),false);assert.equal(hasFlex(Array(8).fill(0)),false);
  assert.equal(createFlexChain(flex,0).active,false);
 });
@@ -29,6 +29,17 @@ test('eight forward segments preserve length, anchor the root and leave inserted
 test('nearest-segment inverse returns source coordinates along the stem and rigid tip',()=>{
  const chain=createFlexChain(flex,.48);
  for(const y of [-.03,0,.012,.07,.105,.165,.225,.285,.345,.405,.465,.52])for(const x of [-.003,0,.003])close(unbendPoint(bendPoint([x,y],chain),chain),[x,y]);
+});
+
+test('looser saved poses retain their full curve, fixed lengths and picking coordinates',()=>{
+ const relaxed=[.12,.31,.53,.75,.94,1.05,1.05,1.05];
+ for(const sign of [-1,1]){
+  const angles=relaxed.map(n=>n*sign),chain=createFlexChain(angles,.48);
+  assert.deepEqual(chain.angles,angles);close(chain.points[0],[0,0]);
+  for(let n=0;n<8;n++)assert.ok(Math.abs(Math.hypot(chain.points[n+1][0]-chain.points[n][0],chain.points[n+1][1]-chain.points[n][1])-.06)<1e-12);
+  for(const y of [.03,.09,.15,.21,.27,.33,.39,.45,.54])for(const x of [-.002,0,.002])close(unbendPoint(bendPoint([x,y],chain),chain),[x,y]);
+  const a=bendPoint([-.04,.55],chain),b=bendPoint([.04,.55],chain);assert.ok(Math.abs(Math.hypot(a[0]-b[0],a[1]-b[1])-.08)<1e-12,'the crown remains rigid');
+ }
 });
 
 test('source, bend, mirror and rotation round-trip through one coordinate contract after crop and length edits',()=>{

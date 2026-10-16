@@ -34,10 +34,16 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  const hint=document.createElement('p');hint.className='game-instruction';
  const fallbackAdjust=document.createElement('button');fallbackAdjust.type='button';fallbackAdjust.id='atelier-fallback-adjust';
  secondary.prepend(fallbackAdjust);
- for(const id of ['layers-tool','guide-button'])$('.atelier-advanced-tools',panel).append($('#'+id));
+ $('.atelier-advanced-tools',panel).append($('#guide-button'));
  const lengthButton=document.createElement('button');lengthButton.type='button';lengthButton.id='atelier-length';lengthButton.className='icon-button';lengthButton.setAttribute('aria-controls','atelier-length-panel');lengthButton.setAttribute('aria-expanded','false');
  lengthButton.innerHTML='<span aria-hidden="true" class="atelier-length-icon">↕</span><span class="atelier-length-label"></span>';
  $('.stage-tools').insertBefore(lengthButton,$('#undo-button'));
+ for(const id of ['prune-tool','erase-tool','atelier-length','flip-button','duplicate-button','layers-tool','undo-button','redo-button']){
+  const button=$('#'+id);button.classList.add('icon-button');$('.stage-tools').append(button);
+ }
+ for(const [id,labels] of [['flip-button',{zh:'翻转',en:'Flip',ja:'反転'}],['duplicate-button',{zh:'复制',en:'Copy',ja:'複製'}]]){
+  const label=$('span[data-zh]',$('#'+id));label.classList.add('atelier-tool-name');Object.assign(label.dataset,labels);
+ }
  const lengthPanel=document.createElement('div');lengthPanel.id='atelier-length-panel';lengthPanel.className='atelier-length-panel';lengthPanel.hidden=true;
  const lengthClose=document.createElement('button');lengthClose.type='button';lengthClose.className='atelier-length-close';lengthClose.textContent='×';
  lengthPanel.append($('#length').closest('.range-control'),lengthClose);panel.append(lengthPanel);
@@ -109,7 +115,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  atmosphereClose.setAttribute('aria-label',words('收起光景','Close light and backgrounds','光と景を閉じる'));
   flowerLabel.textContent=words('花材','Flowers','花材');
   $('#atelier-gallery').textContent=words('我的作品','My works','自分の作品');$('#atelier-book').textContent=words('灵感手帖','Inspiration book','インスピレーション');
-  for(const [id,label] of [['undo-button',words('撤销','Undo','戻す')],['redo-button',words('重做','Redo','やり直す')],['layers-tool',words('花材列表','Flower list','花材の一覧')],['guide-button',words('构图参考','Composition guide','構図ガイド')]]){
+  for(const [id,label] of [['flip-button',words('翻转','Flip','反転')],['duplicate-button',words('复制','Copy','複製')],['undo-button',words('撤销','Undo','戻す')],['redo-button',words('重做','Redo','やり直す')],['layers-tool',words('图层','Layers','レイヤー')],['guide-button',words('构图参考','Composition guide','構図ガイド')]]){
    let text=$('.atelier-tool-name',$('#'+id));if(!text){text=document.createElement('span');text.className='atelier-tool-name';$('#'+id).append(text);}text.textContent=label;
   }
   const labels={morning:words('窗边','Window','窓辺'),shade:words('阴日','Overcast','曇り'),dusk:words('夕照','Evening','夕映え'),moon:words('月色','Moon','月影')};
@@ -188,7 +194,8 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  $('#atelier-gallery').onclick=()=>{closeMenus();$('.main-nav [data-view="gallery"]').click();};
  $('#atelier-book').onclick=()=>{closeMenus();$('.main-nav [data-view="inspiration"]').click();};
  $('#quick-material-open').addEventListener('click',()=>{setLength(false);closeMenus();setInspector(false);});
- $('#layers-tool').addEventListener('click',()=>{closeMenus();setInspector(false);});
+ $('#layers-tool').addEventListener('click',()=>{setLength(false);closeMenus();setInspector(false);});
+ for(const id of ['flip-button','duplicate-button'])$('#'+id).addEventListener('click',()=>{setLength(false);closeMenus();setInspector(false);if(active)canvas.focus({preventScroll:true});});
  for(const id of ['prune-tool','erase-tool']){
   // A first click is immediately usable; the pressed tool is the only mode indicator.
   $('#'+id).addEventListener('click',()=>{if(!$('.stem.selected',stage)){const target=lastFrame?.nodes.filter(n=>n.interactive).at(-1)?.id||$('.stem',stage)?.dataset.id;if(target)onEvent({type:'select',id:target});}},true);

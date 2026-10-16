@@ -8,7 +8,7 @@ import {
  defaultCm,arrangementMetrics,remapSeated,drawsStem,stemCm,lengthBounds,lengthForStem,itemCm,PHOTO_LENGTH,angleCap,sizeBounds,isDetachedPiece
 } from '../dist/scale.js?v=hn3';
 import {stemMaxCm} from '../dist/botany.js';
-import {vesselGeometry} from '../dist/geometry.js?v=restore1';
+import {vesselGeometry} from '../dist/geometry.js?v=soft2';
 
 const KENZAN=['ink-black-low-bowl','charcoal-square-basin','celadon-shallow-suiban','indigo-oval-suiban','sand-wide-pottery-bowl','french-charcoal-compote','modern-travertine-trough'];
 const RECIPES=[['pine','calla','photo-chrysanthemum','photo-gypsophila','photo-rose'],['photo-anemone','photo-ranunculus','photo-tulip','photo-muscari','photo-narcissus']];
