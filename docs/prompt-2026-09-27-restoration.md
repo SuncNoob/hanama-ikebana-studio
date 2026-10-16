@@ -1,5 +1,7 @@
 # 2026-09-27 photographic prompt restoration
 
+Historical record: the natural-light and tracing instructions below were superseded on 2026-10-16 by the user-requested [physical reconstruction comparison](prompt-realism-comparison.md). Material counts, refinement modes and format support remain. The current generation prompt is in `dist/prompt.js`.
+
 The photographic direction in `dist/prompt.js` was restored from the repository's actual September 27 source, following the request to return to that prompt. It is not a newly invented approximation of the old style.
 
 ## Historical source

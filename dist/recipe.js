@@ -9,7 +9,7 @@ import {itemCm,stemCm,drawsStem,crownPoint,seatState,seatPoint,isKenzan,isDetach
 import {vesselGeometry} from './geometry.js?v=soft2';
 import {stemMaxCm,rolesOf,profileOf} from './botany.js?v=hn2';
 import {nameOf,colorOf,supportName,vesselFacts} from './library.js?v=hn3';
-import {materialNoun} from './prompt.js?v=sep27-1';
+import {materialNoun} from './prompt.js?v=realism1';
 
 const LANG_INDEX={zh:0,en:1,ja:2};
 /** The [zh, en, ja] entry for a language (anything unknown reads zh, as app.js does). */

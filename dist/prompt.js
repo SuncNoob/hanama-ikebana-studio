@@ -3,8 +3,8 @@
 /**
  * The generation prompt (A16): English text for ChatGPT built from a draft. Pure and DOM-free (tests/prompt.test.mjs covers
  * all 50 studies). One materials list counted by origin (a stem cut in two is one material), true-scale facts measured from
- * the draft and the vessel's real support. Photographic direction is restored from 2026-09-27 (108095d); see
- * docs/prompt-2026-09-27-restoration.md. Also the pack's mode names, file names and readme (A17).
+ * the draft and the vessel's real support. Realism direction rebuilds one photographed scene instead of preserving
+ * cutout lighting; see docs/prompt-realism-comparison.md. Also the pack's mode names, file names and readme (A17).
  */
 import {arrangementMetrics,isKenzan} from './scale.js?v=scale4';
 import {vesselGeometry} from './geometry.js?v=soft2';
@@ -89,7 +89,7 @@ function supportSentence(vessel){
   return `A low ${material}${noun} sits in ${water} and ${f.visibility==='partial'?'shows only partly':'stays naturally visible'} at the stem bases.`;
  }
  if(f?.kind==='chicken-wire'&&f.visibility==='partial')return `Support the stems with ${lowerName(f.en||'dark floral wire mesh')} that shows only slightly inside the rim.`;
- return {neck:'Let the neck support the stems.','integrated-holes':'Insert stems through the actual openings.','chicken-wire':'Hidden floral wire inside holds the stems.','hidden-grid':'Use a concealed grid below the rim.',crossbar:'Use a concealed crossbar below the rim.',foam:'Conceal the support inside the vessel.'}[f?.kind]||'Use discreet support suited to the vessel.';
+ return {neck:'The neck supports the stems below the rim.','integrated-holes':'Use the actual openings as support points.','chicken-wire':'Conceal the supporting mesh below the rim.','hidden-grid':'Conceal the supporting grid below the rim.',crossbar:'Conceal the supporting crossbar below the rim.',foam:'Conceal the support inside the vessel.'}[f?.kind]||'Use discreet support suited to the vessel.';
 }
 
 /** The true-scale sentence, or null when the draft has nothing to measure. */
@@ -97,7 +97,7 @@ function scaleSentence(assetById,vessel,metrics){
  const top=metrics?.tallest,a=top&&assetById[top.type];
  if(!a||!(top.cmAboveTable>0)||!(metrics.vesselCm>0))return null;
  const line=rolesOf(a).includes('line')?'line':'stem';
- return `True scale: ${vessel.en||vessel.name}, about ${Math.round(metrics.vesselCm)} cm tall; the tallest ${line} (${singleNoun(a)}) rises about ${round5(top.cmAboveTable)} cm above the table. Keep flowers and foliage life-size against the vessel.`;
+ return `Scale reference: ${vessel.en||vessel.name}, about ${Math.round(metrics.vesselCm)} cm tall; the tallest ${line} (${singleNoun(a)}) reaches about ${round5(top.cmAboveTable)} cm above the table. These are approximate physical dimensions, not fixed image coordinates; allow natural perspective and modest proportion corrections.`;
 }
 
 /** Target canvas for the generated photo. The square draft remains an unaltered reference. */
@@ -126,24 +126,24 @@ const formatDirection=id=>{
 export function buildPrompt(s,assetById,scenes,extras={}){
  const vessel=assetById[s.vessel],items=(s.items||[]).filter(i=>assetById[i.type]),groups=materialGroups(items,assetById);
  const several=(vessel.openings?.length||0)>1,kenzan=isKenzan(vessel),glass=/glass/i.test(`${vessel.id} ${vessel.en||''}`);
- const concealed=!vessel.fixture||vessel.fixture.visibility==='hidden';
+ const support=fixtureOf(vessel),narrow=support?.kind==='neck'||vessel.group==='tall';
+ const construction=!items.length?'':kenzan?'Construction priority: correct misplaced bases at the actual pin holders, keeping separate holders separate and the shallow water visible. Physical support takes priority over matching an inaccurate draft.':several?'Construction priority: route each lower stem into one of the actual openings, within its inner boundary. Do not merge separate openings or attach stems to the outside. Physical support takes priority over matching an inaccurate draft.':glass?'Construction priority: route every lower stem through the open mouth and into water inside the glass. Keep the continuous submerged portions visible with refraction; never attach bases to the exterior. Physical support takes priority over matching an inaccurate draft.':narrow?`Construction priority: the reference has incorrect stem-to-vase joins. Repair them even when this visibly changes the lower stem paths. Gather all ${numberWord(items.length)} lower stems into a narrow bundle centered OVER THE OPEN HOLE. Each stem must pass down through the interior ellipse with visible clearance from both left and right inner rim edges. The front lip overlaps and hides the descending bases. No stem ends on the rim or exterior glaze; no side-entry holes, no stems glued to the neck. Adjust the lower few centimeters inward before they enter. Show enough of the opening to verify the insertion. This physical connection takes priority over matching the draft.`:'Construction priority: distribute stem bases within the real opening and its interior support. Every lower stem enters inside the rim, never the exterior wall. Let the front lip hide descending portions. Correct inaccurate bases even when their paths change from the draft.';
  const fixture=kenzan?fixtureOf(vessel):null,holder=holderNoun(fixture),holders=(fixture?.centers?.length||1)>1;
- const hides=glass?`stems show faintly through the ${/smoked/i.test(vessel.en||vessel.id)?'smoked ':''}glass below the waterline`:concealed?'the rim hides the cut ends':'';
- const stems=!items.length?'':kenzan?`Every stem rises continuously from ${holders?`one of the ${holder}${holder==='kenzan'?'':'s'}`:`the ${holder}`}.`:`Every stem rises continuously from ${several?'one of the vessel openings':'the vessel opening'}${hides?`; ${hides}`:''}.`;
+ const stems=!items.length?'':kenzan?`Seat each stem base among the pins of ${holders?`one of the ${holder}${holder==='kenzan'?'':'s'}`:`the ${holder}`}; keep visible insertions connected, without burying the shallow arrangement in a dark hole.`:glass?`Stem bases extend inside the vessel into water and show through the ${/smoked/i.test(vessel.en||vessel.id)?'smoked ':''}glass below the waterline, with subtle refraction. Do not darken the glass into an opaque vessel.`:`Every cut base sits inside ${several?'one of the actual openings':'the vessel opening'}, below the rim. Show stems disappearing into its recessed interior, never attached to the outer wall.`;
  const mode=MODES[s.generation]||MODES.natural;
  const n=hashText(`${s.id||''}-${s.generationVariation||0}`),petals=items.some(i=>hasPetals(assetById[i.type]));
  const detail=petals?pick(['uneven petal overlap and subtle pigment drift','relaxed petal folds and gently varied opening stages','slightly eccentric petals and soft color variation','small differences in petal curl and maturity'],n)
   :pick(['natural leaf texture, needle density and bark grain','slightly uneven leaf edges and natural bark detail','varied leaf angles, needle clusters and fine bark texture','gentle differences in leaf colour, needle and bark texture'],n);
  const materials=groups.map(g=>{
   const cut=g.pieces>1?`, ${g.n>1?'each ':''}cut into ${numberWord(g.pieces)} pieces`:'';
-  const depth=g.front&&!kenzan?`, ${g.front<g.n?`${numberWord(g.front)} `:''}crossing in front of the rim`:'';
+  const depth=g.front&&!kenzan?', upper growth forward with bases inside the vessel':'';
   return `${materialNoun(g.asset,g.n)}${g.colors.length?` (${listText(g.colors)})`:''}${depth}${cut}`;
  }).join('; ');
  let metrics=extras?.metrics;
  if(metrics===undefined)try{metrics=arrangementMetrics({...s,items},assetById)}catch{metrics=null}
  const vesselName=vessel.en||vessel.name;
- const scale=extras?.outOfScale?`Vessel: ${vesselName}.\nKeep flower sizes as drawn relative to the vessel.`
-  :scaleSentence(assetById,vessel,metrics)||`Vessel: ${vesselName}, about ${Math.round(vessel.height)} cm tall.\nThe draft is drawn at true botanical scale; keep every flower head, leaf and branch at its real size relative to the vessel.`;
+ const scale=extras?.outOfScale?`Vessel: ${vesselName}.\nKeep the intended focal hierarchy, with botanically plausible sizes and perspective rather than exact cutout dimensions.`
+  :scaleSentence(assetById,vessel,metrics)||`Vessel: ${vesselName}, about ${Math.round(vessel.height)} cm tall.\nUse botanically plausible proportions; apparent sizes may vary naturally with depth.`;
  const night=s.scene==='night',moodWords=(night&&moodAtNight[s.mood])||moodEN[s.mood];
  const mood=moodWords?`${en(s.mood)} — ${moodWords}`:en(s.mood),note=String(s.intention||'').trim(),title=String(s.title||'').trim(),subtitle=String(s.subtitle||'').trim();
  const preset=!!note&&!!extras?.presetNote,cue=typeof extras?.presetNote==='string'&&extras.presetNote.trim()?extras.presetNote.trim():note;
@@ -154,15 +154,19 @@ export function buildPrompt(s,assetById,scenes,extras={}){
  const shape=extras?.format==='phone'?'portrait':extras?.format==='macbook'?'landscape':'square';
  return `Create an image from the attached draft image: a ${shape} professional photograph of a real floral arrangement. Keep the draft's recognizable composition, selected flowers and count, vessel and main negative spaces. ${mode}
 
-${['Treat the draft as design intent, not a tracing. Allow small shifts in flower facing, stem curves and depth for natural growth and gravity.',stems,supportSentence(vessel)].filter(Boolean).join(' ')}
+${construction}
 
-Keep the overall lighting and atmosphere; let local shadows and reflections follow the real forms. Give each ${petals?'bloom':'branch and leaf'} species-appropriate individuality through ${detail}, without exaggerated damage.
+Reconstruct the whole scene as real three-dimensional plants and a vessel photographed together. Use the draft for design intent, not its cutout surfaces or baked-in highlights. Preserve the design while allowing fore-and-aft overlap, varied flower facing and species-appropriate bending under weight; woody branches remain firm. Do not force branches to touch the table.
+
+${[stems,supportSentence(vessel)].filter(Boolean).join(' ')}
+
+Keep the setting's tone, but relight everything with one broad side light and weaker room bounce. Give the vessel foot contact shadow, overlaps local shade, and recesses depth without black outlines. Thin ${petals?'petals and leaves':'leaves'} transmit some light. Focus on the main subjects; let depth gently soften distant edges, with the arrangement still readable. Give each ${petals?'bloom':'branch and leaf'} ${detail}; retain natural texture without plastic gloss or exaggerated damage.
 
 Materials: ${materials||'as shown in the draft'}.
 ${scale}
 Setting: ${scene[3]||scene[2]||'as in the draft'}. Mood: ${mood}.${theme?`\nPoetic theme (an atmosphere cue, not text to print): ${theme}.`:''}${preset?`\nMood cue: ${cue}`:ownNote?`\nCreative note: ${note}\nIf the creative note names a place, season or light, follow the note over the setting and the draft's lighting.`:''}
 
-${formatDirection(extras?.format)}${extras?.guide?' A faded layout image, if attached, only shows which stems pass in front of the rim; don\'t copy its colours or lines.':''}
+${formatDirection(extras?.format)}${extras?.guide?' An optional faded layout guide suggests overlap of upper growth only; correct every base to its real support. Do not copy guide colours or lines.':''}
 No added text or watermark.`;
 }
 
@@ -181,9 +185,9 @@ export const GENERATOR_PROVIDERS=Object.freeze({
 export function packReadme(mode,lang='zh',format='square',provider='chatgpt'){
  const [zh,en,ja]=MODE_NAMES[mode]||MODE_NAMES.natural;
  const sections={
-  zh:['中文',`花间 · ${zh}创作包`,'1. 打开 ChatGPT（https://chatgpt.com/），新建一个对话。','2. 上传 draft.png。前后关系不清楚时，可再附上 composition-guide.png：它只说明哪些花枝在瓶口前面，不必照描。','3. 粘贴 prompt.txt 的全部文字并发送。','4. 不满意时，可以请它“让枝条更自然”，或重新生成。','5. 回到花间，在「我的作品」点「导入作品照片」，照片会和草稿一起保存。','recipe.png 和 recipe.txt 是配方：要买的花材、每枝剪多长、插在哪里，照着就能插出真实的作品。','composition.json 可以恢复这份可编辑草稿；生成不会改动你的画布。','本网站不调用任何生成接口，创作包里也没有 API 密钥。'],
-  en:['ENGLISH',`HANAMA · ${en.toUpperCase()} PACK`,'1. Open ChatGPT (https://chatgpt.com/) and start a new chat.','2. Attach draft.png. If the layering is unclear, also attach composition-guide.png: it only shows which stems pass in front of the rim, so it need not be traced.','3. Paste all of prompt.txt and send it.','4. Not quite right? Ask for “more natural stems”, or regenerate.','5. Back in HANAMA, open My Works and choose Import a photo; it is kept with its draft.','recipe.png and recipe.txt are the recipe: what to buy, and how long to cut and where to place each stem to make it for real.','composition.json restores this editable draft; generating never changes your canvas.','The website calls no generation API, and the pack contains no API key.'],
-  ja:['日本語',`花間 · ${ja}の生成用パック`,'1. ChatGPT（https://chatgpt.com/）を開き、新しいチャットを始めます。','2. draft.png を添付します。前後関係が分かりにくいときは composition-guide.png も添えてください。花器の口の前を通る枝を示すだけで、なぞる必要はありません。','3. prompt.txt の全文を貼り付けて送信します。','4. イメージと違うときは「枝をもっと自然に」と頼むか、再生成します。','5. HANAMA に戻り、「マイ作品」の「写真を読み込む」から保存すると、下書きと一緒に残ります。','recipe.png と recipe.txt はレシピです。用意する花材と、一本ずつ切る長さ・挿す位置を記しています。','composition.json でこの下書きを編集できる状態に戻せます。生成してもキャンバスは変わりません。','このサイトは生成APIを呼び出さず、パックにAPIキーは含まれていません。']
+  zh:['中文',`花间 · ${zh}创作包`,'1. 打开 ChatGPT（https://chatgpt.com/），新建一个对话。','2. 上传 draft.png。前后关系不清楚时，可再附上 composition-guide.png：它只辅助理解枝叶前后；根部仍须正确进入瓶口或剑山，不要照描错误连接。','3. 粘贴 prompt.txt 的全部文字并发送。','4. 不满意时，可以请它“让枝条更自然”，或重新生成。','5. 回到花间，在「我的作品」点「导入作品照片」，照片会和草稿一起保存。','recipe.png 和 recipe.txt 是配方：要买的花材、每枝剪多长、插在哪里，照着就能插出真实的作品。','composition.json 可以恢复这份可编辑草稿；生成不会改动你的画布。','本网站不调用任何生成接口，创作包里也没有 API 密钥。'],
+  en:['ENGLISH',`HANAMA · ${en.toUpperCase()} PACK`,'1. Open ChatGPT (https://chatgpt.com/) and start a new chat.','2. Attach draft.png. If the layering is unclear, also attach composition-guide.png: it suggests upper-branch overlap; bases must still enter the real opening or pin holder. Do not trace inaccurate connections.','3. Paste all of prompt.txt and send it.','4. Not quite right? Ask for “more natural stems”, or regenerate.','5. Back in HANAMA, open My Works and choose Import a photo; it is kept with its draft.','recipe.png and recipe.txt are the recipe: what to buy, and how long to cut and where to place each stem to make it for real.','composition.json restores this editable draft; generating never changes your canvas.','The website calls no generation API, and the pack contains no API key.'],
+  ja:['日本語',`花間 · ${ja}の生成用パック`,'1. ChatGPT（https://chatgpt.com/）を開き、新しいチャットを始めます。','2. draft.png を添付します。前後関係が分かりにくいときは composition-guide.png も添えてください。枝葉の前後関係の参考です。茎の根元は実際の口や剣山に挿し、誤った接続をなぞらないでください。','3. prompt.txt の全文を貼り付けて送信します。','4. イメージと違うときは「枝をもっと自然に」と頼むか、再生成します。','5. HANAMA に戻り、「マイ作品」の「写真を読み込む」から保存すると、下書きと一緒に残ります。','recipe.png と recipe.txt はレシピです。用意する花材と、一本ずつ切る長さ・挿す位置を記しています。','composition.json でこの下書きを編集できる状態に戻せます。生成してもキャンバスは変わりません。','このサイトは生成APIを呼び出さず、パックにAPIキーは含まれていません。']
  };
  if(provider==='gemini'){
   sections.zh[2]='1. 打开 Gemini（https://gemini.google.com/），进入「图片」功能；有 Nano Banana 选项时可使用它。';

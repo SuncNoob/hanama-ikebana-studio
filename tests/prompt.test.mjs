@@ -3,9 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {buildPrompt,materialGroups,materialNoun,pluralName,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER} from '../dist/prompt.js?v=sep27-1';
+import {buildPrompt,materialGroups,materialNoun,pluralName,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER} from '../dist/prompt.js?v=realism1';
 import {isKenzan,arrangementMetrics,outOfScale} from '../dist/scale.js?v=scale4';
-import {assetById,studies,studyState,initial,scenes,specimenFor,dist} from './helpers/catalog.mjs';
+import {assetById,studies,studyState,initial,scenes,specimenFor,vessels,dist} from './helpers/catalog.mjs';
 
 const MODES=['natural','creative','faithful'];
 const CJK=/[぀-ヿ㐀-鿿豈-﫿]/;
@@ -23,14 +23,14 @@ function scissorsSplit(s,index=0){
  return {...s,items:[...s.items.slice(0,index),...pieces,...s.items.slice(index+1)]};
 }
 
-test('every study prompt in every mode starts the same way, stays in English and within 320 words',()=>{
+test('every study prompt in every mode starts the same way, stays in English and within 500 words',()=>{
  for(const study of studies){
   const s=studyState(study,'en');
   for(const generation of MODES)for(const guide of [false,true]){
    const text=prompt({...s,generation},{guide}),noted=prompt({...s,generation,intention:'For a quiet hallway table.'},{guide});
    assert.match(text,/^Create an image/,`${study.id} ${generation}`);
    for(const t of [text,noted])assert.doesNotMatch(t,CJK,`${study.id} ${generation}: CJK in an English prompt`);
-   assert.ok(words(text)<=320,`${study.id} ${generation}${guide?' +guide':''}: ${words(text)} words`);
+   assert.ok(words(text)<=500,`${study.id} ${generation}${guide?' +guide':''}: ${words(text)} words`);
    assert.doesNotMatch(text,/Nearer the camera|Further back/,'one materials list only');
   }
  }
@@ -73,7 +73,7 @@ test('each origin is named once: one list, front stems first, cut pieces counted
  const text=prompt(split),line=materialsLine(text);
  assert.match(line,/cut into two pieces/);
  assert.equal(line.split('; ').reduce((n,e)=>n+entryCount(e),0),origins(base.items),'the two pieces count as one stem');
- assert.match(line,/crossing in front of the rim/,'a piece in front of the rim puts its material in front');
+ assert.match(line,/upper growth forward with bases inside the vessel/,'layer order describes upper growth, not an exterior stem base');
 });
 
 test('the support sentence follows the vessel: kenzan stand in water, smoked glass shows the stems',()=>{
@@ -90,7 +90,27 @@ test('the support sentence follows the vessel: kenzan stand in water, smoked gla
  assert.match(suiban,/A low brass kenzan sits in calm, shallow, clear water and stays naturally visible at the stem bases/);
 });
 
-test('the three modes restore the September 27 refinement phrases',()=>{
+test('physical insertion overrides inaccurate collage joins without flattening different vessel supports',()=>{
+ const base=initial();
+ for(const vessel of vessels){
+  const text=prompt({...base,vessel:vessel.id});
+  assert.match(text,/Construction priority:/,vessel.id);
+  assert.doesNotMatch(text,/crossing in front of the rim|Every stem rises continuously|Keep flower sizes as drawn|Hidden floral wire/);
+  assert.match(text,/Do not force branches to touch the table/);
+  if(isKenzan(vessel)){
+   assert.match(text,/actual pin holders/);assert.doesNotMatch(text,/narrow bundle centered|front lip overlaps and hides/);
+  }else if((vessel.openings?.length||0)>1){
+   assert.match(text,/Do not merge separate openings/);assert.doesNotMatch(text,/narrow bundle centered/);
+  }else if(/glass/i.test(`${vessel.id} ${vessel.en||''}`)){
+   assert.match(text,/continuous submerged portions visible/);assert.doesNotMatch(text,/narrow bundle centered|front lip overlaps and hides/);
+  }else if(vessel.fixture?.kind==='neck'||vessel.group==='tall'){
+   assert.match(text,/clearance from both left and right inner rim edges/);
+   assert.match(text,/physical connection takes priority over matching the draft/);
+  }
+ }
+});
+
+test('three refinement modes preserve their scope while rebuilding a physical scene',()=>{
  for(const study of studies){
   const s=studyState(study,'en'),[natural,creative,faithful]=MODES.map(generation=>sentences(prompt({...s,generation})));
   const differ=(a,b)=>a.filter(x=>!b.includes(x)).length+b.filter(x=>!a.includes(x)).length;
@@ -99,16 +119,16 @@ test('the three modes restore the September 27 refinement phrases',()=>{
   assert.ok(natural.some(x=>/^Make a gentle florist refinement\./.test(x)));
   assert.ok(faithful.some(x=>/^Make only the small corrections needed for physical realism\./.test(x)));
   assert.ok(creative.some(x=>/^Gently refine the stem rhythm and depth within the same design\./.test(x)));
-  for(const sentences of [natural,creative,faithful])assert.ok(sentences.some(x=>/^Treat the draft as design intent, not a tracing\./.test(x)));
+  for(const sentences of [natural,creative,faithful])assert.ok(sentences.some(x=>/^Reconstruct the whole scene as real three-dimensional plants/.test(x)));
  }
 });
 
-test('true scale comes from the measured draft, rounded to 5 cm; an out-of-scale draft makes no centimetre claims',()=>{
+test('approximate scale references preserve calibrated dimensions without locking projected sizes',()=>{
  for(const study of studies){
   const s=studyState(study,'en'),text=prompt(s),m=arrangementMetrics(s,assetById);
-  const line=text.match(/^True scale: .*$/m)?.[0];
+  const line=text.match(/^Scale reference: .*$/m)?.[0];
   assert.ok(line,`${study.id}: no scale line`);
-  const rise=+line.match(/rises about (\d+) cm above the table/)[1];
+  const rise=+line.match(/reaches about (\d+) cm above the table/)[1];
   assert.equal(rise%5,0);
   assert.ok(Math.abs(rise-m.tallest.cmAboveTable)<=2.5,`${study.id}: ${rise} vs ${m.tallest.cmAboveTable}`);
   assert.match(line,new RegExp(`about ${Math.round(m.vesselCm)} cm tall`));
@@ -119,19 +139,21 @@ test('true scale comes from the measured draft, rounded to 5 cm; an out-of-scale
  assert.ok(outOfScale(s.items[0],assetById[s.items[0].type]));
  const text=prompt(s,{outOfScale:true});
  assert.doesNotMatch(text,/\bcm\b/,'no centimetre claims when a stem is out of scale');
- assert.match(text,/Keep flower sizes as drawn relative to the vessel/);
+ assert.match(text,/botanically plausible sizes and perspective rather than exact cutout dimensions/);
  const unmeasured=prompt(studyState(studies.find(st=>st.id==='cherry'),'en'),{metrics:null});
- assert.match(unmeasured,/The draft is drawn at true botanical scale/,'without metrics the plain wording stays');
+ assert.match(unmeasured,/Use botanically plausible proportions/,'without metrics no unmeasured arrangement height is asserted');
 });
 
-test('September 27 photographic direction is restored; guide and notes keep their separate purpose',()=>{
+test('photographic reconstruction replaces baked-in highlights; guide and notes retain their roles',()=>{
  const s=studyState(studies.find(st=>st.id==='cherry'),'en'),plain=prompt(s);
  assert.ok(plain.startsWith("Create an image from the attached draft image: a square professional photograph of a real floral arrangement. Keep the draft's recognizable composition, selected flowers and count, vessel and main negative spaces."));
- assert.ok(plain.includes('Treat the draft as design intent, not a tracing. Allow small shifts in flower facing, stem curves and depth for natural growth and gravity.'));
- assert.ok(plain.includes('Keep the overall lighting and atmosphere; let local shadows and reflections follow the real forms. Give each bloom species-appropriate individuality through'));
+ assert.ok(plain.includes('Use the draft for design intent, not its cutout surfaces or baked-in highlights.'));
+ assert.match(plain,/species-appropriate bending under weight; woody branches remain firm/);
+ assert.match(plain,/relight everything with one broad side light and weaker room bounce/);
+ assert.match(plain,/vessel foot contact shadow, overlaps local shade, and recesses depth without black outlines/);
  assert.doesNotMatch(plain,/wallpaper-worthy|editorial photograph|The draft is a collage|Capture natural colour|^Light:/m);
- assert.doesNotMatch(plain,/layout image/,'the guide sentence belongs to the zip only');
- assert.match(prompt(s,{guide:true}),/A faded layout image, if attached, only shows which stems pass in front of the rim/);
+ assert.doesNotMatch(plain,/layout guide/,'the guide sentence belongs to the zip only');
+ assert.match(prompt(s,{guide:true}),/layout guide suggests overlap of upper growth only; correct every base to its real support/);
  // The first-run preset note is a mood cue, not an instruction to override the scene.
  const demo=initial(),preset=prompt(demo,{presetNote:demo.intention});
  assert.match(preset,/^Mood cue: Like a morning breeze/m);
@@ -140,7 +162,7 @@ test('September 27 photographic direction is restored; guide and notes keep thei
  assert.match(zhPreset,/^Mood cue: Like a morning breeze/m,'a localised preset is cued in English');
  const own=prompt({...s,intention:'In a tea room at dusk.'});
  assert.match(own,/Creative note: In a tea room at dusk\.\nIf the creative note names a place, season or light, follow the note over the setting and the draft's lighting\./);
- assert.match(own,/Keep the overall lighting and atmosphere; let local shadows and reflections follow the real forms/);
+ assert.match(own,/relight everything with one broad side light and weaker room bounce/);
  assert.doesNotMatch(plain,/unless the creative note/);
  const night=prompt({...s,scene:'night',mood:'春意'});
  assert.match(night,/Mood: Spring — fresh, delicate spring colour under quiet evening light\./);
@@ -159,7 +181,7 @@ test('the detail phrase follows the materials: petals for flowers, leaves and ba
 
 test('app.js builds the prompt once, with the preset cue and the zip-only guide sentence',()=>{
  const source=readFileSync(`${dist}app.js`,'utf8');
- assert.match(source.match(/^import .* from '\.\/prompt\.js[^']*';$/m)?.[0]||'',/^import \{buildPrompt,[^}]*\} from '\.\/prompt\.js\?v=sep27-1';$/,'app.js imports prompt.js with the shared specifier');
+ assert.match(source.match(/^import .* from '\.\/prompt\.js[^']*';$/m)?.[0]||'',/^import \{buildPrompt,[^}]*\} from '\.\/prompt\.js\?v=realism1';$/,'app.js imports prompt.js with the shared specifier');
  assert.ok(source.includes('presetNote:intentionPresets.includes(s.intention)?intentionPresets[1]:false'),'an untouched preset note goes in as its English text');
  assert.ok(source.includes('{guide:true,format}'),'the shared zip builder uses the selected format and mentions the guide');
  assert.equal(source.match(/buildPrompt\(/g).length,1,'one call site (promptFor)');

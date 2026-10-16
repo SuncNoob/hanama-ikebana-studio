@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import {LIGHTS,LIGHT_KEYS,lightOf,lightWorkSize,paintLightAmbient,lightPatch,screenLightPatch,paintLight} from '../dist/ambience.js?v=hn3';
 import {HORIZON,LIGHT} from '../dist/compositor.js?v=quiet2';
 import {compositorLayerPlan} from '../dist/compositor-project.js?v=hn3';
-import {buildPrompt} from '../dist/prompt.js?v=sep27-1';
+import {buildPrompt} from '../dist/prompt.js?v=realism1';
 import {assetById,studies,studyState,initial,scenes,dist} from './helpers/catalog.mjs';
 
 /** A 2D context stand-in that records what is drawn (tests never load a real canvas). */
@@ -114,9 +114,9 @@ test('compositor: the light layer sits right above the plain scene and its groun
  assert.ok(LIGHT.dir[0]>0,'the key light still comes from the upper left');
 });
 
-test('prompt: every canvas light uses September 27 natural shadow reconstruction, without invented window patches',()=>{
+test('prompt: every canvas light uses coherent photographic reconstruction, without invented window patches',()=>{
  const s=studyState(studies.find(st=>st.id==='cherry'),'en'),plain=buildPrompt(s,assetById,scenes);
- const naturalLight='Keep the overall lighting and atmosphere; let local shadows and reflections follow the real forms.';
+ const naturalLight="Keep the setting's tone, but relight everything with one broad side light and weaker room bounce.";
  assert.ok(plain.includes(naturalLight));assert.doesNotMatch(plain,/^Light:/m);
  for(const key of LIGHT_KEYS){
   const text=buildPrompt({...s,light:key},assetById,scenes);
