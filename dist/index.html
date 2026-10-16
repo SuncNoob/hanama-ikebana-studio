@@ -30,8 +30,9 @@
 <link rel="stylesheet" href="/style.css?v=hn3">
 <link rel="stylesheet" href="/material-drawer.css?v=hn3">
 <link rel="stylesheet" href="/ui-polish.css?v=light1">
-<link rel="stylesheet" href="/game-atmosphere.css?v=4">
-<script type="module" src="/app.js?v=quiet4">
+<link rel="stylesheet" href="/game-atmosphere.css?v=5">
+<link rel="stylesheet" href="/background-choices.css?v=1">
+<script type="module" src="/app.js?v=restore1">
 </script>
 </head>
 <body>
@@ -316,13 +317,16 @@
 </div>
 <div class="stage-bottom">
 <div class="scene-picker" role="group" aria-label="背景" data-aria-zh="背景" data-aria-en="Background">
-<span data-zh="光与景" data-en="Light & Scene">光与景</span>
-<button type="button" data-scene="paper" class="scene-dot paper active" aria-pressed="true" aria-label="素纸背景" title="素纸" data-aria-zh="素纸背景" data-aria-en="Paper background" data-title-zh="素纸" data-title-en="Paper">
-</button>
-<button type="button" data-scene="stone" class="scene-dot stone" aria-pressed="false" aria-label="青灰背景" title="青灰" data-aria-zh="青灰背景" data-aria-en="Stone background" data-title-zh="青灰" data-title-en="Stone">
-</button>
-<button type="button" data-scene="night" class="scene-dot night" aria-pressed="false" aria-label="墨夜背景" title="墨夜" data-aria-zh="墨夜背景" data-aria-en="Night background" data-title-zh="墨夜" data-title-en="Night">
-</button>
+<span data-zh="背景 · 9 款" data-en="Backgrounds · 9" data-ja="背景 · 9種">背景 · 9 款</span>
+<button type="button" data-scene="paper" class="scene-choice" aria-pressed="true" title="杏粉花房" data-title-zh="杏粉花房" data-title-en="Apricot" data-title-ja="杏色の部屋"><img src="/assets/editorial/room-blush.webp" alt="" loading="lazy" decoding="async"><span data-zh="杏粉花房" data-en="Apricot" data-ja="杏色の部屋">杏粉花房</span></button>
+<button type="button" data-scene="stone" class="scene-choice" aria-pressed="false" title="象牙花房" data-title-zh="象牙花房" data-title-en="Ivory" data-title-ja="象牙の部屋"><img src="/assets/editorial/room-ivory.webp" alt="" loading="lazy" decoding="async"><span data-zh="象牙花房" data-en="Ivory" data-ja="象牙の部屋">象牙花房</span></button>
+<button type="button" data-scene="night" class="scene-choice" aria-pressed="false" title="梅紫花房" data-title-zh="梅紫花房" data-title-en="Plum" data-title-ja="梅紫の部屋"><img src="/assets/editorial/room-plum.webp" alt="" loading="lazy" decoding="async"><span data-zh="梅紫花房" data-en="Plum" data-ja="梅紫の部屋">梅紫花房</span></button>
+<button type="button" data-scene="atelier-milk" class="scene-choice" aria-pressed="false" title="奶油和室" data-title-zh="奶油和室" data-title-en="Cream" data-title-ja="乳白の和室"><img src="/assets/atelier/room-milk.webp" alt="" loading="lazy" decoding="async"><span data-zh="奶油和室" data-en="Cream" data-ja="乳白の和室">奶油和室</span></button>
+<button type="button" data-scene="atelier-sage" class="scene-choice" aria-pressed="false" title="青绿和室" data-title-zh="青绿和室" data-title-en="Sage" data-title-ja="若草の和室"><img src="/assets/atelier/room-sage.webp" alt="" loading="lazy" decoding="async"><span data-zh="青绿和室" data-en="Sage" data-ja="若草の和室">青绿和室</span></button>
+<button type="button" data-scene="atelier-moon" class="scene-choice" aria-pressed="false" title="月夜和室" data-title-zh="月夜和室" data-title-en="Moonlit" data-title-ja="月夜の和室"><img src="/assets/atelier/room-moon.webp" alt="" loading="lazy" decoding="async"><span data-zh="月夜和室" data-en="Moonlit" data-ja="月夜の和室">月夜和室</span></button>
+<button type="button" data-scene="classic-paper" class="scene-choice" aria-pressed="false" title="素纸" data-title-zh="素纸" data-title-en="Paper" data-title-ja="素紙"><i aria-hidden="true"></i><span data-zh="素纸" data-en="Paper" data-ja="素紙">素纸</span></button>
+<button type="button" data-scene="classic-stone" class="scene-choice" aria-pressed="false" title="青灰" data-title-zh="青灰" data-title-en="Stone" data-title-ja="青灰"><i aria-hidden="true"></i><span data-zh="青灰" data-en="Stone" data-ja="青灰">青灰</span></button>
+<button type="button" data-scene="classic-night" class="scene-choice" aria-pressed="false" title="墨夜" data-title-zh="墨夜" data-title-en="Ink night" data-title-ja="墨夜"><i aria-hidden="true"></i><span data-zh="墨夜" data-en="Ink night" data-ja="墨夜">墨夜</span></button>
 <div class="light-picker">
 <button type="button" id="light-button" class="light-chip" aria-haspopup="true" aria-expanded="false" aria-controls="light-menu" aria-label="窗光：无" title="窗光与时辰"><span class="light-chip-mark" aria-hidden="true"></span><span data-zh="光" data-en="Light" data-ja="光">光</span><b id="light-name" class="light-chip-name"></b></button>
 <div id="light-menu" class="light-menu" role="group" aria-label="窗光" data-aria-zh="窗光" data-aria-en="Window light" data-aria-ja="窓の光" hidden>

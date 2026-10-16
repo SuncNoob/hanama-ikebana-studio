@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
-import {dimensions,vesselGeometry,warpY,flexExtent} from './geometry.js?v=organic3';
+import {dimensions,vesselGeometry,warpY,flexExtent} from './geometry.js?v=restore1';
 import {hasFlex,createFlexChain,flexGrid} from './flex.js?v=1';
 import {applyLocalCut} from './local-cut.js?v=31';
 import {naturalStemRoutesV1,naturalStemRoutes,stemRoots,stemPath} from './natural-stems.js?v=hn2';
 import {seatClip,vesselFoot,seatState,stemWidthCm,isKenzan,isDetachedPiece,KENZAN,kenzanHolders,kenzanPins,onHolder} from './scale.js?v=hn3';
 import {stemMmOf} from './botany.js?v=hn2';
 import {lightOf,paintLight} from './ambience.js?v=hn3';
-import {paintOrganicRoom,paintOrganicGround} from './organic-room.js';
+import {paintOrganicRoom,paintOrganicGround,isNightScene} from './organic-room.js?v=restore1';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
@@ -524,8 +524,8 @@ function softEllipse(ctx,x,y,rx,ry,blur,color){
  */
 export function paintGroundPass(ctx,size,s,assets,images){
  const vessel=assets[s.vessel];if(!vessel)return;
- if(['generated-atelier','generated-editorial'].includes(vessel.source)){paintOrganicGround(ctx,size,vessel,s.scene==='night');return;}
- const night=s.scene==='night',k=size/100,foot=vesselFoot(vessel);
+ if(['generated-atelier','generated-editorial'].includes(vessel.source)){paintOrganicGround(ctx,size,vessel,isNightScene(s.scene));return;}
+ const night=isNightScene(s.scene),k=size/100,foot=vesselFoot(vessel);
  softEllipse(ctx,(foot.cx+1.2)*k,(foot.bottom-.4)*k,foot.half*1.15*k,Math.max(.8,foot.arc*1.3)*k,size*.024,night?'#07100b2e':'#2f332b1f');
  // The foot ring seen from above the table is an ellipse whose front edge is the vessel's lowest point: centred a little
  // above it, so the shadow hugs the foot instead of lying in front of it like a dish.
@@ -541,7 +541,7 @@ export function paintVesselLayer(ctx,size,s,assets,images,{ground=true,fixture=t
  const vessel=assets[s.vessel],img=images[s.vessel];if(!vessel)return;
  if(ground)paintGroundPass(ctx,size,s,assets,images);
  if(img)ctx.drawImage(img,...vesselRect(vesselGeometry(vessel),size));
- if(fixture)paintFixture(ctx,size,vessel,{night:s.scene==='night'});
+ if(fixture)paintFixture(ctx,size,vessel,{night:isNightScene(s.scene)});
 }
 /** How far above an opening its back lip may rise (cm): a stem entering the mouth passes in front of it. */
 const LIP_CM=.5;
@@ -694,7 +694,7 @@ function veilSubmerged(ctx,size,s,seat,assets,img,g,{night,getSprite,createCanva
  */
 export function paintKenzanPass(ctx,size,s,assets,images,{seats=null,side='front',getSprite=null,createCanvas=null}={}){
  const vessel=assets[s.vessel],list=(seats||kenzanSeats(s,assets,getSprite))[side]||[];if(!vessel||!list.length)return 0;
- const g=vesselGeometry(vessel),k=size/100,night=s.scene==='night',img=images?.[s.vessel],thin=size<360;
+ const g=vesselGeometry(vessel),k=size/100,night=isNightScene(s.scene),img=images?.[s.vessel],thin=size<360;
  for(const seat of list){
   const opening=g.openings[seat.opening]||g.openings[0];
   ctx.save();ctx.beginPath();traceOpening(ctx,size,opening);ctx.clip();
@@ -721,7 +721,7 @@ export function paintKenzanPass(ctx,size,s,assets,images,{seats=null,side='front
  * over them. The stage paints the same order by lifting #fixture-layer under #interior-layer on a kenzan.
  */
 export function paintInsertedPass(ctx,size,s,assets,images,getSprite,{clips=null,seats=null,look=null,createCanvas=null}={}){
- const vessel=assets[s.vessel],night=s.scene==='night';if(!vessel)return 0;
+ const vessel=assets[s.vessel],night=isNightScene(s.scene);if(!vessel)return 0;
  if(!isKenzan(vessel)){const n=paintInteriorPass(ctx,size,s,assets,getSprite,{look,clips});paintFixture(ctx,size,vessel,{night,createCanvas});return n}
  paintFixture(ctx,size,vessel,{night,createCanvas});
  const n=paintInteriorPass(ctx,size,s,assets,getSprite,{look,clips});
@@ -729,7 +729,7 @@ export function paintInsertedPass(ctx,size,s,assets,images,getSprite,{clips=null
  return n;
 }
 export function paintSceneFinish(ctx,size,s){
- const night=s.scene==='night';
+ const night=isNightScene(s.scene);
  const vignette=ctx.createRadialGradient(size*.5,size*.45,size*.42,size*.5,size*.48,size*.78);vignette.addColorStop(.55,'#00000000');vignette.addColorStop(1,night?'#05090628':'#26302410');ctx.fillStyle=vignette;ctx.fillRect(0,0,size,size);
 }
 /**
@@ -772,7 +772,7 @@ const GUIDE_TONE=.62*.72;
 /** Exact silhouette and layer map; it never invents a direction or endpoint. Stems behind the vessel are hidden by its
  silhouette (except where they enter the openings), so the faded vessel reads in front of them as in the draft. */
 export function paintCompositionGuide(ctx,size,s,assets,scenes,getSprite,images,createCanvas=browserCanvas){
- const colors=scenes[s.scene],night=s.scene==='night',bg=ctx.createLinearGradient(0,0,size,size);bg.addColorStop(0,colors[0]);bg.addColorStop(1,colors[1]);ctx.fillStyle=bg;ctx.fillRect(0,0,size,size);
+ const colors=scenes[s.scene],night=isNightScene(s.scene),bg=ctx.createLinearGradient(0,0,size,size);bg.addColorStop(0,colors[0]);bg.addColorStop(1,colors[1]);ctx.fillStyle=bg;ctx.fillRect(0,0,size,size);
  ctx.fillStyle=night?'#10171320':'#ffffff66';ctx.fillRect(0,0,size,size);ctx.fillStyle=night?'#17211c66':'#bfc2b744';ctx.fillRect(0,size*.8,size,size*.2);
  const vessel=images[s.vessel],rect=vesselRect(vesselGeometry(assets[s.vessel]),size),n=Math.max(1,s.items.length);
  const back=s.items.filter(i=>!i.aboveVessel),front=s.items.filter(i=>i.aboveVessel);

@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {arrangementRecipe,immersionCm,recipeLines,recipeText,recipeLabel,RECIPE_TEXT,groupText,placeText,KENZAN_DIP} from '../dist/recipe.js?v=hn3';
 import {isKenzan,crownPoint} from '../dist/scale.js?v=hn3';
-import {vesselGeometry} from '../dist/geometry.js?v=organic3';
+import {vesselGeometry} from '../dist/geometry.js?v=restore1';
 import {assetById,studies,studyState,initial} from './helpers/catalog.mjs';
 
 const LANGS=['zh','en','ja'];

@@ -34,7 +34,18 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  const hint=document.createElement('p');hint.className='game-instruction';
  const fallbackAdjust=document.createElement('button');fallbackAdjust.type='button';fallbackAdjust.id='atelier-fallback-adjust';
  secondary.prepend(fallbackAdjust);
- for(const id of ['redo-button','layers-tool','guide-button'])$('.atelier-advanced-tools',panel).append($('#'+id));
+ for(const id of ['layers-tool','guide-button'])$('.atelier-advanced-tools',panel).append($('#'+id));
+ const lengthButton=document.createElement('button');lengthButton.type='button';lengthButton.id='atelier-length';lengthButton.className='icon-button';lengthButton.setAttribute('aria-controls','atelier-length-panel');lengthButton.setAttribute('aria-expanded','false');
+ lengthButton.innerHTML='<span aria-hidden="true" class="atelier-length-icon">↕</span><span class="atelier-length-label"></span>';
+ $('.stage-tools').insertBefore(lengthButton,$('#undo-button'));
+ const lengthPanel=document.createElement('div');lengthPanel.id='atelier-length-panel';lengthPanel.className='atelier-length-panel';lengthPanel.hidden=true;
+ const lengthClose=document.createElement('button');lengthClose.type='button';lengthClose.className='atelier-length-close';lengthClose.textContent='×';
+ lengthPanel.append($('#length').closest('.range-control'),lengthClose);panel.append(lengthPanel);
+ // Background and every light stay directly available when the atmosphere panel opens.
+ const fine=$('.atelier-fine'),fineContent=document.createElement('div');fineContent.className='atelier-fine';fineContent.innerHTML='<p class="atelier-fine-label"></p>';
+ while(fine.children.length>1)fineContent.append(fine.children[1]);fine.replaceWith(fineContent);
+ $('.atelier-atmosphere-panel').insertBefore($('.atelier-scene-slot'),$('.atelier-presets'));
+ const atmosphereClose=document.createElement('button');atmosphereClose.type='button';atmosphereClose.className='atelier-atmosphere-close';atmosphereClose.textContent='×';atmosphereClose.onclick=()=>{$('#atelier-atmosphere').open=false;$('#atelier-atmosphere>summary').focus()};$('.atelier-atmosphere-panel').prepend(atmosphereClose);
  secondary.append($('.zoom-controls'));
  const inspector=$('.design-panel');
  const closeInspector=document.createElement('button');closeInspector.className='atelier-inspector-close';closeInspector.type='button';closeInspector.textContent='×';inspector.prepend(closeInspector);
@@ -67,8 +78,16 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  function announce(text){clearTimeout(feedbackTimer);feedback.textContent=text;feedback.classList.add('visible');feedbackTimer=setTimeout(()=>feedback.classList.remove('visible'),1800);}
  function closeMenus(except){document.querySelectorAll('.atelier-disclosure').forEach(d=>{if(d!==except)d.open=false;});}
  function setInspector(open,tab='shape'){
-  if(open){closeMenus();$('#quick-material-close').click();if(!$('#layer-menu').hidden)$('#close-layers').click();$('.editor-tabs [data-editor-tab="'+tab+'"]',inspector)?.click();}
+  if(open){setLength(false);closeMenus();$('#quick-material-close').click();if(!$('#layer-menu').hidden)$('#close-layers').click();$('.editor-tabs [data-editor-tab="'+tab+'"]',inspector)?.click();}
   document.body.classList.toggle('atelier-inspector-open',open);$('#atelier-adjust').setAttribute('aria-expanded',String(open));
+ }
+ function setLength(open){
+  if(open){
+   onAction?.('move');if(!$('.stem.selected',stage)){const target=lastFrame?.nodes.filter(n=>n.interactive).at(-1)?.id||$('.stem',stage)?.dataset.id;if(!target)return;onEvent({type:'select',id:target});}
+   closeMenus();setInspector(false);$('#quick-material-close').click();if(!$('#layer-menu').hidden)$('#close-layers').click();
+  }
+  lengthPanel.hidden=!open;lengthButton.setAttribute('aria-expanded',String(open));
+  if(open)$('#length').focus({preventScroll:true});
  }
  function updateControls(){
   $('#game-motion').setAttribute('aria-pressed',String(settings.motion&&!reduced.matches));$('#game-sound').setAttribute('aria-pressed',String(sound));
@@ -87,15 +106,17 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  }
  function language(){
   $('.atelier-atmosphere-label').textContent=words('光景','Light','光と景');$('.atelier-work-label').textContent=words('作品','Keep','作品');
+ atmosphereClose.setAttribute('aria-label',words('收起光景','Close light and backgrounds','光と景を閉じる'));
   flowerLabel.textContent=words('花材','Flowers','花材');
   $('#atelier-gallery').textContent=words('我的作品','My works','自分の作品');$('#atelier-book').textContent=words('灵感手帖','Inspiration book','インスピレーション');
-  for(const [id,label] of [['redo-button',words('重做','Redo','やり直す')],['layers-tool',words('花材列表','Flower list','花材の一覧')],['guide-button',words('构图参考','Composition guide','構図ガイド')]]){
+  for(const [id,label] of [['undo-button',words('撤销','Undo','戻す')],['redo-button',words('重做','Redo','やり直す')],['layers-tool',words('花材列表','Flower list','花材の一覧')],['guide-button',words('构图参考','Composition guide','構図ガイド')]]){
    let text=$('.atelier-tool-name',$('#'+id));if(!text){text=document.createElement('span');text.className='atelier-tool-name';$('#'+id).append(text);}text.textContent=label;
   }
   const labels={morning:words('窗边','Window','窓辺'),shade:words('阴日','Overcast','曇り'),dusk:words('夕照','Evening','夕映え'),moon:words('月色','Moon','月影')};
   document.querySelectorAll('[data-atmosphere]').forEach(b=>$('span',b).textContent=labels[b.dataset.atmosphere]);
   $('.atelier-presets').setAttribute('aria-label',words('自然光景','Natural atmospheres','自然な光と景'));
-  $('.atelier-fine-label').textContent=words('细调','Fine tune','微調整');$('.atelier-studies-label').textContent=words('从一幅花景开始','Begin from a study','花景の作例から');
+  $('.atelier-fine-label').textContent=words('光照调整','Light settings','光の調整');$('.atelier-studies-label').textContent=words('从一幅花景开始','Begin from a study','花景の作例から');
+  $('.atelier-length-label').textContent=words('枝长','Length','茎の長さ');lengthButton.title=words('拉伸枝干','Stretch the stem','茎を伸ばす');lengthButton.setAttribute('aria-label',lengthButton.title);lengthClose.setAttribute('aria-label',words('收起枝长','Close stem length','茎の長さを閉じる'));
   $('.atelier-more-label').textContent=words('更多','More','その他');$('#atelier-image-pack').textContent=words('准备 AI 生图包 ↗','Prepare an AI image pack ↗','AI生成用パック ↗');
   $('.light-direction-label').textContent=words('光从哪里来','Light direction','光の向き');$('.light-power-label').textContent=words('光的浓淡','Light presence','光の濃さ');
   hint.textContent=active?words('拖花头弯枝 · 拖根部移动','Pull the flower to bend · move at its base','花先で曲げる・根元で移動'):words('拖花头转向 · 拖根部移动','Drag the flower to turn · move at its base','花先で向きを調整・根元で移動');
@@ -163,16 +184,17 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  fallbackAdjust.onclick=()=>setInspector(!document.body.classList.contains('atelier-inspector-open'));
  closeInspector.onclick=()=>{setInspector(false);$('#atelier-work>summary').focus({preventScroll:true});};
  $('#atelier-image-pack').onclick=()=>setInspector(true,'create');
+ lengthButton.onclick=()=>setLength(lengthPanel.hidden);lengthClose.onclick=()=>{setLength(false);lengthButton.focus({preventScroll:true});};
  $('#atelier-gallery').onclick=()=>{closeMenus();$('.main-nav [data-view="gallery"]').click();};
  $('#atelier-book').onclick=()=>{closeMenus();$('.main-nav [data-view="inspiration"]').click();};
- $('#quick-material-open').addEventListener('click',()=>{closeMenus();setInspector(false);});
+ $('#quick-material-open').addEventListener('click',()=>{setLength(false);closeMenus();setInspector(false);});
  $('#layers-tool').addEventListener('click',()=>{closeMenus();setInspector(false);});
  for(const id of ['prune-tool','erase-tool']){
   // A first click is immediately usable; the pressed tool is the only mode indicator.
   $('#'+id).addEventListener('click',()=>{if(!$('.stem.selected',stage)){const target=lastFrame?.nodes.filter(n=>n.interactive).at(-1)?.id||$('.stem',stage)?.dataset.id;if(target)onEvent({type:'select',id:target});}},true);
-  $('#'+id).addEventListener('click',()=>{closeMenus();setInspector(false);if(active)canvas.focus({preventScroll:true});});
+  $('#'+id).addEventListener('click',()=>{setLength(false);closeMenus();setInspector(false);if(active)canvas.focus({preventScroll:true});});
  }
- document.querySelectorAll('.atelier-disclosure').forEach(d=>d.addEventListener('toggle',()=>{if(d.open){closeMenus(d);setInspector(false);}}));
+ document.querySelectorAll('.atelier-disclosure').forEach(d=>d.addEventListener('toggle',()=>{if(d.open){setLength(false);closeMenus(d);setInspector(false);}}));
  document.addEventListener('pointerdown',e=>{if(!e.target.closest('.atelier-disclosure'))closeMenus();});
  $('#language-select').addEventListener('change',language);
  $('#game-motion').onclick=()=>{settings.motion=!settings.motion;persist();present();updateControls();};
@@ -182,6 +204,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  $('#game-photo').onclick=()=>photo(!settings.photo);
  $('#game-capture').onclick=()=>{if(!active||busy||capturePending)return;capturePending=true;updateControls();closeMenus();captureTimer=setTimeout(()=>finishCapture({type:'capture-error'}),15000);instance.SendMessage('HanamaGame','Capture','');};
  document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!lengthPanel.hidden){e.preventDefault();setLength(false);lengthButton.focus({preventScroll:true});return;}
   if(e.key==='Escape'&&document.body.classList.contains('atelier-inspector-open')&&!e.target.closest('dialog')){e.preventDefault();setInspector(false);return;}
   const cancel=e.key==='Escape'||((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&busy);if(!cancel||e.target.closest('input,textarea,select,dialog'))return;
   if(active&&busy){e.preventDefault();e.stopImmediatePropagation();instance.SendMessage('HanamaGame','CancelGesture','');}

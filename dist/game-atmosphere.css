@@ -176,3 +176,39 @@ body.atelier-simple{background:#f0f1ea;color:var(--atelier-ink)}
  .atelier-simple #studio-view>.workspace{padding-top:6px;padding-bottom:8px}
  .atelier-popover{max-height:calc(100dvh - 75px)}
 }
+
+/* Keep the full editing kit within reach without covering the flowers. */
+.atelier-simple #studio-view .atelier-tool-slot .stage-tools :is(#atelier-length,#undo-button,#redo-button){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
+.atelier-tool-slot .atelier-tool-name,.atelier-length-label,.atelier-simple .atelier-tool-slot .prune-tool-label{display:block;max-width:42px;font-size:10px;line-height:1.2;white-space:nowrap}
+.atelier-length-icon{font-size:20px;line-height:18px}
+.atelier-simple #studio-view .atelier-tool-slot #atelier-length[aria-expanded=true]{background:#405b3e;color:white}
+.atelier-length-panel{position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);z-index:825;width:min(440px,100%);padding:14px 58px 12px 17px;border:1px solid #d6dfcd;border-radius:12px;background:#fafcf6f5;box-shadow:0 10px 35px #30472a1c;backdrop-filter:blur(12px)}
+.atelier-length-panel .range-control{margin:0}.atelier-length-panel .slider-label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 5px;font-size:12px;color:#556a49}.atelier-length-panel output{font-size:11px;color:#879879}
+.atelier-length-panel .length-track{width:100%}.atelier-length-panel input{display:block;width:100%;height:40px;min-height:40px;accent-color:#6f895e}
+.atelier-length-close{position:absolute;top:10px;right:7px;display:grid;place-items:center;width:44px;height:44px;min-height:44px;border:0;border-radius:50%;background:transparent;color:#7f9271;font-size:23px}
+.atelier-length-close:hover{background:#e8efdf}
+.atelier-simple #atelier-atmosphere .atelier-fine{margin-top:12px;padding-top:10px}.atelier-fine-label{margin:0 0 9px;font-size:11px;color:#7e8c73}.atelier-simple #atelier-atmosphere .atelier-light{margin:8px 0 0}
+.atelier-simple #atelier-atmosphere .scene-picker{display:flex;flex-wrap:wrap;align-items:center;gap:8px;width:100%;margin:0 0 15px}
+.atelier-simple #atelier-atmosphere .scene-picker>span{flex-basis:100%;margin:0 0 3px;font-size:11px}
+.atelier-simple #atelier-atmosphere .scene-picker .light-picker{display:block!important;position:static;flex-basis:100%;margin-top:8px}
+.atelier-simple #atelier-atmosphere #light-button{display:none!important}
+.atelier-simple #atelier-atmosphere #light-menu{position:static!important;inset:auto!important;display:flex!important;flex-wrap:wrap;gap:5px;width:100%;min-width:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;transform:none}
+.atelier-simple #atelier-atmosphere #light-menu button{flex:1 1 auto;min-width:44px;min-height:44px;margin:0;padding:7px 8px;border:1px solid #dae2d1;border-radius:7px;background:#f1f5eb;color:#6a7e5d;font-size:11px;text-align:center}
+.atelier-simple #atelier-atmosphere #light-menu button[aria-pressed=true]{border-color:#819575;background:#e3ecd9;color:#405b35}
+.atelier-simple.game-photo-mode .atelier-length-panel{display:none!important}
+@media(max-width:900px){
+ :root{--atelier-size:min(1040px,max(240px,calc(100dvh - 190px)))}
+ .atelier-bench{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:2px 8px}
+ .atelier-tool-slot{grid-column:1/-1;grid-row:1;justify-content:center}
+ .atelier-simple #studio-view .atelier-tool-slot>.stage-tools{gap:10px}
+ .atelier-add-slot{grid-column:1;grid-row:2;justify-self:start}
+ #atelier-atmosphere{grid-column:2;grid-row:2;justify-self:center}
+ #atelier-work{grid-column:3;grid-row:2;justify-self:end}
+ .atelier-bench-space{display:none}
+ .atelier-length-panel{position:relative;bottom:auto;left:auto;transform:none;width:100%;margin:9px 0 0;box-shadow:none;padding-top:12px;padding-bottom:10px}
+ .atelier-simple.game-photo-mode .atelier-bench{display:flex;justify-content:flex-end}
+}
+@media(orientation:landscape) and (max-height:540px){
+ :root{--atelier-size:min(78vw,max(150px,calc(100dvh - 170px)))}
+ .atelier-length-panel{position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);margin:0;width:min(440px,calc(100vw - 24px));box-shadow:0 10px 35px #30472a1c}
+}

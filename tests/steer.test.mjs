@@ -9,7 +9,7 @@ import {
  mouthBase,mouthSpan,slideBase,besideBase,seatState,seatPoint,cutEnd,cutEndSource,anchorAt,pieceHead,reseatPiece,companionFit,companionClear,
  tipPoint,isKenzan,isDetachedPiece
 } from '../dist/scale.js?v=hn3';
-import {vesselGeometry,dimensions,sourceToStage,warpY} from '../dist/geometry.js?v=organic3';
+import {vesselGeometry,dimensions,sourceToStage,warpY} from '../dist/geometry.js?v=restore1';
 
 const near=(p,q,eps=1e-6)=>Math.hypot(p[0]-q[0],p[1]-q[1])<=eps;
 const distance=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]);

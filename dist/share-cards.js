@@ -5,7 +5,7 @@
  * same code runs in the browser and in node (tests/share-cards.test.mjs uses a recording context). Text is measured and
  * wrapped with ctx.measureText; CJK lines may break between any two characters, Latin lines only at spaces.
  */
-import {vesselGeometry} from './geometry.js?v=organic3';
+import {vesselGeometry} from './geometry.js?v=restore1';
 
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
 /** Characters a CJK line may not start with (kinsoku): they stay with the character before them. */

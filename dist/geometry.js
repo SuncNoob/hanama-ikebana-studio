@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** A specimen's original pixels are its editing coordinates. Only its lower stem stretches. */
 import {hasFlex,createFlexChain,bendPoint,unbendPoint} from './flex.js?v=1';
+import {normalizeStemSplit} from './stem-length.js';
 export const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 const vesselBounds=asset=>{
   const height=asset.height, width=height*asset.width/asset.heightPx;
@@ -47,7 +48,7 @@ function stemAnchor(asset,y){
  return path.at(-1)[1];
 }
 export function dimensions(item, asset) {
-  const split = asset.split ?? .5;
+  const split = normalizeStemSplit(item.stemSplit,item,asset) ?? asset.split ?? .5;
   const length = item.length ?? 1;
   const end = 1 - item.trim / 100;
   const height=warpY(end, split, length);

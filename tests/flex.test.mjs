@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {normalizeFlex,hasFlex,createFlexChain,bendPoint,unbendPoint,flexGrid} from '../dist/flex.js?v=1';
-import {dimensions,warpY,unwarpY,clamp,sourceToStage,stageToSource} from '../dist/geometry.js?v=organic3';
+import {dimensions,warpY,unwarpY,clamp,sourceToStage,stageToSource} from '../dist/geometry.js?v=restore1';
 const close=(actual,expected,tolerance=1e-9)=>actual.forEach((n,i)=>assert.ok(Math.abs(n-expected[i])<tolerance,`${actual} differs from ${expected}`));
 const asset={width:100,heightPx:240,anchor:.46,split:.55};
 const base={x:52,y:79,h:48,trim:10,length:1.3,angle:0,flip:false,cropAnchorY:1};

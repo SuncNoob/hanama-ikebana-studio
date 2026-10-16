@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
-import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow,paintLightPass,paintLightSilhouette} from './compositor.js?v=organic3';
+import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow,paintLightPass,paintLightSilhouette} from './compositor.js?v=restore1';
 import {LIGHTS,lightOf,lightPatch,lightWorkSize,paintLightAmbient} from './ambience.js?v=hn3';
 import {zipFiles,backupFiles,backupName,readBackup,keepIncoming,withTimeout,failedIds,BackupError,MAX_BACKUP_FILE} from './my-works.js?v=hn3';
 import {compositorLayerPlan,compositorManifest} from './compositor-project.js?v=hn3';
@@ -22,9 +22,9 @@ import {studies,studySeasons} from './studies.js?v=hn3';
 import {applyRealScale,sizeBounds,sizeRatioBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,besideBase,tipPoint,reach,stemUnit,stemTrimmed,spriteScale,stageCanvasSize,isKenzan,seatState,seatPoint,solveTo,slideBase,remapSeated,isDetachedPiece,cutEndSource,anchorAt,pieceHead,reseatPiece,companionClear,planSlot,slotState,guideRays,guideReading,fitToSlot,insertIndex} from './scale.js?v=hn3';
 import {stemMaxCm,roleOf,rolesOf,roleTip,roleLabel} from './botany.js?v=hn2';
 import {nameOf,colorOf,poseOf,displayPose,provenance,cardName,supportName,coverFor,matchesRole,sortByRole,roleGroups,sizeOf,sizeText,cardMeta,buildSearchIndex,emptyText,clearFiltersLabel,currentSeason,shiftSeason,seasonShiftOf,matchesSeason,seasonMark,seasonChip} from './library.js?v=hn3';
-import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints,flexExtent} from './geometry.js?v=organic3';
+import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints,flexExtent} from './geometry.js?v=restore1';
 import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=31';
-import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=hn2';
+import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=restore1';
 import {lightScenes} from './light-scenes.js';
 import {atelierCase} from './atelier-cases.js';
 import {createItem,stemVersion,buildStudyState,buildDemoItems} from './study-state.js?v=hn3';
@@ -32,9 +32,10 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=4';
+import {mountUnityGame} from './atelier.js?v=5';
 import {normalizeFlex} from './flex.js?v=1';
-import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms} from './organic-room.js';
+import {stemLengthRatio,setStemLength,normalizeStemSplit,supportsStemStretch,stemStretchSplit} from './stem-length.js';
+import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene} from './organic-room.js?v=restore1';
 let gameBridge=null;
 const $ = (s,root=document) => root.querySelector(s);
 const $$ = (s,root=document) => [...root.querySelectorAll(s)];
@@ -177,7 +178,7 @@ function validate(v,{lenient=false,report=null}={}){
   });
   const originId=typeof i.originId==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(i.originId)?i.originId:null;
   const pieceLabel=typeof i.pieceLabel==='string'&&/^[AB12]{1,8}$/.test(i.pieceLabel)?i.pieceLabel:'';
-  return makeItem(i.type,{id:itemId,x:clamp(i.x,5,95),y:clamp(i.y,15,95),h:clamp(i.h,2,95),angle:clamp(i.angle,-180,180),trim:clamp(i.trim,0,60),flip:!!i.flip,length:clamp(Number.isFinite(i.length)?i.length:1,...lengthBounds(assetById[i.type],clamp(i.h,2,95),clamp(i.trim,0,60))),cuts,segments,localCuts,originId,pieceLabel,...(Array.isArray(i.flex)&&i.flex.length?{flex:normalizeFlex(i.flex)}:{}),aboveVessel:!!i.aboveVessel,cropAnchorY:clamp(Number.isFinite(i.cropAnchorY)?i.cropAnchorY:1,0,1),cropAnchorSourceY:Number.isFinite(i.cropAnchorSourceY)?clamp(i.cropAnchorSourceY,0,1):null,sv:stemVersion({sv:i.sv,cuts,segments,localCuts})});
+  return makeItem(i.type,{id:itemId,x:clamp(i.x,5,95),y:clamp(i.y,15,95),h:clamp(i.h,2,95),angle:clamp(i.angle,-180,180),trim:clamp(i.trim,0,60),flip:!!i.flip,length:clamp(Number.isFinite(i.length)?i.length:1,...lengthBounds(assetById[i.type],clamp(i.h,2,95),clamp(i.trim,0,60))),cuts,segments,localCuts,originId,pieceLabel,...(normalizeStemSplit(i.stemSplit,i,assetById[i.type])!==null?{stemSplit:normalizeStemSplit(i.stemSplit,i,assetById[i.type])}:{}),...(Array.isArray(i.flex)&&i.flex.length?{flex:normalizeFlex(i.flex)}:{}),aboveVessel:!!i.aboveVessel,cropAnchorY:clamp(Number.isFinite(i.cropAnchorY)?i.cropAnchorY:1,0,1),cropAnchorSourceY:Number.isFinite(i.cropAnchorSourceY)?clamp(i.cropAnchorSourceY,0,1):null,sv:stemVersion({sv:i.sv,cuts,segments,localCuts})});
  },{lenient,report})};
 }
 let state=initial(),selected=null,category='flowers',familyFilter='atelier',colorFilter='all',vesselFilter='all',undoStack=[],redoStack=[],toastTimer,images={},galleryUrls=[],importArtFor=null,drag=null,gesture=null,canvasPan=null,zoomLevel=1,zoomPanX=0,zoomPanY=0,editMode='move',stroke=null,cutSession=null,layerDragId=null,suppressLayerContextUntil=0,touchHintShown=false;
@@ -307,7 +308,7 @@ function dropSprite(id){const entry=spriteCache.get(id);if(!entry)return;spriteC
 /** Cached, resolution-budgeted sprite for one stem (LRU, about 40 entries; evicted canvases are zeroed so iOS frees them). */
 function specimenCanvas(item){
  const img=images[item.type],a=assetById[item.type];if(!img||!a)return null;
- const k=spriteScale(item,a,img.naturalWidth||img.width,img.naturalHeight||img.height),key=`${item.type}|${item.length}|${item.trim}|${k}|${item.sv}|${cutsKey(item.cuts)}|${cutsKey(item.segments)}|${cutsKey(item.localCuts)}`;
+ const k=spriteScale(item,a,img.naturalWidth||img.width,img.naturalHeight||img.height),key=`${item.type}|${item.length}|${item.stemSplit??''}|${item.trim}|${k}|${item.sv}|${cutsKey(item.cuts)}|${cutsKey(item.segments)}|${cutsKey(item.localCuts)}`;
  const cached=spriteCache.get(item.id);
  if(cached?.key===key){spriteCache.delete(item.id);spriteCache.set(item.id,cached);return cached.canvas}
  let canvas=null;try{canvas=composeSpecimen(img,item,a,null,undefined,k)}catch(err){canvasTrouble(err)}
@@ -374,11 +375,11 @@ function renderVesselLayers(){
  if(vesselLayersFrame){cancelAnimationFrame(vesselLayersFrame);vesselLayersFrame=0}
  const stageEl=$('#stage');if(!stageEl)return;
  const cssSize=Math.max(1,Math.round(stageEl.getBoundingClientRect().width)),density=Math.min(2,window.devicePixelRatio||1),size=Math.max(1,Math.min(LAYER_MAX,Math.round(cssSize*density)));
- const vessel=assetById[state.vessel],night=state.scene==='night',vesselReady=!!images[state.vessel];
+ const vessel=assetById[state.vessel],night=isNightScene(state.scene),vesselReady=!!images[state.vessel];
  if(!vessel)return;
  if(!vesselReady)ensureAsset(state.vessel).then(scheduleVesselLayers).catch(()=>{});
  const scene=$('#scene-layer'),sceneSize=Math.min(SCENE_MAX,size),sceneKey=`${sceneSize}|${state.vessel}|${state.scene}|${vesselReady}|${lightOf(state.light)||''}`;
- if(scene&&sceneKey!==sceneLayerKey){const ctx=layerContext(scene,sceneSize);if(ctx){paintSceneBackground(ctx,sceneSize,state,scenes);paintLightAmbient(ctx,sceneSize,state.light,{night:state.scene==='night'});paintGroundPass(ctx,sceneSize,state,assetById,images);paintSceneFinish(ctx,sceneSize,state);sceneLayerKey=sceneKey;stageEl.classList.add('scene-painted')}else{sceneLayerKey='';stageEl.classList.remove('scene-painted')}}
+ if(scene&&sceneKey!==sceneLayerKey){const ctx=layerContext(scene,sceneSize);if(ctx){paintSceneBackground(ctx,sceneSize,state,scenes);paintLightAmbient(ctx,sceneSize,state.light,{night:isNightScene(state.scene)});paintGroundPass(ctx,sceneSize,state,assetById,images);paintSceneFinish(ctx,sceneSize,state);sceneLayerKey=sceneKey;stageEl.classList.add('scene-painted')}else{sceneLayerKey='';stageEl.classList.remove('scene-painted')}}
  const fixture=$('#fixture-layer'),fixtureKey=`${size}|${state.vessel}|${state.scene}`;
  if(fixture&&fixtureKey!==fixtureLayerKey){const ctx=layerContext(fixture,size);if(ctx){paintFixture(ctx,size,vessel,{night});fixtureLayerKey=fixtureKey}}
  // On a kenzan the holder lies under the stems standing on it (CSS lifts #fixture-layer under #interior-layer); the pins
@@ -496,12 +497,12 @@ function renderSizeControls(i,a=assetById[i.type]){
   const track=length.parentElement;track.style.setProperty('--cap',String(Math.round(cap/Math.max(1,top)*1e4)/1e4));track.classList.toggle('past-cap',top>cap+.5);
   pastCap=keptStemCm(i)!==null&&stemCm(i,a)>cap+.5;
  }
- else{length.min=60;length.max=240;length.step=5;length.disabled=false;length.value=Math.round((i.length??1)*100);$('#length-value').value=Math.round((i.length??1)*100)+'%';length.parentElement.classList.remove('past-cap')}
+ else{const ratio=stemLengthRatio(i,a);length.min=60;length.max=240;length.step=5;length.disabled=supportsStemStretch(a)&&stemStretchSplit(i,a)===null;length.value=Math.round(ratio*100);$('#length-value').value=Math.round(ratio*100)+'%';length.parentElement.classList.remove('past-cap')}
  const total=Math.round(itemCm(i,a)),vessel=Math.round(vesselGeometry(assetById[state.vessel]).height);
  // Screen readers hear the size and length in centimetres as well as the slider's position (A15).
  const pct=Math.round(i.h/a.height*100);size.setAttribute('aria-valuetext',L(`约 ${total} cm · ${pct}%`,`about ${total} cm · ${pct}%`,`約${total} cm · ${pct}%`));
  if(drawsStem(a)){const cm=Math.round(stemCm(i,a));length.setAttribute('aria-valuetext',L(`茎 +${cm} cm · 全长约 ${total} cm`,`stem +${cm} cm · whole stem about ${total} cm`,`茎 +${cm} cm · 全長 約${total} cm`))}
- else length.setAttribute('aria-valuetext',L(`约 ${total} cm · ${Math.round((i.length??1)*100)}%`,`about ${total} cm · ${Math.round((i.length??1)*100)}%`,`約${total} cm · ${Math.round((i.length??1)*100)}%`));
+ else length.setAttribute('aria-valuetext',L(`约 ${total} cm · ${Math.round(stemLengthRatio(i,a)*100)}%`,`about ${total} cm · ${Math.round(stemLengthRatio(i,a)*100)}%`,`約${total} cm · ${Math.round(stemLengthRatio(i,a)*100)}%`));
  $('#real-size').textContent=lang==='ja'?`この花材 約${total} cm · 花器の高さ 約${vessel} cm`:L(`此枝约 ${total} cm · 花器高约 ${vessel} cm`,`This stem ≈ ${total} cm · vessel ≈ ${vessel} cm tall`);
  $('#scale-warning').hidden=!outOfScale(i,a);
  const capNote=$('#stem-cap-warning');
@@ -718,22 +719,19 @@ function resetRealSize(){
 }
 function variantPicker(family,replaceId=null,preferredColor='all'){
  const selectedType=state.items.find(i=>i.id===replaceId)?.type;
- const allOptions=specimens.filter(a=>a.family===family&&(!bookSpecimens.includes(a)||a.id===selectedType)).sort((a,b)=>Number(isLibraryCurated(b))-Number(isLibraryCurated(a))||Number(b.source==='flower-book')-Number(a.source==='flower-book')||Number(legacyFlowers.includes(a))-Number(legacyFlowers.includes(b)));
+ const allOptions=librarySpecimens.filter(a=>a.family===family).sort((a,b)=>Number(isLibraryCurated(b))-Number(isLibraryCurated(a))||Number(legacyFlowers.includes(a))-Number(legacyFlowers.includes(b)));
  const colorOptions=preferredColor==='all'||replaceId?allOptions:allOptions.filter(a=>matchesMaterialColor(a,preferredColor));
  const options=colorOptions.length?colorOptions:allOptions;
  if(!options.length)return;
- const matched=options.filter(isLibraryCurated),primary=matched.length?matched:[options[0]],selectedPose=options.find(a=>a.id===selectedType);
- if(selectedPose&&!primary.includes(selectedPose))primary.push(selectedPose);
- const archived=options.filter(a=>!primary.includes(a));
  // Shape first (B8): each pose says what it looks like (displayPose); where its picture comes from is a small badge, and the
  // provenance notes fold into one 关于素材 under the grid. The re-trim warning stays in view.
  const notes=[options.some(a=>a.source==='flower-book-photo')?(lang==='ja'?'原書の花びら・色・複数の枝を保った写真です。ひとつのレイヤーとして配置し、付け根を局所的に切れます。':L('原书实拍：保留花瓣、色彩和多枝组合。成组花材可局部剪开。','Original Flower Book photographs retain their petals, colors and groupings. Cut locally at an attachment to separate a piece.')):'',
   options.some(a=>a.source==='generated-foliage')?(lang==='ja'?'透明の葉もの素材は制作した画像です。実物写真ではありません。':L('透明叶材为创作用图像，不是实物摄影。','These transparent foliage cutouts are rendered artwork, not photographs.')):'',
   options.some(a=>a.source==='generated-pose')?L('新增姿态参考原素材辅助制作，保留原姿态供选择。','New poses were made with AI assistance from the original specimens; the originals remain available.','新しい姿は元の花材を参考にAIの補助で制作しました。元の姿も選べます。'):''].filter(Boolean);
  const variantCard=a=>{const pose=displayPose(a,lang),badge=provenance(a,lang);return `<button class="variant-card ${a.id===selectedType?'active':''}" data-variant="${a.id}"><img src="${cardImage(a)}" alt="${esc(assetColor(a)+' '+pose)}" loading="lazy" decoding="async">${badge?`<span class="variant-badge" data-provenance="${badge.key}" title="${esc(badge.title)}">${esc(badge.label)}</span>`:''}<strong><i style="background:${a.swatch}"></i>${esc(assetColor(a))}</strong><span>${esc(pose)}</span><small class="variant-size">${esc(sizeText(sizeFor(a),lang))}</small></button>`};
- openModal(`<h2>${esc(L(`${assetName(options[0])}，选一种喜欢的姿态。`,`Choose a pose for ${assetName(options[0])}.`,`${assetName(options[0])}の姿を選ぶ`))}</h2><p>${esc(botanicalDescription(family))}</p><div class="variant-grid variant-grid-primary">${primary.map(variantCard).join('')}</div>${archived.length?`<details class="material-about archived-poses"><summary>${esc(L('更多姿态','More poses','ほかの姿'))} · ${archived.length}</summary><div class="variant-grid">${archived.map(variantCard).join('')}</div></details>`:''}${replaceId&&(current()?.cuts.length||current()?.localCuts?.length)?`<p class="file-note">${L('换姿态会恢复这枝的剪口，便于重新修剪；可以撤销恢复。','Changing pose restores this stem before pruning so you can trim it again; Undo remains available.')}</p>`:''}${notes.length?`<details class="material-about"><summary>${esc(L('关于素材','About this material','素材について'))}</summary>${notes.map(note=>`<p class="file-note">${esc(note)}</p>`).join('')}</details>`:''}`,'BOTANICAL VARIATIONS');
+ openModal(`<h2>${esc(L(`${assetName(options[0])}，选一种喜欢的姿态。`,`Choose a pose for ${assetName(options[0])}.`,`${assetName(options[0])}の姿を選ぶ`))}</h2><p>${esc(botanicalDescription(family))} · ${options.length} ${L('种姿态','poses','の姿')}</p><div class="variant-grid variant-grid-primary">${options.map(variantCard).join('')}</div>${replaceId&&(current()?.cuts.length||current()?.localCuts?.length)?`<p class="file-note">${L('换姿态会恢复这枝的剪口，便于重新修剪；可以撤销恢复。','Changing pose restores this stem before pruning so you can trim it again; Undo remains available.')}</p>`:''}${notes.length?`<details class="material-about"><summary>${esc(L('关于素材','About this material','素材について'))}</summary>${notes.map(note=>`<p class="file-note">${esc(note)}</p>`).join('')}</details>`:''}`,'BOTANICAL VARIATIONS');
  toneMaterialImages($('#modal'));
- $$('[data-variant]').forEach(b=>b.onclick=()=>{if(replaceId){const i=state.items.find(i=>i.id===replaceId);if(!i)return;if(i.type!==b.dataset.variant){const hadCuts=!!(i.cuts?.length||i.localCuts?.length||i.segments?.length);checkpoint();const before=assetById[i.type],tip=tipPoint(i,before),after=assetById[b.dataset.variant],ratio=clamp(i.h/before.height,...sizeRatioBounds(after));i.type=b.dataset.variant;i.cuts=[];i.localCuts=[];i.segments=[];i.pieceLabel='';i.sv=2;i.h=Math.round(after.height*ratio*10)/10;i.trim=0;i.length=1;const {miss:_,...fit}=solveTo(i,after,[i.x,i.y],tip);Object.assign(i,fit);spriteCache.delete(i.id);selected=i.id;renderStage();ensureAsset(i.type).then(()=>{if(state.items.some(item=>item.id===i.id&&item.type===i.type))renderStage()}).catch(()=>toast(L('这枝花材暂时无法载入。','This material could not be loaded.')));persist();if(hadCuts)undoToast(L('剪口已重置','Cuts reset','剪定をリセット'))}}else addSpecimen(b.dataset.variant);$('#modal').close();document.querySelector('.stem.selected')?.focus({preventScroll:true})});
+ $$('[data-variant]').forEach(b=>b.onclick=()=>{if(replaceId){const i=state.items.find(i=>i.id===replaceId);if(!i)return;if(i.type!==b.dataset.variant){const hadCuts=!!(i.cuts?.length||i.localCuts?.length||i.segments?.length);checkpoint();const before=assetById[i.type],tip=tipPoint(i,before),after=assetById[b.dataset.variant],ratio=clamp(i.h/before.height,...sizeRatioBounds(after));i.type=b.dataset.variant;i.cuts=[];i.localCuts=[];i.segments=[];i.pieceLabel='';i.sv=2;i.h=Math.round(after.height*ratio*10)/10;i.trim=0;i.length=1;delete i.stemSplit;const {miss:_,...fit}=solveTo(i,after,[i.x,i.y],tip);Object.assign(i,fit);spriteCache.delete(i.id);selected=i.id;renderStage();ensureAsset(i.type).then(()=>{if(state.items.some(item=>item.id===i.id&&item.type===i.type))renderStage()}).catch(()=>toast(L('这枝花材暂时无法载入。','This material could not be loaded.')));persist();if(hadCuts)undoToast(L('剪口已重置','Cuts reset','剪定をリセット'))}}else addSpecimen(b.dataset.variant);$('#modal').close();document.querySelector('.stem.selected')?.focus({preventScroll:true})});
 }
 $('#change-variant').onclick=()=>{const i=current();if(i)variantPicker(assetById[i.type].family,i.id)};
 /**
@@ -742,15 +740,17 @@ $('#change-variant').onclick=()=>{const i=current();if(i)variantPicker(assetById
  * role headers under 全部; 花之书 narrows any role to the Flower Book families. Size chips give the true size a material gets
  * as the first stem in the current vessel (cached per vessel).
  */
-let familyBook=false,libraryExpanded=false,sizeCache={vessel:null,sizes:new Map()},searchIndex=null,curatedSearchIndex=null;
-const bookFamilies=new Set(photoSpecimens.map(a=>a.family));
-const familyPoses=new Map(familyOrder.map(family=>[family,browseSpecimens.filter(a=>a.family===family)]));
-// The complete catalogue stays available to saved drafts; the default picker has one matched visual direction.
+let familyBook=false,sizeCache={vessel:null,sizes:new Map()},searchIndex=null;
+if(familyFilter==='atelier')familyFilter='all';
+// Show every catalogued material; IDs, not family names, identify distinct poses.
+const librarySpecimens=[...new Map(specimens.filter(a=>a?.id&&a.family&&assetById[a.id]).map(a=>[a.id,a])).values()];
+const libraryVesselCatalog=[...new Map(vessels.filter(a=>a?.id&&assetById[a.id]).map(a=>[a.id,a])).values()];
+const familyPoses=new Map([...new Set(librarySpecimens.map(a=>a.family))].map(family=>[family,librarySpecimens.filter(a=>a.family===family)]));
+const libraryFamilies=[...familyPoses].map(([family,poses])=>({...poses[0],id:family,variants:poses.length}));
+const bookFamilies=new Set(librarySpecimens.filter(a=>['flower-book-photo','flower-book'].includes(a.source)).map(a=>a.family));
+// The new photographic collection supplies covers without hiding earlier materials.
 const curatedLibrarySource=specimens.some(a=>a.source==='generated-editorial')?'generated-editorial':'generated-atelier';
 const isLibraryCurated=a=>a?.source===curatedLibrarySource;
-const curatedLibrarySpecimens=browseSpecimens.filter(isLibraryCurated),curatedLibraryVessels=vessels.filter(isLibraryCurated);
-const curatedLibraryFamilies=[...new Set(curatedLibrarySpecimens.map(a=>a.family))];
-const curatedLibraryFlowers=curatedLibraryFamilies.map(family=>{const poses=curatedLibrarySpecimens.filter(a=>a.family===family);return {...poses[0],id:family,variants:poses.length}});
 function sizeFor(a){
  const vessel=assetById[state.vessel];if(!vessel||!a)return null;
  if(sizeCache.vessel!==state.vessel)sizeCache={vessel:state.vessel,sizes:new Map()};
@@ -758,8 +758,8 @@ function sizeFor(a){
  return sizeCache.sizes.get(a.id);
 }
 const familyHeight=f=>Math.max(0,...(familyPoses.get(f.family)||[]).map(a=>sizeFor(a)?.cm||0));
-const libraryIndex=()=>searchIndex||=buildSearchIndex(flowers,vessels,browseSpecimens);
-const curatedLibraryIndex=()=>curatedSearchIndex||=buildSearchIndex(curatedLibraryFlowers,curatedLibraryVessels,curatedLibrarySpecimens);
+const libraryIndex=()=>searchIndex||=buildSearchIndex(libraryFamilies,libraryVesselCatalog,librarySpecimens);
+const libraryCount=materials=>{const poses=materials.reduce((n,a)=>n+(a.libraryPoses||familyPoses.get(a.family)||[]).length,0);return L(`${materials.length} 类 · ${poses} 姿态`,`${materials.length} types · ${poses} poses`,`${materials.length}種類 · ${poses}の姿`)};
 const colorChipName=color=>{const group=materialColorGroups.find(g=>g.id===color);return group?group[lang]||group.zh:''};
 /**
  * 当季 / In season / 旬 (B8): the garden season from the month, two seasons on in a southern-hemisphere time zone. Pressing the
@@ -778,15 +778,15 @@ const filterName=role=>role==='atelier'?L('精选','Studio selection','アトリ
 /** Families that pass a role or season chip, the 花之书 toggle and a colour chip, then the search: best match first, else
  role, in season, then height. */
 function libraryFlowers(role,book,color,query){
- const full=libraryExpanded||book,pool=full?flowers:curatedLibraryFlowers,hits=(full?libraryIndex():curatedLibraryIndex()).match(query,'flowers'),season=librarySeason(),effectiveRole=role==='atelier'?'all':role;
+ const hits=libraryIndex().match(query,'flowers'),season=librarySeason(),effectiveRole=role==='atelier'?'all':role;
  const fits=a=>effectiveRole==='season'?matchesSeason(a,season):matchesRole(a,effectiveRole);
- const posesFor=family=>(full?familyPoses.get(family)||[]:curatedLibrarySpecimens.filter(a=>a.family===family)).filter(a=>!book||a.source==='flower-book-photo');
- const candidates=pool.filter(a=>fits(a)&&(!book||bookFamilies.has(a.family))&&posesFor(a.family).some(p=>matchesMaterialColor(p,color))&&(!hits||hits.has(a.id)));
- const list=sortByRole(candidates.map(a=>({...a,libraryPoses:posesFor(a.family),libraryCurated:!full})),full?familyHeight:a=>Math.max(0,...posesFor(a.family).map(p=>sizeFor(p)?.cm||0)),a=>matchesSeason(a,season));
+ const posesFor=family=>(familyPoses.get(family)||[]).filter(a=>(!book||['flower-book-photo','flower-book'].includes(a.source))&&matchesMaterialColor(a,color));
+ const candidates=libraryFamilies.filter(a=>fits(a)&&(!book||bookFamilies.has(a.family))&&posesFor(a.family).length&&(!hits||hits.has(a.id)));
+ const list=sortByRole(candidates.map(a=>({...a,libraryPoses:posesFor(a.family)})),familyHeight,a=>matchesSeason(a,season));
  return hits?list.sort((p,q)=>hits.get(q.id)-hits.get(p.id)):list;
 }
 function libraryVessels(style,query){
- const full=libraryExpanded||style==='book',hits=(full?libraryIndex():curatedLibraryIndex()).match(query,'vessels'),list=(full?vessels:curatedLibraryVessels).filter(a=>(style==='all'||(style==='book'?a.source==='flower-book-vessel':(a.style||'japanese')===style))&&(!hits||hits.has(a.id)));
+ const hits=libraryIndex().match(query,'vessels'),list=libraryVesselCatalog.filter(a=>(style==='all'||(style==='book'?a.source==='flower-book-vessel':(a.style||'japanese')===style))&&(!hits||hits.has(a.id)));
  return hits?list.sort((p,q)=>hits.get(q.id)-hits.get(p.id)):list;
 }
 /** A family card: picture, name, then its role and true size (线条 · ≈47–65 cm). Under a role header or a role chip (`grouped`)
@@ -794,7 +794,7 @@ function libraryVessels(style,query){
 function flowerCard(a,attr,color='all',extra='',grouped=false){
  const poses=a.libraryPoses||familyPoses.get(a.family)||[a],m=cardMeta(a,lang,{vessel:assetById[state.vessel],poses,size:sizeFor}),cover=poses.find(p=>isLibraryCurated(p)&&matchesMaterialColor(p,color))||coverFor(a.family,poses,color)||specimenFor(a.family),kicker=grouped&&rolesOf(a).length<2?'':m.kicker;
  const season=seasonMark(a,librarySeason(),lang),label=season?`${m.label} · ${season.title}`:m.label;
- return `<button type="button" class="material-card${extra}" ${attr}="${esc(a.family)}"${a.libraryCurated&&isLibraryCurated(cover)?` data-direct-specimen="${esc(cover.id)}"`:''} aria-label="${esc(label)}"><span class="add-mark" aria-hidden="true">+</span><span class="card-figure"><img src="${cardImage(cover)}" alt="" loading="lazy" decoding="async" draggable="false">${m.badge?`<span class="card-badge">${esc(m.badge)}</span>`:''}${season?`<span class="card-season${season.now?' is-now':''}" data-season="${season.key}" title="${esc(season.title)}" aria-hidden="true">${esc(season.text)}</span>`:''}</span><strong>${esc(cardName(a,lang))}</strong><small class="card-size">${kicker?`<span class="card-role">${esc(kicker)}</span> · `:''}${esc(m.size)}</small></button>`;
+ return `<button type="button" class="material-card${extra}" ${attr}="${esc(a.family)}" aria-label="${esc(label)}"><span class="add-mark" aria-hidden="true">+</span><span class="card-figure"><img src="${cardImage(cover)}" alt="" loading="lazy" decoding="async" draggable="false">${m.badge?`<span class="card-badge">${esc(m.badge)}</span>`:''}${season?`<span class="card-season${season.now?' is-now':''}" data-season="${season.key}" title="${esc(season.title)}" aria-hidden="true">${esc(season.text)}</span>`:''}</span><strong>${esc(cardName(a,lang))}</strong><small class="card-size">${kicker?`<span class="card-role">${esc(kicker)}</span> · `:''}${esc(m.size)}</small></button>`;
 }
 function vesselCard(a,attr,extra=''){
  const m=cardMeta(a,lang),active=a.id===state.vessel;
@@ -818,7 +818,7 @@ function renderMaterials(){
  const filters=flowersTab?[familyFilter!=='all'?filterName(familyFilter):'',familyBook?vesselStyleName('book'):'',colorFilter!=='all'?colorChipName(colorFilter):''].filter(Boolean):[vesselFilter!=='all'?vesselStyleName(vesselFilter):''].filter(Boolean);
  $('#material-filters').hidden=!flowersTab;$('#material-color-filters').hidden=!flowersTab;$('#vessel-filters').hidden=flowersTab;$('#material-heading').textContent=flowersTab?L('一枝一叶','Botanicals'):L('一器一境','Vessels');
  const filtered=filters.length>0||!!query.trim(),n=materials.length;
- $('#material-count').textContent=flowersTab?L(`${n} 种`,`${n} types`,`${n}種類`):L(`${n} 款花器`,`${n} vessels`,`${n}点の花器`);
+ $('#material-count').textContent=flowersTab?libraryCount(materials):L(`${n} 款花器`,`${n} vessels`,`${n}点の花器`);
  pressChips('[data-family-group]','familyGroup',familyFilter==='atelier'?'all':familyFilter);renderSeasonChips();pressToggle('[data-family-book]',familyBook);pressChips('[data-color-group]','colorGroup',colorFilter);pressChips('[data-vessel-style]','vesselStyle',vesselFilter);
  grid.innerHTML=!n?`<div class="material-grid-empty">${libraryEmpty(flowersTab?'flowers':'vessels',filters,query)}</div>`:flowersTab?libraryCards(materials,(a,grouped)=>flowerCard(a,'data-material',colorFilter,'',grouped||!['all','season'].includes(familyFilter)),['all','season'].includes(familyFilter)&&!query.trim()):materials.map(a=>vesselCard(a,'data-material')).join('');
  grid.onclick=e=>{
@@ -833,7 +833,7 @@ function renderMaterials(){
  * pose again where a florist would put it (addSpecimen, auto placement); ⋯ opens the family's poses.
  */
 const RECENT_MATERIALS='hanama-recent-materials',RECENT_POSES='hanama-recent-materials-v2',RECENT_SLOTS=3;
-let quickFilter='atelier',quickColorFilter='all',quickBook=false,quickMode='flowers',quickVesselFilter='all',quickRecent=[];
+let quickFilter='all',quickColorFilter='all',quickBook=false,quickMode='flowers',quickVesselFilter='all',quickRecent=[];
 const recentPose=id=>{const a=typeof id==='string'&&Object.hasOwn(assetById,id)?assetById[id]:null;return a?.family?a:null};
 {
  const read=key=>{try{const saved=JSON.parse(localStorage.getItem(key)||'null');return Array.isArray(saved)?saved:null}catch{return null}};
@@ -845,7 +845,7 @@ if(!quickRecent.length)quickRecent=[...new Set([...state.items].reverse().map(i=
 function rememberMaterial(type){if(!recentPose(type))return;quickRecent=[type,...quickRecent.filter(id=>id!==type)].slice(0,RECENT_SLOTS);try{localStorage.setItem(RECENT_POSES,JSON.stringify(quickRecent))}catch{}renderRecentMaterials()}
 function renderRecentMaterials(){
  const group=$('#quick-material-recent');if(!group)return;
- const full=libraryExpanded||(quickMode==='vessels'?quickVesselFilter==='book':quickBook),recent=quickRecent.map(recentPose).filter(a=>a&&(full||isLibraryCurated(a)));group.hidden=!recent.length;
+ const recent=quickRecent.map(recentPose).filter(Boolean);group.hidden=!recent.length;
  $$('[data-recent-slot]',group).forEach((slot,index)=>{
   const a=recent[index],add=$('[data-quick-recent]',slot),more=$('[data-recent-more]',slot);slot.hidden=!a;add.disabled=more.disabled=!a;if(!a)return;
   const name=assetName(a),pose=displayPose(a,lang);add.dataset.quickRecent=a.id;more.dataset.recentMore=a.family;
@@ -866,19 +866,17 @@ function setWords(el,[zh,en,ja],kind=''){
  if(kind==='aria')el.setAttribute('aria-label',text);else if(kind==='placeholder')el.placeholder=text;else el.textContent=text;
 }
 function renderLibraryScope(){
- const vesselMode=quickMode==='vessels',expanded=libraryExpanded||(vesselMode?quickVesselFilter==='book':quickBook),button=$('#library-scope-toggle');if(!button)return;
- const labels=expanded?(vesselMode?['精选花器','Selected vessels','花器のセレクトへ']:['精选花材','Selected flowers','花材のセレクトへ']):(vesselMode?['更多花器','More vessels','ほかの花器']:['更多花材','More flowers','ほかの花材']);
- setWords(button,labels);button.setAttribute('aria-pressed',String(expanded));$('#quick-material-drawer').dataset.scope=expanded?'all':'selected';
+ const button=$('#library-scope-toggle');if(button){button.hidden=true;button.onclick=null;}$('#quick-material-drawer').dataset.scope='all';
 }
 function renderQuickMaterials(){
  const vesselMode=quickMode==='vessels',words=QUICK_WORDS[quickMode],search=$('#quick-material-search'),query=search.value,grid=$('#quick-material-grid'),empty=$('#quick-material-empty');
  $$('[data-quick-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.quickMode===quickMode)));
  $('#quick-material-filters').hidden=vesselMode;$('#quick-material-color-filters').hidden=vesselMode;$('#quick-vessel-filters').hidden=!vesselMode;
- const drawer=$('#quick-material-drawer');drawer.dataset.mode=quickMode;setWords(drawer,words.aria,'aria');setWords($('#quick-material-title'),words.title);setWords(search,words.search,'placeholder');setWords($('.quick-material-search-label .sr-only'),words.search);setWords($('#quick-material-hint'),!vesselMode&&(libraryExpanded||quickBook)?['选择花材，再挑姿态与花色','Choose a material, then a pose and color','花材を選び、姿と色を決めます']:words.hint);
+ const drawer=$('#quick-material-drawer');drawer.dataset.mode=quickMode;setWords(drawer,words.aria,'aria');setWords($('#quick-material-title'),words.title);setWords(search,words.search,'placeholder');setWords($('.quick-material-search-label .sr-only'),words.search);setWords($('#quick-material-hint'),!vesselMode?['选择花材，再挑姿态与花色','Choose a material, then a pose and color','花材を選び、姿と色を決めます']:words.hint);
  const eyebrow=$('.quick-material-heading .eyebrow');if(eyebrow)eyebrow.textContent=words.eyebrow;
  const materials=vesselMode?libraryVessels(quickVesselFilter,query):libraryFlowers(quickFilter,quickBook,quickColorFilter,query),n=materials.length;
  const filters=vesselMode?[quickVesselFilter!=='all'?vesselStyleName(quickVesselFilter):''].filter(Boolean):[quickFilter!=='all'?filterName(quickFilter):'',quickBook?vesselStyleName('book'):'',quickColorFilter!=='all'?colorChipName(quickColorFilter):''].filter(Boolean);
- $('#quick-material-count').textContent=vesselMode?L(`${n} 款花器`,`${n} vessels`,`${n}点の花器`):L(`${n} 种`,`${n} types`,`${n}種類`);
+ $('#quick-material-count').textContent=vesselMode?L(`${n} 款花器`,`${n} vessels`,`${n}点の花器`):libraryCount(materials);
  empty.hidden=!!n;empty.innerHTML=n?'':libraryEmpty(vesselMode?'vessels':'flowers',filters,query);
  grid.innerHTML=vesselMode?materials.map(a=>vesselCard(a,'data-quick-vessel',' quick-material-card')).join(''):libraryCards(materials,(a,grouped)=>flowerCard(a,'data-quick-material',quickColorFilter,' quick-material-card',grouped||!['all','season'].includes(quickFilter)),['all','season'].includes(quickFilter)&&!query.trim());
  pressChips('[data-quick-family-group]','quickFamilyGroup',quickFilter==='atelier'?'all':quickFilter);renderSeasonChips();pressToggle('[data-quick-book]',quickBook);pressChips('[data-quick-color-group]','quickColorGroup',quickColorFilter);pressChips('[data-quick-vessel-style]','quickVesselStyle',quickVesselFilter);
@@ -896,7 +894,6 @@ function openQuickMaterialDrawer({filter=null,mode='flowers'}={}){const drawer=$
 $('#quick-material-open').onclick=()=>{if(!$('#quick-material-drawer').hidden){closeQuickMaterialDrawer({focus:true});return}openQuickMaterialDrawer()};
 $('#quick-material-close').onclick=()=>closeQuickMaterialDrawer({focus:true});
 $('#quick-material-search').oninput=renderQuickMaterials;
-$('#library-scope-toggle').onclick=()=>{const full=libraryExpanded||(quickMode==='vessels'?quickVesselFilter==='book':quickBook);libraryExpanded=!full;familyBook=quickBook=false;if(vesselFilter==='book')vesselFilter='all';if(quickVesselFilter==='book')quickVesselFilter='all';$('#material-search').value='';$('#quick-material-search').value='';renderMaterials();renderQuickMaterials();$('#quick-material-grid').scrollTop=0};
 $('#quick-material-modes').onclick=e=>{const button=e.target.closest('[data-quick-mode]');if(!button||button.dataset.quickMode===quickMode)return;quickMode=button.dataset.quickMode==='vessels'?'vessels':'flowers';$('#quick-material-search').value='';renderQuickMaterials();$('#quick-material-grid').scrollTop=0};
 $('#quick-material-filters').onclick=e=>{if(e.target.closest('[data-quick-book]')){quickBook=!quickBook;renderQuickMaterials();return}const button=e.target.closest('[data-quick-family-group]');if(!button)return;if(button.dataset.quickFamilyGroup==='season'&&quickFilter==='season'){cycleSeason();renderMaterials()}quickFilter=button.dataset.quickFamilyGroup;renderQuickMaterials()};
 $('#quick-vessel-filters').onclick=e=>{const button=e.target.closest('[data-quick-vessel-style]');if(!button)return;quickVesselFilter=button.dataset.quickVesselStyle;renderQuickMaterials()};
@@ -1423,7 +1420,7 @@ const keyboardFocus=el=>{try{return el.matches(':focus-visible')}catch{return tr
 $('#stage').addEventListener('focusin',e=>{const stem=e.target.closest?.('.stem');if(stem&&!restoringStemFocus&&stem.dataset.id!==selected&&keyboardFocus(stem)&&state.items.some(i=>i.id===stem.dataset.id)){selectItem(stem.dataset.id);revealStemPanel()}});
 /** Slider ticks restyle only the selected stem once per frame; drawn stems keep their centimetres, and the length slider
  stops at the species' usual length (stemCeil). */
-for(const [id,key,factor] of [['angle','angle',1],['size','h',1],['trim','trim',1],['length','length',.01]]){let active=false;const el=$('#'+id);el.addEventListener('input',()=>{const item=current();if(!item)return;const a=assetById[item.type];if(key==='trim'&&drawsStem(a))return;if(!active){checkpoint();active=true;if(key==='length')lengthCeil={id:item.id,max:+el.max}}const maxLength=()=>lengthBounds(a,item.h,item.trim)[1];const apply=i=>{if(key==='length'&&drawsStem(a))i.length=Math.min(lengthForStem(i,a,+el.value),maxLength());else if(key==='h'&&drawsStem(a)){const cm=stemCm(i,a);i.h=+el.value;i.length=Math.min(lengthForStem(i,a,cm),maxLength())}else i[key]=+el.value*factor};if(key==='angle'||key==='h')aboutCutEnd(item,apply);else apply(item);queueStemUpdate(item);schedulePersist()});const release=()=>{active=false;if(key==='length'&&lengthCeil){lengthCeil=null;const item=current();if(item)renderSizeControls(item)}flushPersist()};el.addEventListener('change',release);el.addEventListener('blur',release)}
+for(const [id,key,factor] of [['angle','angle',1],['size','h',1],['trim','trim',1],['length','length',.01]]){let active=false;const el=$('#'+id);el.addEventListener('input',()=>{const item=current();if(!item)return;const a=assetById[item.type];if(key==='trim'&&drawsStem(a))return;if(!active){checkpoint();active=true;if(key==='length')lengthCeil={id:item.id,max:+el.max}}const maxLength=()=>lengthBounds(a,item.h,item.trim)[1];const apply=i=>{if(key==='length'&&drawsStem(a))i.length=Math.min(lengthForStem(i,a,+el.value),maxLength());else if(key==='h'&&drawsStem(a)){const cm=stemCm(i,a);i.h=+el.value;i.length=Math.min(lengthForStem(i,a,cm),maxLength())}else if(key==='length'){if(!setStemLength(i,a,+el.value*factor))i.length=+el.value*factor}else i[key]=+el.value*factor};if(key==='angle'||key==='h')aboutCutEnd(item,apply);else apply(item);queueStemUpdate(item);schedulePersist()});const release=()=>{active=false;if(key==='length'&&lengthCeil){lengthCeil=null;const item=current();if(item)renderSizeControls(item)}flushPersist()};el.addEventListener('change',release);el.addEventListener('blur',release)}
 function removeSelected(){const item=current();if(!item)return;const name=itemName(item);checkpoint();state.items=state.items.filter(i=>i.id!==selected);selected=state.items.at(-1)?.id||null;setEditMode('move');renderStage();persist();undoToast(L(`已移除${name}`,`Removed ${name}`,`${name}を外しました`))}
 /**
  * Duplicate (A11). A copy of a stem standing in the vessel is a companion inserted just behind it: its base 1.5 cm beside the
@@ -1478,27 +1475,27 @@ function help(){
  const copy=lang==='en'?{
   title:'Take a moment and arrange slowly.',
   steps:[
-   ['Choose a stem, then shape it.','Use Flowers to choose plants or vessels. Pull a flower head to bend its branch, drag the base dot to move it, and use two fingers to rotate and scale. The coloured handles adjust angle and size; Keep → More contains precise adjustments.'],
-   ['Cut or refine.','Tap the scissors to cut a twig, or the eraser to brush away details. Both pieces stay on the canvas after a cut and can be moved separately. Tap the active tool again or press Esc to return to arranging. Undo is always beside the tools.'],
-   ['Find the light, keep the moment.','Light offers four natural settings and optional fine tuning. Open Keep to save a draft, take a photo or immerse yourself in the arrangement. More contains the recipe, sharing and an AI image pack. Imported photos stay with your drafts in My Works.']
+   ['Choose a stem, then shape it.','Use Flowers to choose plants or vessels. Pull a flower head to bend its branch, drag the base dot to move it, and use two fingers to rotate and scale. The coloured handles adjust angle and size. Tap Length below the flowers to stretch a stem without enlarging its flower head.'],
+   ['Cut or refine.','Tap the scissors to cut a twig, or the eraser to brush away details. Both pieces stay on the canvas after a cut and can be moved separately. Tap the active tool again or press Esc to return to arranging. Undo and Redo are always beside the tools.'],
+   ['Find the light, keep the moment.','Light offers all nine backgrounds, four atmosphere presets and direct light controls. Open Keep to save a draft, take a photo or immerse yourself in the arrangement. More contains the recipe, sharing and an AI image pack. Imported photos stay with your drafts in My Works.']
   ],
   note:'Ctrl/⌘+Z undoes, Ctrl/⌘+Shift+Z redoes, Delete removes, and Esc leaves the current tool. Drafts and artworks stay in this browser; export a file to keep a backup.',
   done:'Start arranging',import:'Import draft file'
  }:lang==='ja'?{
   title:'ゆっくり、ひと枝ずつ。',
   steps:[
-   ['花材を選び、枝を曲げる。','「花材」から花材や花器を選びます。花先を引くと枝が曲がり、根元の点で移動できます。2本指で回転・拡大縮小。色付きハンドルで角度や大きさを変え、「作品 → その他 → 調整」で細かく整えます。'],
-   ['切って、細部を整える。','ハサミを選んで小枝を切り、消しゴムで細部をなぞって消します。切った両方の部分はそのまま残り、別々に動かせます。同じツールをもう一度タップするか、Escで終了します。「元に戻す」はすぐ隣にあります。'],
-   ['光を選び、この瞬間を残す。','「光と景」には4つの自然な光と微調整があります。「作品」から下書き保存、撮影、鑑賞ができます。「その他」にはレシピ、共有、AI生成用パックがあります。取り込んだ写真は下書きと一緒に「マイ作品」に残ります。']
+   ['花材を選び、枝を曲げる。','「花材」から花材や花器を選びます。花先を引くと枝が曲がり、根元の点で移動できます。2本指で回転・拡大縮小。色付きハンドルで角度や大きさを変え、花の下の「茎の長さ」で花先の大きさを保って茎を伸ばせます。'],
+   ['切って、細部を整える。','ハサミを選んで小枝を切り、消しゴムで細部をなぞって消します。切った両方の部分はそのまま残り、別々に動かせます。同じツールをもう一度タップするか、Escで終了します。「元に戻す」と「やり直す」はすぐ隣にあります。'],
+   ['光を選び、この瞬間を残す。','「光と景」には9つの背景、4つの光のプリセット、直接使える光の調整があります。「作品」から下書き保存、撮影、鑑賞ができます。「その他」にはレシピ、共有、AI生成用パックがあります。取り込んだ写真は下書きと一緒に「マイ作品」に残ります。']
   ],
   note:'Ctrl/⌘+Zで元に戻す、Ctrl/⌘+Shift+Zでやり直し、Deleteで削除、Escで現在のツールを終了します。下書きと作品はこのブラウザに保存されます。ファイルを書き出すとバックアップできます。',
   done:'創作を始める',import:'下書きを読み込む'
  }:{
   title:'给自己一刻，慢慢插花。',
   steps:[
-   ['挑一枝，弯出姿态。','从「花材」选择花与枝或花器。拖花头弯枝，拖根部圆点移位，双指旋转和缩放；彩色手柄可单独调角度与大小，在「作品 → 更多 → 调整」中可精细修改。'],
-   ['剪一剪，留出呼吸。','点剪刀横划细枝，点橡皮涂抹细节。剪开的两段直接留在画布上，可以分别移动。再点一次当前工具或按 Esc 即可继续插花，撤销就在工具旁。'],
-   ['选一束光，留住这一刻。','「光景」提供四种自然氛围和折叠细调。「作品」里可保存草稿、拍照或全屏赏花；「更多」里还有配方、分享和AI生图包。导入的照片会与草稿一起保存在「我的作品」。']
+   ['挑一枝，弯出姿态。','从「花材」选择花与枝或花器。拖花头弯枝，拖根部圆点移位，双指旋转和缩放；彩色手柄可单独调角度与大小，点画布下方「枝长」直接拉伸枝干，花头大小保持不变。'],
+   ['剪一剪，留出呼吸。','点剪刀横划细枝，点橡皮涂抹细节。剪开的两段直接留在画布上，可以分别移动。再点一次当前工具或按 Esc 即可继续插花，撤销与重做就在工具旁。'],
+   ['选一束光，留住这一刻。','「光景」直接展示 9 款背景、四种自然氛围和光照调节。「作品」里可保存草稿、拍照或全屏赏花；「更多」里还有配方、分享和AI生图包。导入的照片会与草稿一起保存在「我的作品」。']
   ],
   note:'Ctrl/⌘+Z撤销，Ctrl/⌘+Shift+Z重做，Delete删除，Esc退出当前工具。草稿与作品保存在当前浏览器，可导出文件备份。',
   done:'开始这一枝',import:'导入草稿文件'
@@ -2142,9 +2139,9 @@ function gameRaster(key,paint,size=768){
 }
 function gameFrame(knownTextures=new Map()){
  const transfer=(id,key,paint,size)=>knownTextures.get(id)===key?'':gameRaster(key,paint,size);
- const sceneKey=`organic-room-5|${organicRoomsReady}|${sceneLayerKey}|${state.light||''}`;
+ const sceneKey=`organic-room-6|${organicRoomsReady}|${sceneLayerKey}|${state.light||''}`;
  const full=(id,key,texture,order)=>({id,key,texture,x:50,y:50,width:100,height:100,px:.5,py:.5,angle:0,flip:false,interactive:false,order});
- const background=transfer('room',sceneKey,(ctx,S)=>{paintOrganicRoom(ctx,S,state);paintOrganicGround(ctx,S,assetById[state.vessel],state.scene==='night');});
+ const background=transfer('room',sceneKey,(ctx,S)=>{paintOrganicRoom(ctx,S,state);paintOrganicGround(ctx,S,assetById[state.vessel],isNightScene(state.scene));});
  const nodes=[full('room',sceneKey,background,0)];
  state.items.forEach((item,index)=>{
   const a=assetById[item.type],src=specimenCanvas(item);if(!src?.width||!src.height)return;

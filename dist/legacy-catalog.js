@@ -16,7 +16,17 @@ export const legacyVessels=[
  {id:'bottle',name:'褐釉长颈瓶',shortName:'褐釉长颈瓶',en:'Dark brown glazed bottle vase',color:'褐釉',colorEn:'dark brown glaze',height:29,width:818,heightPx:978,group:'tall',style:'japanese',mouth:[.5,.04],insertion:[50,60],openings:[{shape:'ellipse',center:[.5,.04],radius:[.13,.024],frontRimY:.075}],fixture:{kind:'neck',visibility:'hidden',name:'瓶口支撑',en:'Concealed neck support',prompt:'The narrow glazed neck itself supports the stems below the rim; no separate support is visible.'}}
 ];
 /** Scene palettes: [wall, floor, zh description, en description]. validate() accepts exactly these keys. */
-export const scenes={paper:['#f5f4ef','#dedfd7','温暖的米灰色石灰墙与浅色石台','warm greige limewash wall and pale stone surface'],stone:['#e2e6e2','#aeb9b2','青灰色墙面与自然石台','blue-gray wall and natural stone surface'],night:['#566259','#27312b','深墨绿色背景与沉静的暗调光影','deep ink-green backdrop with subdued dark tones']};
+export const scenes={
+ paper:['#eacbb8','#ba9b88','杏粉艺术花房与柔和侧光','apricot editorial room with soft side light'],
+ stone:['#eeeadf','#d7d2c4','象牙白花房与自然漫射光','ivory editorial room with diffuse daylight'],
+ night:['#584251','#2f242f','梅紫花房与深色光影','plum editorial room with deep soft shadows'],
+ 'atelier-milk':['#f2f0e6','#dddcd0','奶油色日式花房','cream Japanese atelier'],
+ 'atelier-sage':['#e5e9e4','#d3dcd6','鼠尾草色日式花房','sage Japanese atelier'],
+ 'atelier-moon':['#303b37','#202c29','月夜日式花房','moonlit Japanese atelier'],
+ 'classic-paper':['#f5f4ef','#dedfd7','温暖的米灰色石灰墙与浅色石台','warm greige limewash wall and pale stone surface'],
+ 'classic-stone':['#e2e6e2','#aeb9b2','青灰色墙面与自然石台','blue-gray wall and natural stone surface'],
+ 'classic-night':['#566259','#27312b','深墨绿色背景与沉静的暗调光影','deep ink-green backdrop with subdued dark tones']
+};
 /** Modest color correction is shared by the canvas and exported artwork; original files remain intact. */
 export const saturationTune={ 'photo-poppy':.78,'photo-ranunculus':.82,'photo-anemone':.88,'photo-cosmos':.88,'photo-dahlia':.86,'photo-zinnia':.86,'photo-celosia':.86,'photo-sunflower':.9,'photo-aster':.9,'photo-peony':.89,'photo-cornflower':.9,'photo-chrysanthemum':.9 };
 /** Apply saturationTune to a specimen list in place (the same loop app.js ran inline). */
