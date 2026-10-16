@@ -1,7 +1,8 @@
+import {mountEraserCursor} from './eraser-cursor.js?v=1';
 // The canvas is the workbench. Existing document controls keep their handlers and IDs.
 const PREFS='hanama-atelier-preferences-v3';
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
+export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,locale=()=> 'zh'}){
  const stage=document.querySelector('#stage');if(!stage)return null;
  const $=(s,root=document)=>root.querySelector(s);
  const words=(zh,en,ja)=>locale()==='zh'?zh:locale()==='ja'?ja:en;
@@ -73,6 +74,12 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  const sentTextures=new Map(),pendingEvents=[],canvasPointers=new Set();
  const presets={morning:{light:'morning',scene:'paper',power:.35,direction:125},shade:{light:'noon',scene:'stone',power:.23,direction:100},dusk:{light:'dusk',scene:'paper',power:.29,direction:145},moon:{light:'moon',scene:'night',power:.22,direction:45}};
  const visible=()=>!document.hidden&&!$('#studio-view')?.hidden&&!$('dialog[open]');
+ const eraserCursor=mountEraserCursor({stage,brushInput:$('#brush-size'),getDiameter:()=>{
+  const diameter=Number($('#brush-size').value)||16,width=Math.max(1,stage.getBoundingClientRect().width);
+  const selected=$('.stem.selected',stage)?.dataset.id||lastFrame?.selected,node=lastFrame?.nodes.find(n=>n.id===selected);
+  if(node?.h>0)return clamp(diameter/width*50/node.h,.002,.3)*node.h/100*width*2;
+  const fallbackDiameter=getEraserDiameter?.();return Number.isFinite(fallbackDiameter)&&fallbackDiameter>0?fallbackDiameter:diameter;
+ }});
  // CSS can stay generous while the WebGL render target has a predictable pixel budget.
  // Native photography uses its own 1600px render texture and is independent of this buffer.
  function bufferMetrics(){
@@ -86,7 +93,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
   if(canvas.width!==size.width)canvas.width=size.width;if(canvas.height!==size.height)canvas.height=size.height;
  }
  function persist(){try{localStorage.setItem(PREFS,JSON.stringify({motion:settings.motion,power:settings.power,direction:settings.direction,sound}));}catch{}}
- function cancel(){canvasPointers.clear();if(active)instance.SendMessage('HanamaGame','CancelGesture','');}
+ function cancel(){canvasPointers.clear();eraserCursor?.clear();if(active)instance.SendMessage('HanamaGame','CancelGesture','');}
  function present(){
   settings.paused=!visible();settings.reducedMotion=reduced.matches;settings.coarsePointer=coarsePointer.matches;
   settings.viewportPixels=Math.max(1,host.getBoundingClientRect().width);settings.tool=touchTool;
@@ -99,7 +106,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
   const labels={translate:words('移动','Move','移動'),bend:words('弯枝','Bend','曲げる'),rotate:words('旋转','Rotate','回転')};
   touchTools.querySelectorAll('[data-touch-tool]').forEach(b=>{b.textContent=labels[b.dataset.touchTool];b.disabled=!active;b.setAttribute('aria-pressed',String(!pruning&&b.dataset.touchTool===touchTool));});
   const hints={translate:words('按住花材任意位置移动','Drag anywhere on a stem to move','花材をつかんで移動'),bend:words('按住花头，轻柔弯枝','Hold the flower head to bend','花先をつかんで曲げる'),rotate:words('按住花材，左右滑动旋转','Hold a stem and slide sideways to rotate','花材をつかんで左右に動かすと回転')};
-  $('#atelier-touch-hint').textContent=!active?words('拖动花材 · 在调整面板中造型','Drag stems · open Adjust to shape','花材をドラッグ・調整で形を整える'):pruning?(mode==='brush'?words('橡皮使用中 · 点移动退出','Erasing · tap Move to finish','消去中・移動で終了'):words('剪刀使用中 · 点移动退出','Cutting · tap Move to finish','切断中・移動で終了')):hints[touchTool];
+  $('#atelier-touch-hint').textContent=mode==='brush'?words('涂抹即擦除 · 可撤销','Brush to erase · Undo anytime','なぞって消す・元に戻せます'):!active?words('拖动花材 · 在调整面板中造型','Drag stems · open Adjust to shape','花材をドラッグ・調整で形を整える'):pruning?words('剪刀使用中 · 点移动退出','Cutting · tap Move to finish','切断中・移動で終了'):hints[touchTool];
  }
 
  function ping(kind){
@@ -191,9 +198,9 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
   if(event.type==='preview'){readout(event);return;}
   if(event.type==='magnet')return;
   if(event.type==='begin'){busy=true;canvas.style.cursor='grabbing';closeMenus();}
-  if(['commit','cut','cancel'].includes(event.type)){busy=false;canvas.style.cursor='grab';}
+  if(['commit','cut','cancel'].includes(event.type)){busy=false;canvas.style.cursor='grab';if(event.type==='cancel')eraserCursor?.clear();}
   if(event.type==='commit'||event.type==='cut')ping(event.type==='cut'?'cut':'place');
-  onEvent(event);if(event.type!=='begin')schedule();
+  onEvent(event);eraserCursor?.refresh();if(event.type!=='begin')schedule();
  };
  const status=(text,progress=0)=>{const box=$('.game-loading',panel);box.hidden=false;$('span',box).textContent=text;$('progress',box).value=progress;};
  async function start(){

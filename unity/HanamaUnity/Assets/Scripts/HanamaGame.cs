@@ -11,11 +11,11 @@ using UnityEngine.InputSystem;
 // The game owns rendering and gestures. The host owns the durable composition schema.
 public sealed partial class HanamaGame : MonoBehaviour
 {
-    [Serializable] public class Node { public string id, texture, key, name; public float x,y,width,height,px,py,angle,h,minScale=.8f,maxScale=1.25f,seatDX,seatDY; public bool flip,interactive,seated,front,cutSeat; public float extent,flexibility=.6f; public float[] flex; public int order; }
+    [Serializable] public class Node { public string id, texture, key, name; public float x,y,width,height,px,py,angle,h,minScale=.8f,maxScale=1.25f,seatDX,seatDY; public bool flip,interactive,seated,front,cutSeat,canErase=true; public float extent,flexibility=.6f; public float[] flex; public int order; }
     [Serializable] public class MouthTarget { public float left,right,y,frontY; }
-    [Serializable] public class Frame { public Node[] nodes; public MouthTarget[] mouths; public string selected,mode,light; public float mouthX,mouthY,brush=2; }
+    [Serializable] public class Frame { public Node[] nodes; public MouthTarget[] mouths; public string selected,mode,light; public float mouthX,mouthY,brush=2; public int eraseAck; }
     [Serializable] public class Point { public float x,y; public Point(Vector2 p){x=p.x;y=p.y;} }
-    [Serializable] public class GameEvent { public string type,id,mode,image; public bool snapped; public float x,y,angle,scale=1; public Point[] points; public float[] flex; }
+    [Serializable] public class GameEvent { public string type,id,mode,image; public bool snapped; public float x,y,angle,scale=1,radius; public int eraseId; public Point[] points; public float[] flex; }
     sealed class Piece { public Node data; public GameObject root; public Mesh mesh; public MeshRenderer renderer,shadow; public Material mat,shadowMaterial; public Texture2D tex; public string key; public float scale=1,bend,velocity,phase; public Vector3[] basis,vertices; public Vector2 previous; public float width,height,px,py,lastBend=float.NaN; public StemChain chain; public Mesh shadowMesh; public Texture2D shadowTex; public Vector3[] shadowBasis,shadowVertices; }
     sealed class Mote { public Transform root; public SpriteRenderer sprite; public Vector2 velocity; public float life; }
     readonly Dictionary<string,Piece> pieces=new Dictionary<string,Piece>();
@@ -24,6 +24,7 @@ public sealed partial class HanamaGame : MonoBehaviour
     Camera cameraRig; Material baseMaterial; Shader botanical; Sprite dot; Frame frame;
     Piece picked; Vector2 down,offset,pinchCenter; float startAngle,startScale,turnStart,pinchDistance,pinchAngle; bool held,started,turning,scaling,pinching,usedPinch,nearMouth,capturing,touchGesture; int dragTouchId=-1; float scaleDistance,previewAt; string hovered=""; string selected="",tool="move";
     LineRenderer ring,cutLine,snapRing,anchorLine,brushRing; GameObject handle,scaleHandle,rootHandle; int lastWidth,lastHeight; float idle;
+    Piece erasePiece; Texture2D eraseMask; byte[] erasePixels; int eraseWidth,eraseHeight,eraseSequence,pendingEraseId; float eraseRadius; bool eraseDirty,waitForRelease; Vector2 lastTouchPosition;
 #if UNITY_WEBGL && !UNITY_EDITOR
     [DllImport("__Internal")] static extern void HanamaEvent(string json);
 #endif
@@ -59,13 +60,18 @@ public sealed partial class HanamaGame : MonoBehaviour
     // Atomic updates: reuse textures and meshes; no allocation per drag frame.
     public void ReceiveFrame(string json)
     {
-        try{var next=JsonUtility.FromJson<Frame>(json);if(next==null||next.nodes==null)return;frame=next;selected=next.selected??"";tool=next.mode??"move";
+        try{var next=JsonUtility.FromJson<Frame>(json);if(next==null||next.nodes==null)return;
+            if(held&&next.mode!=tool)CancelGesture("");
+            frame=next;selected=next.selected??"";tool=next.mode??"move";
             var keep=new HashSet<string>();foreach(var node in next.nodes){if(string.IsNullOrEmpty(node.id))continue;keep.Add(node.id);if(!pieces.TryGetValue(node.id,out var p)){p=new Piece{root=new GameObject(node.id),mesh=new Mesh()};p.mesh.MarkDynamic();p.phase=pieces.Count*2.4f;p.mat=node.interactive?new Material(botanical):new Material(baseMaterial);p.renderer=p.root.AddComponent<MeshRenderer>();p.renderer.sharedMaterial=p.mat;p.root.AddComponent<MeshFilter>().sharedMesh=p.mesh;pieces.Add(node.id,p);}
                 p.data=node;p.scale=1;
                 if(!string.IsNullOrEmpty(node.texture)&&p.key!=node.key){var comma=node.texture.IndexOf(',');if(comma>=0){var bytes=Convert.FromBase64String(node.texture.Substring(comma+1));var tex=new Texture2D(2,2,TextureFormat.RGBA32,false);if(ImageConversion.LoadImage(tex,bytes,false)){tex.filterMode=FilterMode.Bilinear;tex.wrapMode=TextureWrapMode.Clamp;if(p.tex)Destroy(p.tex);p.tex=tex;p.mat.mainTexture=tex;p.key=node.key;if(p.shadowTex){Destroy(p.shadowTex);p.shadowTex=null;}}else Destroy(tex);}}
                 SetGeometry(p);p.renderer.sortingOrder=node.order;p.root.transform.position=new Vector3(node.x,100-node.y,0);p.root.transform.rotation=Quaternion.Euler(0,0,-node.angle);p.root.transform.localScale=new Vector3(node.flip?-1:1,1,1);p.previous=p.root.transform.position;
                 if(node.interactive){if(!p.shadow){var sh=new GameObject("Soft stem shadow");sh.AddComponent<MeshFilter>().sharedMesh=p.mesh;p.shadow=sh.AddComponent<MeshRenderer>();p.shadowMaterial=new Material(botanical);p.shadowMaterial.SetFloat("_Shadow",1);p.shadow.sharedMaterial=p.shadowMaterial;}p.shadow.sortingOrder=10+Mathf.Clamp(node.order%100,0,60);if(!p.shadowMesh)MakeShadowMesh(p);SyncOrganic(p);p.shadowMaterial.mainTexture=p.shadowTex;}
             }
+            // A select/begin frame can already be queued when the pointer lifts. Only the
+            // host's matching cut acknowledgement may replace this transient preview.
+            if(erasePiece!=null&&(!keep.Contains(erasePiece.data.id)||(pendingEraseId!=0&&next.eraseAck==pendingEraseId)))ClearErasePreview();
             var remove=new List<string>();foreach(var kv in pieces)if(!keep.Contains(kv.Key))remove.Add(kv.Key);foreach(var id in remove){var p=pieces[id];Destroy(p.root);Destroy(p.mesh);Destroy(p.mat);if(p.shadow)Destroy(p.shadow.gameObject);if(p.shadowMaterial)Destroy(p.shadowMaterial);if(p.tex)Destroy(p.tex);if(p.shadowTex)Destroy(p.shadowTex);if(p.shadowMesh)Destroy(p.shadowMesh);pieces.Remove(id);}
             idle=0;DrawSelection();
         }catch(Exception e){Debug.LogWarning("Hanama frame rejected: "+e.Message);Emit(new GameEvent{type="error",mode="frame"});}
@@ -94,8 +100,16 @@ public sealed partial class HanamaGame : MonoBehaviour
         if(touches!=null)
         {
             // Track a real finger, not primaryTouch's stale position after that finger lifts.
-            if(held)foreach(var t in touches.touches)if(t.press.isPressed&&t.touchId.ReadValue()==dragTouchId)return t.position.ReadValue();
-            foreach(var t in touches.touches)if(t.press.isPressed){dragTouchId=t.touchId.ReadValue();return t.position.ReadValue();}
+            if(held&&dragTouchId>=0)
+            {
+                foreach(var t in touches.touches)if(t.press.isPressed&&t.touchId.ReadValue()==dragTouchId){lastTouchPosition=t.position.ReadValue();return lastTouchPosition;}
+                // After a pinch, movement continues under the remaining finger. A brush
+                // never transfers its endpoint to a different finger.
+                if(tool=="move")foreach(var t in touches.touches)if(t.press.isPressed){dragTouchId=t.touchId.ReadValue();lastTouchPosition=t.position.ReadValue();return lastTouchPosition;}
+                foreach(var t in touches.touches)if(t.touchId.ReadValue()==dragTouchId){lastTouchPosition=t.position.ReadValue();return lastTouchPosition;}
+                return lastTouchPosition;
+            }
+            foreach(var t in touches.touches)if(t.press.isPressed){dragTouchId=t.touchId.ReadValue();lastTouchPosition=t.position.ReadValue();return lastTouchPosition;}
         }
         return Mouse.current!=null?Mouse.current.position.ReadValue():Vector2.zero;
 #else
@@ -181,8 +195,12 @@ public sealed partial class HanamaGame : MonoBehaviour
         Vector2 screen=Pointer(),at=World(screen);bool inside=screen.x>=0&&screen.y>=0&&screen.x<=Screen.width&&screen.y<=Screen.height;
         if(settings.photo){HideSelection();OnDemandRendering.renderFrameInterval=(!settings.motion||settings.reducedMotion)?4:1;return;}
         if(Keyboard.current!=null&&Keyboard.current.escapeKey.wasPressedThisFrame){CancelGesture("");return;}
+        if(waitForRelease){if(!IsHeld())waitForRelease=false;return;}
+        // A second finger cancels a brush stroke, never moves its endpoint to that finger.
+        if(held&&tool=="brush"&&TwoTouches(out _,out _)){CancelGesture("");waitForRelease=true;return;}
         if(!held&&Pressed()&&inside)
         {
+            if(pendingEraseId!=0)return;
             touchGesture=settings.coarsePointer||(Touchscreen.current!=null&&Touchscreen.current.primaryTouch.press.isPressed);
             idle=0;bool hitTurn=handle.activeSelf&&Vector2.Distance(at,handle.transform.position)<2.5f;
             bool hitScale=scaleHandle.activeSelf&&Vector2.Distance(at,scaleHandle.transform.position)<2.5f;
@@ -190,6 +208,7 @@ public sealed partial class HanamaGame : MonoBehaviour
             picked=(hitTurn||hitScale||hitRoot)&&pieces.ContainsKey(selected)?pieces[selected]:(touchGesture?PickTouch(at):Pick(at));
             if(picked==null&&tool!="move")pieces.TryGetValue(selected,out picked);
             if(picked==null){selected="";DrawSelection();Emit(new GameEvent{type="select",id=""});return;}
+            if(tool=="brush"&&!picked.data.canErase){picked=null;return;}
             RestOrganic(picked);selected=picked.data.id;down=at;offset=(Vector2)picked.root.transform.position-at;startAngle=picked.data.angle;startScale=picked.scale;
             turnStart=Angle(at-(Vector2)picked.root.transform.position);scaleDistance=Mathf.Max(2,Vector2.Distance(at,picked.root.transform.position));
             turning=tool=="move"&&(hitTurn||(!hitRoot&&(settings.tool=="rotate"||Shift())));
@@ -198,7 +217,9 @@ public sealed partial class HanamaGame : MonoBehaviour
             bending=tool=="move"&&settings.tool!="translate"&&!turning&&!scaling&&!hitRoot&&picked.chain!=null&&flat.y>picked.chain.extent*.16f;
             if(tool=="move"&&settings.tool=="bend"&&!bending){Emit(new GameEvent{type="select",id=selected});DrawSelection();picked=null;return;}
             if(bending)BeginBend(picked,at);held=true;started=false;pinching=usedPinch=false;cutPoints.Clear();
-            if(tool!="move")cutPoints.Add(at);Emit(new GameEvent{type="select",id=selected});DrawSelection();
+            if(tool!="move")cutPoints.Add(at);Emit(new GameEvent{type="select",id=selected});
+            if(tool=="brush"){BeginErasePreview(picked,at);BeginEdit();}
+            DrawSelection();
         }
         if(held&&picked!=null)
         {
@@ -222,8 +243,8 @@ public sealed partial class HanamaGame : MonoBehaviour
                 {
                     if(tool!="move")
                     {
-                        if(cutPoints.Count<512&&Vector2.Distance(cutPoints[cutPoints.Count-1],at)>.22f)cutPoints.Add(at);
-                        cutLine.positionCount=cutPoints.Count;for(int i=0;i<cutPoints.Count;i++)cutLine.SetPosition(i,cutPoints[i]);
+                        AddCutPoint(at,false);
+                        if(tool=="split"){cutLine.positionCount=cutPoints.Count;for(int i=0;i<cutPoints.Count;i++)cutLine.SetPosition(i,cutPoints[i]);}
                     }
                     else if(scaling)ApplyScale(picked,startScale*Vector2.Distance(at,picked.root.transform.position)/scaleDistance);
                     else if(turning)SetAngle(picked,(touchGesture||settings.tool=="rotate")?startAngle+(at.x-down.x)/CssDistance(1)*.65f:startAngle-Mathf.DeltaAngle(turnStart,Angle(at-(Vector2)picked.root.transform.position)));
@@ -235,7 +256,7 @@ public sealed partial class HanamaGame : MonoBehaviour
                     }
                 }
             }
-            if(started&&Time.unscaledTime-previewAt>.05f){previewAt=Time.unscaledTime;EmitTransform(picked,"preview");}
+            if(started&&tool=="move"&&Time.unscaledTime-previewAt>.05f){previewAt=Time.unscaledTime;EmitTransform(picked,"preview");}
             if(!IsHeld())Finish(at);
         }
         float scroll=inside?Scroll():0;
@@ -248,7 +269,8 @@ public sealed partial class HanamaGame : MonoBehaviour
             previewAt=Time.unscaledTime;var hit=Pick(at);string id=hit?.data.id??"";
             if(hovered!=id){hovered=id;Emit(new GameEvent{type="hover",id=id});}
         }
-        DrawCircle(brushRing,at,inside&&tool=="brush"?frame.brush:0);DrawSelection();idle+=dt;
+        // The host draws the CSS-pixel brush ring and eraser icon on both mouse and touch.
+        brushRing.positionCount=0;UploadErasePreview();DrawSelection();idle+=dt;
         OnDemandRendering.renderFrameInterval=(!settings.motion||settings.reducedMotion)&&idle>2?4:1;
     }
     void Finish(Vector2 at)
@@ -258,8 +280,11 @@ public sealed partial class HanamaGame : MonoBehaviour
         {
             if(tool!="move")
             {
+                AddCutPoint(at,true);UploadErasePreview();
                 var points=new Point[cutPoints.Count];for(int i=0;i<points.Length;i++)points[i]=new Point(new Vector2(cutPoints[i].x,100-cutPoints[i].y));
-                Emit(new GameEvent{type="cut",id=selected,mode=tool,points=points});Burst(at,8);
+                if(tool=="brush")pendingEraseId=eraseSequence;
+                Emit(new GameEvent{type="cut",id=selected,mode=tool,points=points,radius=tool=="brush"?eraseRadius:0,eraseId=tool=="brush"?eraseSequence:0});
+                if(tool=="split")Burst(at,8);
             }
             else
             {
@@ -272,12 +297,85 @@ public sealed partial class HanamaGame : MonoBehaviour
     }
     public void CancelGesture(string unused)
     {
+        ClearErasePreview();
         if(held&&picked!=null)
         {
             var n=picked.data;picked.root.transform.SetPositionAndRotation(new Vector3(n.x,100-n.y,0),Quaternion.Euler(0,0,-n.angle));ApplyScale(picked,1);SyncOrganic(picked);if(picked.chain!=null){Array.Copy(picked.chain.rest,picked.chain.angles,Bones);Forward(picked.chain,picked.chain.angles,picked.chain.joints);UpdateOrganicMesh(picked);}
             bool wasStarted=started;held=started=pinching=false;picked=null;if(wasStarted)Emit(new GameEvent{type="cancel"});
         }
         cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;bending=turning=scaling=false;dragTouchId=-1;
+    }
+    void AddCutPoint(Vector2 at,bool final)
+    {
+        if(cutPoints.Count==0){cutPoints.Add(at);return;}
+        var previous=cutPoints[cutPoints.Count-1];float spacing=tool=="brush"?Mathf.Min(.22f,eraseRadius*.22f):.22f;
+        if((at-previous).sqrMagnitude<(final ? .000001f : spacing * spacing))return;
+        if(cutPoints.Count==512)
+        {
+            // Retain the entire gesture and its endpoint instead of silently stopping at 512 samples.
+            int write=1;for(int read=2;read<cutPoints.Count-1;read+=2)cutPoints[write++]=cutPoints[read];
+            cutPoints[write++]=previous;cutPoints.RemoveRange(write,cutPoints.Count-write);
+            if(tool=="brush")RebuildErasePreview();
+        }
+        cutPoints.Add(at);if(tool=="brush")StampErase(previous,at);
+    }
+    void BeginErasePreview(Piece piece,Vector2 at)
+    {
+        ClearErasePreview();erasePiece=piece;eraseSequence=eraseSequence==int.MaxValue?1:eraseSequence+1;
+        eraseRadius=Mathf.Clamp(frame.brush/Mathf.Max(.001f,piece.data.h),.002f,.3f)*piece.data.h;
+        // One bounded mask for the active piece. The durable flower texture stays untouched.
+        float longest=Mathf.Max(piece.data.width,piece.data.height,.001f);
+        eraseWidth=Mathf.Clamp(Mathf.CeilToInt(piece.data.width/longest*512),16,512);
+        eraseHeight=Mathf.Clamp(Mathf.CeilToInt(piece.data.height/longest*512),16,512);
+        erasePixels=new byte[eraseWidth*eraseHeight];eraseMask=new Texture2D(eraseWidth,eraseHeight,TextureFormat.R8,false,true);eraseDirty=true;
+        eraseMask.wrapMode=TextureWrapMode.Clamp;eraseMask.filterMode=FilterMode.Bilinear;
+        piece.mat.SetTexture("_EraseTex",eraseMask);piece.mat.SetFloat("_EraseActive",1);
+        if(piece.shadowMaterial){piece.shadowMaterial.SetTexture("_EraseTex",eraseMask);piece.shadowMaterial.SetFloat("_EraseActive",1);}
+        StampErase(at,at);UploadErasePreview();
+    }
+    void RebuildErasePreview()
+    {
+        if(erasePixels==null)return;Array.Clear(erasePixels,0,erasePixels.Length);
+        for(int i=0;i<cutPoints.Count;i++)StampErase(cutPoints[Mathf.Max(0,i-1)],cutPoints[i]);
+        eraseDirty=true;
+    }
+    Vector2 EraseLocal(Vector2 world)
+    {
+        var p=erasePiece;var v=UnbendLocal(p,p.root.transform.InverseTransformPoint(world));
+        // Geometry is the cropped, already stretched photograph. These coordinates match
+        // the host's stageToSource -> warpY path without another image warp or PNG transfer.
+        return new Vector2(v.x+p.data.px*p.data.width,v.y+(1-p.data.py)*p.data.height);
+    }
+    void StampErase(Vector2 from,Vector2 to)
+    {
+        if(erasePiece==null||erasePixels==null)return;
+        var a=EraseLocal(from);var b=EraseLocal(to);var delta=b-a;float span=delta.sqrMagnitude;
+        float stepX=erasePiece.data.width/eraseWidth,stepY=erasePiece.data.height/eraseHeight;
+        float edge=Mathf.Max(stepX,stepY),radius=eraseRadius/Mathf.Max(.001f,erasePiece.scale),outer=radius+edge;
+        int left=Mathf.Clamp(Mathf.FloorToInt((Mathf.Min(a.x,b.x)-outer)/stepX),0,eraseWidth-1);
+        int right=Mathf.Clamp(Mathf.CeilToInt((Mathf.Max(a.x,b.x)+outer)/stepX),0,eraseWidth-1);
+        int bottom=Mathf.Clamp(Mathf.FloorToInt((Mathf.Min(a.y,b.y)-outer)/stepY),0,eraseHeight-1);
+        int top=Mathf.Clamp(Mathf.CeilToInt((Mathf.Max(a.y,b.y)+outer)/stepY),0,eraseHeight-1);
+        for(int y=bottom;y<=top;y++)for(int x=left;x<=right;x++)
+        {
+            var point=new Vector2((x+.5f)*stepX,(y+.5f)*stepY);float t=span>.0000001f?Mathf.Clamp01(Vector2.Dot(point-a,delta)/span):0;
+            float distance=(point-a-delta*t).magnitude;byte amount=(byte)Mathf.RoundToInt(Mathf.Clamp01((radius+edge*.5f-distance)/edge)*255);
+            int index=y*eraseWidth+x;if(amount>erasePixels[index]){erasePixels[index]=amount;eraseDirty=true;}
+        }
+    }
+    void UploadErasePreview()
+    {
+        if(!eraseDirty||!eraseMask)return;
+        eraseMask.SetPixelData(erasePixels,0);eraseMask.Apply(false,false);eraseDirty=false;
+    }
+    void ClearErasePreview()
+    {
+        if(erasePiece!=null)
+        {
+            if(erasePiece.mat){erasePiece.mat.SetFloat("_EraseActive",0);erasePiece.mat.SetTexture("_EraseTex",null);}
+            if(erasePiece.shadowMaterial){erasePiece.shadowMaterial.SetFloat("_EraseActive",0);erasePiece.shadowMaterial.SetTexture("_EraseTex",null);}
+        }
+        if(eraseMask)Destroy(eraseMask);eraseMask=null;erasePixels=null;erasePiece=null;eraseDirty=false;pendingEraseId=0;
     }
     void SetAngle(Piece p,float angle){p.root.transform.rotation=Quaternion.Euler(0,0,-angle);}
     void ApplyScale(Piece p,float scale){p.scale=Mathf.Clamp(scale,p.data.minScale,p.data.maxScale);p.root.transform.localScale=new Vector3((p.data.flip?-1:1)*p.scale,p.scale,1);}

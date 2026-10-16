@@ -1,0 +1,11 @@
+/* SPDX-FileCopyrightText: 2026 Marko Sun
+   SPDX-License-Identifier: LicenseRef-Hanama-Proprietary */
+/* The ring is the brush footprint; the offset icon names the tool without hiding its work. */
+.eraser-cursor{position:absolute;inset:0;z-index:390;pointer-events:none!important;user-select:none;contain:layout style}
+.eraser-cursor[hidden]{display:none!important}
+.eraser-cursor-ring,.eraser-cursor-icon{position:absolute;transform:translate(-50%,-50%);pointer-events:none!important;box-sizing:border-box}
+.eraser-cursor-ring{border:0;border-radius:50%;box-shadow:0 0 0 1px #263c30,0 0 0 2px #fffffff0,inset 0 0 0 1px #ffffffb3;background:transparent}
+.eraser-cursor-icon{display:grid;place-items:center;border:1px solid #405b3e80;border-radius:6px;color:#405b3e;background:#fffffff5;box-shadow:0 1px 5px #22372524,0 0 0 1px #ffffffb3}
+.eraser-cursor-icon svg{display:block;width:74%;height:74%;overflow:visible}
+.eraser-cursor[data-contact=true] .eraser-cursor-icon{background:#edf3e8;color:#2f4e35}
+.stage.eraser-pointer-active,.stage.eraser-pointer-active .unity-container canvas,.stage.eraser-pointer-active .stem{cursor:none!important}

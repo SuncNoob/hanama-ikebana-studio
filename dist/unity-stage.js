@@ -1,1 +1,1 @@
-export {mountUnityGame} from './atelier.js?v=9';
+export {mountUnityGame} from './atelier.js?v=10';

@@ -9,6 +9,8 @@ Shader "Hanama/Botanical"
         _Selected ("Selection", Float) = 0
         _Shadow ("Shadow pass", Float) = 0
         _Softness ("Penumbra", Vector) = (.005, .005, 0, 0)
+        _EraseTex ("Transient eraser mask", 2D) = "black" {}
+        _EraseActive ("Eraser preview", Float) = 0
     }
     SubShader
     {
@@ -23,13 +25,19 @@ Shader "Hanama/Botanical"
             #include "UnityCG.cginc"
             struct appdata { float4 vertex : POSITION; float2 uv : TEXCOORD0; };
             struct v2f { float4 vertex : SV_POSITION; float2 uv : TEXCOORD0; };
-            sampler2D _MainTex;
+            sampler2D _MainTex, _EraseTex;
             float4 _MainTex_TexelSize, _LightDirection, _LightColor, _Softness;
-            float _LightPower, _Selected, _Shadow;
+            float _LightPower, _Selected, _Shadow, _EraseActive;
             v2f vert(appdata v) { v2f o; o.vertex=UnityObjectToClipPos(v.vertex); o.uv=v.uv; return o; }
             fixed4 frag(v2f i) : SV_Target
             {
                 fixed4 c=tex2D(_MainTex,i.uv);
+                if (_EraseActive>.5)
+                {
+                    // Shadow geometry includes 12% padding; the mask uses the flower's UVs.
+                    float2 maskUV=_Shadow>.5?i.uv*1.24-.12:i.uv;
+                    c.a*=1-tex2D(_EraseTex,maskUV).r;
+                }
                 if (_Shadow>.5)
                     return fixed4(.28,.30,.26,c.a*lerp(.035,.085,_LightPower)*lerp(1,.56,saturate(i.uv.y)));
                 // A broad wrapped light retains the source photograph's soft botanical detail.

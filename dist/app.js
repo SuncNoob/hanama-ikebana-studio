@@ -33,7 +33,7 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=9';
+import {mountUnityGame} from './atelier.js?v=10';
 import {normalizeFlex} from './flex.js?v=2';
 import {stemLengthRatio,setStemLength,normalizeStemSplit,supportsStemStretch,stemStretchSplit} from './stem-length.js';
 import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene} from './organic-room.js?v=restore1';
@@ -156,7 +156,7 @@ function validate(v,{lenient=false,report=null}={}){
  return {version:2,id:typeof v.id==='string'&&/^[A-Za-z0-9_-]{1,80}$/.test(v.id)?v.id:uid(),title:String(v.title||L('未命名作品','Untitled Arrangement')).slice(0,40),subtitle:String(v.subtitle||'').slice(0,90),vessel:v.vessel,scene:v.scene,mood:['静寂','侘寂','春意','野趣'].includes(v.mood)?v.mood:'静寂',generation:['natural','creative','faithful'].includes(v.generation)?v.generation:'natural',intention:String(v.intention||'').slice(0,600),...lineageField(v.lineage),...(lightOf(v.light)?{light:lightOf(v.light)}:{}),items:tolerant(v.items,i=>{
   if(!specimens.some(a=>a.id===i.type)||!['x','y','h','angle','trim'].every(k=>Number.isFinite(i[k])))throw Error(L('花材信息不完整','Material data is incomplete'));
   const cuts=tolerant((Array.isArray(i.cuts)?i.cuts:[]).slice(0,24),c=>{
-   if(!['lasso','brush'].includes(c.kind)||!Array.isArray(c.points)||c.points.length>128)throw Error(L('剪枝信息不完整','Pruning data is incomplete'));
+   if(!['lasso','brush'].includes(c.kind)||!Array.isArray(c.points)||c.points.length>512)throw Error(L('剪枝信息不完整','Pruning data is incomplete'));
    totalPoints+=c.points.length;if(totalPoints>8000)throw Error(L('剪枝信息过多','The draft contains too much pruning detail'));
    const points=c.points.map(p=>{if(!Array.isArray(p)||p.length!==2||!p.every(Number.isFinite))throw Error(L('剪枝坐标无效','Pruning coordinates are invalid'));return p.map(n=>clamp(n,-3,4));});
    return {kind:c.kind,points,radius:clamp(Number.isFinite(c.radius)?c.radius:.025,.002,.3)};
@@ -1310,6 +1310,7 @@ stage.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||e.buttons||
 stage.addEventListener('pointerleave',()=>{hoverAt=null;stage.classList.remove('over-stem','over-base')});
 function setEditMode(mode){
  if(drag||gesture||canvasPan||movePointers.size)finishMoveInteraction(true);
+ cancelPrunePreview();
  if(mode!=='move'&&!current()){if(!state.items.length)return;selectItem(state.items.at(-1).id)}
  editMode=mode;gameBridge?.schedule();stroke=null;$('#stage').dataset.tool=mode;
  $('#move-tool').setAttribute('aria-pressed',String(mode==='move'));$('#prune-tool').setAttribute('aria-pressed',String(mode==='split'));$('#erase-tool').setAttribute('aria-pressed',String(mode==='brush'));
@@ -1331,9 +1332,9 @@ $('#mode-pill-done').onclick=()=>{setEditMode('move');renderStage()};
 for(const [id,step] of [['brush-smaller',-3],['brush-larger',3]])$('#'+id).onclick=()=>{const input=$('#brush-size'),next=clamp(Number(input.value)+step,Number(input.min)||5,Number(input.max)||35);if(String(next)===input.value)return;input.value=String(next);input.dispatchEvent(new Event('input',{bubbles:true}))};
 $('#move-tool').onclick=()=>setEditMode('move');$('#prune-tool').onclick=()=>setEditMode(editMode==='split'?'move':'split');$('#erase-tool').onclick=()=>setEditMode(editMode==='brush'?'move':'brush');$$('[data-prune]').forEach(b=>b.onclick=()=>setEditMode(editMode===b.dataset.prune?'move':b.dataset.prune));
 $('#stem-details').addEventListener('toggle',()=>{if(!document.body.classList.contains('atelier-simple')&&!$('#stem-details').open&&editMode!=='move')setEditMode('move')});
-$('#brush-size').oninput=e=>{$('#brush-value').value=e.target.value;const pillSize=$('#mode-pill-size');if(pillSize)pillSize.value=e.target.value};
+$('#brush-size').oninput=e=>{gameBridge?.cancel();cancelPrunePreview();$('#brush-value').value=e.target.value;const pillSize=$('#mode-pill-size');if(pillSize)pillSize.value=e.target.value;gameBridge?.schedule()};
 $('#restore-cuts').onclick=()=>{if(!current()?.cuts.length)return;checkpoint();current().cuts=[];current().sv=stemVersion(current());renderStage();persist();undoToast(L('已恢复细部擦除。','Brushwork restored.','細部消去を戻しました。'))};
-function drawPruneOverlay(){const c=$('#prune-overlay');if(!c)return;const size=Math.max(1,Math.round($('#stage').getBoundingClientRect().width));c.width=c.height=size;const ctx=c.getContext('2d');if(!stroke?.points.length||!current())return;const item=current(),asset=assetById[item.type],points=stroke.kind==='split'?[stroke.points[0],stroke.points.at(-1)]:stroke.points;ctx.beginPath();points.forEach((p,k)=>{const q=sourceToStage(p,item,asset);ctx[k?'lineTo':'moveTo'](q[0]*size,q[1]*size)});ctx.strokeStyle='#a5533e';ctx.lineWidth=stroke.kind==='split'?2.5:2;ctx.setLineDash(stroke.kind==='split'?[7,4]:[5,4]);ctx.stroke();}
+function drawPruneOverlay(){const c=$('#prune-overlay');if(!c)return;const size=Math.max(1,Math.round($('#stage').getBoundingClientRect().width));c.width=c.height=size;const ctx=c.getContext('2d');if(stroke?.kind!=='split'||!stroke.points.length||!current())return;const item=current(),asset=assetById[item.type],points=[stroke.points[0],stroke.points.at(-1)];ctx.beginPath();points.forEach((p,k)=>{const q=sourceToStage(p,item,asset);ctx[k?'lineTo':'moveTo'](q[0]*size,q[1]*size)});ctx.strokeStyle='#a5533e';ctx.lineWidth=2.5;ctx.setLineDash([7,4]);ctx.stroke();}
 /** Resize and rotation: zoom, overlays and the vessel layers follow at once; the stem canvases are re-rasterised for the new
  size 120 ms after the last change. A hidden studio measures 0 px and is skipped until it shows again. */
 let stemResizeTimer=0;
@@ -1352,8 +1353,18 @@ function retargetPrune(e){
  if(!id||id===selected)return;
  selectItem(id);
 }
-$('#stage').addEventListener('pointerdown',e=>{if(editMode==='move'||e.button!==0||!current()||stroke)return;e.preventDefault();lastPointerType=e.pointerType;retargetPrune(e);if(editMode==='split'&&(current().localCuts||[]).length>=8)return toast(L('这一段已经剪得很细，可先整理现有片段。','This piece has reached the cut limit. Arrange its pieces first.','この部分はこれ以上分割できません。'));if(editMode!=='split'&&current().cuts.length>=24)return toast(L('这枝已有 24 处剪口；可恢复剪枝后重剪。','This stem already has 24 cuts. Restore it before pruning again.'));const total=state.items.reduce((n,i)=>n+i.cuts.reduce((m,c)=>m+c.points.length,0),0);if(editMode!=='split'&&total>7800)return toast(L('剪枝细节已很多，请先恢复部分剪口。','There is extensive pruning detail. Restore some cuts first.'));const item=current(),p=stageToSource(pointerStage(e),item,assetById[item.type]);stroke={kind:editMode,points:[p],radius:clamp(Number($('#brush-size').value)/$('#stage').getBoundingClientRect().width/(item.h/100)/2,.002,.3),pointer:e.pointerId};$('#stage').setPointerCapture(e.pointerId);drawPruneOverlay()});
+$('#stage').addEventListener('pointerdown',e=>{if(e.isPrimary===false){cancelPrunePreview();return;}if(editMode==='move'||e.button!==0||!current()||stroke)return;e.preventDefault();lastPointerType=e.pointerType;retargetPrune(e);if(editMode==='split'&&(current().localCuts||[]).length>=8)return toast(L('这一段已经剪得很细，可先整理现有片段。','This piece has reached the cut limit. Arrange its pieces first.','この部分はこれ以上分割できません。'));if(editMode!=='split'&&current().cuts.length>=24)return toast(L('这枝已有 24 处剪口；可恢复剪枝后重剪。','This stem already has 24 cuts. Restore it before pruning again.'));const total=state.items.reduce((n,i)=>n+i.cuts.reduce((m,c)=>m+c.points.length,0),0);if(editMode!=='split'&&total>7488)return toast(L('剪枝细节已很多，请先恢复部分剪口。','There is extensive pruning detail. Restore some cuts first.'));const item=current(),p=stageToSource(pointerStage(e),item,assetById[item.type]);stroke={kind:editMode,points:[p],radius:clamp(Number($('#brush-size').value)/$('#stage').getBoundingClientRect().width/(item.h/100)/2,.002,.3),pointer:e.pointerId};$('#stage').setPointerCapture(e.pointerId);drawPruneOverlay()});
 let brushPreviewFrame=0;
+function cancelPrunePreview(){
+ if(!stroke)return;
+ stroke=null;if(brushPreviewFrame){cancelAnimationFrame(brushPreviewFrame);brushPreviewFrame=0;}
+ redrawStemCanvases();drawPruneOverlay();
+}
+// The fallback canvas previews even a stationary dab; Unity renders its own live mask.
+stage.addEventListener('pointerdown',()=>{if(stroke?.kind==='brush'&&current())drawStemCanvas($(`.stem[data-id="${current().id}"]`),current(),{previewCut:stroke})});
+stage.addEventListener('lostpointercapture',e=>{if(stroke?.pointer===e.pointerId)cancelPrunePreview()});
+window.addEventListener('blur',cancelPrunePreview);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelPrunePreview()});
 $('#stage').addEventListener('pointermove',e=>{if(!stroke||stroke.pointer!==e.pointerId)return;const item=current();const p=stageToSource(pointerStage(e),item,assetById[item.type]);const previous=sourceToStage(stroke.points.at(-1),item,assetById[item.type]),next=pointerStage(e);if(Math.hypot(next[0]-previous[0],next[1]-previous[1])<.003)return;if(stroke.kind==='split')stroke.points=[stroke.points[0],p];else stroke.points.push(p);if(stroke.points.length>512)stroke.points=simplifyPoints(stroke.points,256);if(stroke.kind==='brush'&&!brushPreviewFrame){const itemId=item.id;brushPreviewFrame=requestAnimationFrame(()=>{brushPreviewFrame=0;if(stroke?.kind==='brush'&&current()?.id===itemId)drawStemCanvas($(`.stem[data-id="${itemId}"]`),item,{previewCut:stroke})})}drawPruneOverlay()});
 function splitSelected(cut){
  const item=current(),asset=item&&assetById[item.type],img=item&&images[item.type];if(!item||!img)return false;
@@ -1377,13 +1388,14 @@ function splitSelected(cut){
 }
 function finishPrune(e,cancel=false){
  if(!stroke||stroke.pointer!==e.pointerId)return;const cut=stroke;stroke=null;
+ if(brushPreviewFrame){cancelAnimationFrame(brushPreviewFrame);brushPreviewFrame=0;}
  if(e.pointerType==='touch')suppressLayerContextUntil=performance.now()+600;
  if(!cancel&&cut.kind==='split'){if(cut.points.length>=2&&splitSelected(cut))return;renderStage();return}
  if(!cancel&&cut.kind==='brush'){
   const item=current();
   // A stroke that reaches no visible pixel of the stem (on the pre-cut mask) is not a cut: no undo step, nothing stored.
   if(!strokeTouches(specimenCanvas(item)?.mask,cut,item,assetById[item.type])){renderStage();return}
-  checkpoint();item.cuts.push({kind:cut.kind,points:simplifyPoints(cut.points),radius:clamp(cut.radius,.002,.3)});
+  checkpoint();item.cuts.push({kind:cut.kind,points:simplifyPoints(cut.points,cut.kind==='brush'?512:128),radius:clamp(cut.radius,.002,.3)});
   const mask=specimenCanvas(item)?.mask,fullyErased=!!mask&&!mask.data.some(alpha=>alpha>12);
   if(fullyErased){state.items=state.items.filter(entry=>entry.id!==item.id);dropSprite(item.id);selected=state.items.find(entry=>entry.originId&&entry.originId===item.originId)?.id||state.items.at(-1)?.id||null;cutSession=null;setEditMode('move')}
  }
@@ -2169,6 +2181,7 @@ function gameRaster(key,paint,size=768){
  return texture;
 }
 function gameFrame(knownTextures=new Map()){
+ const eraseBudget=state.items.reduce((sum,item)=>sum+item.cuts.reduce((n,cut)=>n+cut.points.length,0),0)<=7488;
  const transfer=(id,key,paint,size)=>knownTextures.get(id)===key?'':gameRaster(key,paint,size);
  const sceneKey=`organic-room-6|${organicRoomsReady}|${sceneLayerKey}|${state.light||''}`;
  const full=(id,key,texture,order)=>({id,key,texture,x:50,y:50,width:100,height:100,px:.5,py:.5,angle:0,flip:false,interactive:false,order});
@@ -2180,7 +2193,7 @@ function gameFrame(knownTextures=new Map()){
   const pivot=Number.isFinite(item.cropAnchorSourceY)?warpY(item.cropAnchorSourceY,g.split,g.length)/g.height:(item.cropAnchorY??1),key=`game-flower|${spriteCache.get(item.id)?.key}|${src.width}|${src.height}|${a.saturation||1}`;
   const texture=transfer(item.id,key,(ctx,S)=>{if(a.saturation)ctx.filter=`saturate(${a.saturation})`;ctx.drawImage(src,0,0,S,S);},Math.min(1024,Math.max(src.width,src.height)));
   const [min,max]=sizeBounds(a),foot=seatPoint(item,a);
-  nodes.push({id:item.id,name:assetName(a),flex:normalizeFlex(item.flex),extent:flexExtent(item,a,g)*100,flexibility:botanicalFlexibility(a),seated:isSeated(item),seatDX:foot[0]-item.x,seatDY:foot[1]-item.y,front:!!item.aboveVessel,cutSeat:!!cutEndSource(item,a),key,texture,x:item.x,y:item.y,width:item.h*g.ratio*crop.width/crop.fullWidth,height:item.h*g.height*crop.height/crop.fullHeight,px:(g.anchor*crop.fullWidth-crop.x)/crop.width,py:(pivot*crop.fullHeight-crop.y)/crop.height,angle:item.angle,h:item.h,flip:item.flip,interactive:true,order:(item.aboveVessel?600:100)+index*2,minScale:min/item.h,maxScale:max/item.h});
+  nodes.push({id:item.id,name:assetName(a),canErase:eraseBudget&&item.cuts.length<24,flex:normalizeFlex(item.flex),extent:flexExtent(item,a,g)*100,flexibility:botanicalFlexibility(a),seated:isSeated(item),seatDX:foot[0]-item.x,seatDY:foot[1]-item.y,front:!!item.aboveVessel,cutSeat:!!cutEndSource(item,a),key,texture,x:item.x,y:item.y,width:item.h*g.ratio*crop.width/crop.fullWidth,height:item.h*g.height*crop.height/crop.fullHeight,px:(g.anchor*crop.fullWidth-crop.x)/crop.width,py:(pivot*crop.fullHeight-crop.y)/crop.height,angle:item.angle,h:item.h,flip:item.flip,interactive:true,order:(item.aboveVessel?600:100)+index*2,minScale:min/item.h,maxScale:max/item.h});
  });
  const compositionKey=JSON.stringify(state.items),vesselKey=`game-vessel|${state.vessel}|${!!images[state.vessel]}`;
  nodes.push(full('vessel',vesselKey,transfer('vessel',vesselKey,(ctx,S)=>paintVesselLayer(ctx,S,state,assetById,images,{ground:false,fixture:false})),500));
@@ -2188,10 +2201,11 @@ function gameFrame(knownTextures=new Map()){
   const c=$(`#${name}-layer`);if(!c?.width)continue;const key=`game-${name}|${state.vessel}|${state.scene}|${compositionKey}`;
   nodes.push(full(name,key,transfer(name,key,(ctx,S)=>ctx.drawImage(c,0,0,S,S)),order));
  }
- const vessel=assetById[state.vessel],v=vesselGeometry(vessel);return {nodes,selected:selected||'',mode:editMode,brush:Number($('#brush-size').value)/Math.max(1,stageWidth())*50,light:state.light||'',mouths:mouthTargets(vessel),mouthX:v.insertion[0],mouthY:v.insertion[1]};
+ const vessel=assetById[state.vessel],v=vesselGeometry(vessel);return {nodes,eraseAck:gameEraseAck,selected:selected||'',mode:editMode,brush:Number($('#brush-size').value)/Math.max(1,stageWidth())*50,light:state.light||'',mouths:mouthTargets(vessel),mouthX:v.insertion[0],mouthY:v.insertion[1]};
 }
-let gameGestureMark=null,gameGestureRedo=null,gameGestureUndo=null;
+let gameGestureMark=null,gameGestureRedo=null,gameGestureUndo=null,gameEraseAck=0;
 function gameEvent(e){
+ if(e.type==='cut'&&e.mode==='brush'&&Number.isSafeInteger(e.eraseId)&&e.eraseId>0)gameEraseAck=e.eraseId;
  if(e.type==='select'){selectItem(e.id||null);return;}
  const item=state.items.find(i=>i.id===e.id);
  if(e.type==='begin'&&item){gameGestureMark=null;gameGestureRedo=redoStack.slice();gameGestureUndo=undoStack.slice();if(editMode==='move'){checkpoint();gameGestureMark=undoStack.at(-1);}selectItem(e.id);return;}
@@ -2202,13 +2216,15 @@ function gameEvent(e){
   if(Array.isArray(e.flex)){const flex=normalizeFlex(e.flex);if(flex.some(a=>Math.abs(a)>.00001))item.flex=flex;else delete item.flex;}
   gameGestureUndo=gameGestureRedo=gameGestureMark=null;selected=item.id;renderStage();persist();return;
  }
- if(e.type==='cut'&&item&&['split','brush'].includes(e.mode)&&Array.isArray(e.points)&&e.points.length>=2){
+ if(e.type==='cut')gameGestureUndo=gameGestureRedo=gameGestureMark=null;
+ if(e.type==='cut'&&item&&['split','brush'].includes(e.mode)&&Array.isArray(e.points)&&e.points.length>=(e.mode==='brush'?1:2)){
   selected=item.id;const points=e.points.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)).slice(0,512).map(p=>stageToSource([p.x/100,p.y/100],item,assetById[item.type]));
-  if((e.mode==='split'&&(item.localCuts?.length||0)>=8)||(e.mode==='brush'&&item.cuts.length>=24))return;
-  stroke={kind:e.mode,points,radius:clamp(Number($('#brush-size').value)/stageWidth()/(item.h/100)/2,.002,.3),pointer:-777};finishPrune({pointerId:-777,pointerType:'mouse'});
+  if(points.length<(e.mode==='brush'?1:2)||(e.mode==='split'&&(item.localCuts?.length||0)>=8)||(e.mode==='brush'&&(item.cuts.length>=24||state.items.reduce((n,i)=>n+i.cuts.reduce((m,c)=>m+c.points.length,0),0)>7488)))return;
+  const radius=Number.isFinite(e.radius)&&e.radius>0?e.radius/item.h:Number($('#brush-size').value)/stageWidth()/(item.h/100)/2;
+  stroke={kind:e.mode,points,radius:clamp(radius,.002,.3),pointer:-777};finishPrune({pointerId:-777,pointerType:'mouse'});
  }
 }
-gameBridge=mountUnityGame({getFrame:gameFrame,onEvent:gameEvent,locale:()=>lang,onAction:action=>{
+gameBridge=mountUnityGame({getFrame:gameFrame,onEvent:gameEvent,getEraserDiameter:()=>{const h=current()?.h,w=Math.max(1,stageWidth()),d=Number($('#brush-size').value)||16;return h>0?clamp(d/w*50/h,.002,.3)*h/100*w*2:d;},locale:()=>lang,onAction:action=>{
  if(action==='move'){setEditMode('move');return;}
  if(action==='duplicate'){duplicateSelected();return;}
  if(action==='straighten'&&current()){checkpoint();delete current().flex;renderStage();persist();return;}
