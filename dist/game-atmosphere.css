@@ -232,7 +232,7 @@ body.atelier-simple{background:#f0f1ea;color:var(--atelier-ink)}
  .atelier-bench{row-gap:2px}
 }
 
-/* Touch modes use the flower itself as the handle. */
+/* The same direct manipulation modes work with a mouse or a finger. */
 .atelier-touch-tools[hidden]{display:none!important}
 .atelier-touch-tools{display:flex;flex-direction:column;align-items:center;gap:3px;margin:0 0 5px}
 .atelier-touch-modes{display:flex;align-items:center;justify-content:center;gap:3px;width:252px;padding:2px;border:1px solid #d7dfce;border-radius:12px;background:#f8faf3}
@@ -241,38 +241,49 @@ body.atelier-simple{background:#f0f1ea;color:var(--atelier-ink)}
 .atelier-touch-modes button:disabled{opacity:.4}
 #atelier-touch-hint{margin:0;min-height:14px;color:#829176;font-size:10px;line-height:14px;text-align:center}
 .atelier-simple.game-photo-mode .atelier-touch-tools{display:none!important}
-@media(pointer:coarse){
- .atelier-touch{--atelier-size:min(1040px,max(150px,calc(100dvh - 220px)))}
+.atelier-direct{--atelier-size:min(1040px,max(150px,calc(100dvh - 270px)))}
+.atelier-bench{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:center;gap:5px 8px}
+.atelier-tool-slot{grid-column:1/-1;grid-row:1;justify-content:center}
+.atelier-add-slot{grid-column:1;grid-row:2;justify-self:start}
+.atelier-vessel-slot{grid-column:2;grid-row:2;justify-self:center}
+#atelier-atmosphere{grid-column:3;grid-row:2;justify-self:center}
+#atelier-work{grid-column:4;grid-row:2;justify-self:end}
+.atelier-bench-space{display:none}
+.atelier-simple .atelier-vessel-slot>button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:8px 15px;border:1px solid #cbd8c1;border-radius:999px;background:#e8efdf;color:#405b3e;font-size:12px;font-weight:400;box-shadow:none;white-space:nowrap}
+.atelier-simple .atelier-vessel-slot>button:hover{background:#dce8d2;transform:none}
+.atelier-simple .atelier-vessel-slot>button>span{font-size:inherit;line-height:inherit}
+.atelier-vessel-slot>button>span:first-child:not(:last-child){font-size:18px}
+.atelier-simple.game-photo-mode .atelier-bench{display:flex;justify-content:flex-end}
+.atelier-simple.game-photo-mode .atelier-vessel-slot{display:none}
+@media(max-width:900px){
+ .atelier-direct{--atelier-size:min(1040px,max(150px,calc(100dvh - 262px)))}
+ .atelier-simple .atelier-vessel-slot>button{padding:8px 12px;font-size:11px}
 }
-@media(pointer:coarse) and (max-width:900px){
- .atelier-touch{--atelier-size:min(1040px,max(150px,calc(100dvh - 262px)))}
+@media(max-width:600px){
+ .atelier-direct{--atelier-size:min(1040px,max(150px,calc(100dvh - 308px)))}
+ .atelier-bench{column-gap:4px}
+ .atelier-simple .atelier-add-slot>button,.atelier-simple .atelier-vessel-slot>button{padding:8px 10px;min-width:44px}
+ .atelier-add-slot>button>span:first-child,.atelier-vessel-slot>button>span:first-child:not(:last-child){display:none}
 }
-@media(pointer:coarse) and (max-width:600px){
- .atelier-touch{--atelier-size:min(1040px,max(150px,calc(100dvh - 308px)))}
-}
-@media(pointer:coarse) and (orientation:landscape) and (max-height:540px){
- .atelier-touch{--atelier-size:min(78vw,max(80px,calc(100dvh - 242px)))}
- .atelier-touch-tools{flex-direction:row;justify-content:center;gap:10px;margin-bottom:4px}
- .atelier-touch-modes{width:230px;flex:none}
- #atelier-touch-hint{max-width:190px;text-align:left}
-}
-
-/* On a short phone, keep a useful canvas beside the controls. */
-@media(pointer:coarse) and (orientation:landscape) and (max-height:540px) and (min-width:480px){
- .atelier-touch{--atelier-size:max(100px,min(calc(100dvh - 70px),calc(100vw - 290px)))}
- .atelier-simple.atelier-touch #studio-view .stage-shell{width:min(100%,880px)!important}
- .atelier-simple.atelier-touch #studio-view .stage-shell>.stage-frame{display:grid!important;grid-template-columns:minmax(100px,var(--atelier-size)) 252px;justify-content:center;align-items:center;gap:12px}
- .atelier-touch .canvas-viewport{grid-column:1;grid-row:1}
- .atelier-touch .game-session{grid-column:2;grid-row:1;width:252px;min-width:0;margin:0}
- .atelier-touch .atelier-touch-tools{flex-direction:column;gap:3px;margin-bottom:5px}
- .atelier-touch .atelier-touch-modes{width:252px}
- .atelier-touch #atelier-touch-hint{max-width:252px;text-align:center}
- .atelier-simple.atelier-touch #studio-view .atelier-tool-slot>.stage-tools{flex-wrap:wrap;width:252px;gap:6px 8px}
- .atelier-touch .atelier-bench{row-gap:5px}
- .atelier-touch .atelier-popover,.atelier-touch .atelier-length-panel{position:fixed;inset:auto 12px 12px auto;transform:none;width:min(350px,calc(100vw - 24px));max-height:calc(100dvh - 24px);margin:0}
- .atelier-simple.atelier-touch.game-photo-mode #studio-view .stage-shell>.stage-frame{display:flex!important}
- .atelier-simple.atelier-touch.game-photo-mode #studio-view .stage-shell{width:min(calc(100dvh - 120px),100%)!important}
- .atelier-simple.atelier-touch.game-photo-mode .game-session{width:100%;margin-top:5px}
+/* Short windows keep a useful canvas beside the controls. */
+@media(orientation:landscape) and (max-height:540px) and (min-width:480px){
+ .atelier-direct{--atelier-size:max(100px,min(calc(100dvh - 70px),calc(100vw - 290px)))}
+ .atelier-simple.atelier-direct #studio-view .stage-shell{width:min(100%,880px)!important}
+ .atelier-simple.atelier-direct #studio-view .stage-shell>.stage-frame{display:grid!important;grid-template-columns:minmax(100px,var(--atelier-size)) 252px;justify-content:center;align-items:center;gap:12px}
+ .atelier-direct .canvas-viewport{grid-column:1;grid-row:1}
+ .atelier-direct .game-session{grid-column:2;grid-row:1;width:252px;min-width:0;margin:0}
+ .atelier-direct .atelier-touch-tools{flex-direction:column;gap:3px;margin-bottom:5px}
+ .atelier-direct .atelier-touch-modes{width:252px}
+ .atelier-direct #atelier-touch-hint{max-width:252px;text-align:center}
+ .atelier-simple.atelier-direct #studio-view .atelier-tool-slot>.stage-tools{flex-wrap:wrap;width:252px;gap:6px 8px}
+ .atelier-direct .atelier-bench{gap:5px 3px}
+ .atelier-simple.atelier-direct .atelier-add-slot>button,.atelier-simple.atelier-direct .atelier-vessel-slot>button{padding:8px 6px;min-width:44px;font-size:11px}
+ .atelier-direct .atelier-add-slot>button>span:first-child,.atelier-direct .atelier-vessel-slot>button>span:first-child:not(:last-child){display:none}
+ .atelier-simple.atelier-direct .atelier-disclosure>summary{padding:8px 6px}
+ .atelier-direct .atelier-popover,.atelier-direct .atelier-length-panel{position:fixed;inset:auto 12px 12px auto;transform:none;width:min(350px,calc(100vw - 24px));max-height:calc(100dvh - 24px);margin:0}
+ .atelier-simple.atelier-direct.game-photo-mode #studio-view .stage-shell>.stage-frame{display:flex!important}
+ .atelier-simple.atelier-direct.game-photo-mode #studio-view .stage-shell{width:min(calc(100dvh - 120px),100%)!important}
+ .atelier-simple.atelier-direct.game-photo-mode .game-session{width:100%;margin-top:5px}
 }
 
 .atelier-work-panel{padding-top:48px}

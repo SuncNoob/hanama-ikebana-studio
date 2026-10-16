@@ -190,7 +190,7 @@ test('app.js and index.html: one library renderer, role chips in both rows, a ve
   const tag=html.match(new RegExp(`<button[^>]*${attr}="${role}"[^>]*>`))?.[0];
   assert.ok(tag,`${attr}=${role}`);assert.match(tag,/data-zh="[^"]+"[^>]*data-en="[^"]+"[^>]*data-ja="[^"]+"/,tag);assert.match(tag,/aria-pressed=/);
  }
- for(const attr of ['data-family-book','data-quick-book','data-quick-mode="flowers"','data-quick-mode="vessels"','data-quick-vessel-style="all"'])assert.ok(html.includes(attr),attr);
+ for(const attr of ['data-family-book','data-quick-book','id="quick-material-open"','id="quick-vessel-open"','data-quick-vessel-style="all"'])assert.ok(html.includes(attr),attr);
  for(const style of ['japanese','english','french'])assert.match(html,new RegExp(`data-vessel-style="${style}"[^>]*data-en="${style[0].toUpperCase()}${style.slice(1)}"`));
  assert.match(app,/openQuickMaterialDrawer\(\{filter:'line'\}\)/,'the start card still opens the sheet on lines');
  assert.match(app,/aria-valuetext/);

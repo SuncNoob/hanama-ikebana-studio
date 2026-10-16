@@ -30,9 +30,9 @@
 <link rel="stylesheet" href="/style.css?v=hn3">
 <link rel="stylesheet" href="/material-drawer.css?v=hn3">
 <link rel="stylesheet" href="/ui-polish.css?v=light1">
-<link rel="stylesheet" href="/game-atmosphere.css?v=7">
+<link rel="stylesheet" href="/game-atmosphere.css?v=8">
 <link rel="stylesheet" href="/background-choices.css?v=1">
-<script type="module" src="/app.js?v=mobile7">
+<script type="module" src="/app.js?v=library8">
 </script>
 </head>
 <body>
@@ -164,7 +164,7 @@
 <div class="stage-shell">
 <div class="stage-frame">
 <div id="canvas-viewport" class="canvas-viewport">
-<div class="stage" id="stage" tabindex="0" role="application" aria-label="插花画布。点选花材后拖动花头转向，拖根部圆点移动，双指旋转和缩放；右键打开花材图层。插在花器里的花枝：←/→ 转向，↑/↓ 调整枝梗长度，Alt+方向键移动；其他花材方向键微调。[ 和 ] 旋转，Delete 删除，Ctrl/⌘+Z 撤销，Esc 取消选择。" data-aria-zh="插花画布。点选花材后拖动花头转向，拖根部圆点移动，双指旋转和缩放；右键打开花材图层。插在花器里的花枝：←/→ 转向，↑/↓ 调整枝梗长度，Alt+方向键移动；其他花材方向键微调。[ 和 ] 旋转，Delete 删除，Ctrl/⌘+Z 撤销，Esc 取消选择。" data-aria-en="Ikebana canvas. Select a material, drag the flower to swing it and drag the base dot to move it; use two fingers to rotate and scale; right-click for layers. For a stem in the vessel, ←/→ turn it, ↑/↓ change its stem length and Alt+arrows move it; other materials move with the arrow keys. [ and ] rotate, Delete removes, Ctrl/⌘+Z undoes, Esc deselects." data-aria-ja="いけばなキャンバス。花材を選び、花を引いて向きを変え、根元の点で移動、2本指で回転・拡大縮小、右クリックでレイヤー。花器に挿した茎は←/→で向き、↑/↓で茎の長さ、Alt+矢印で移動。ほかの花材は矢印キーで移動。[ と ] で回転、Deleteで削除、Ctrl/⌘+Zで元に戻す、Escで選択解除。">
+<div class="stage" id="stage" tabindex="0" role="application" aria-label="插花画布。点选花材并拖动调整，双指旋转和缩放；右键打开花材图层。插在花器里的花枝：←/→ 转向，↑/↓ 调整枝梗长度，Alt+方向键移动；其他花材方向键微调。[ 和 ] 旋转，Delete 删除，Ctrl/⌘+Z 撤销，Esc 取消选择。" data-aria-zh="插花画布。点选花材并拖动调整，双指旋转和缩放；右键打开花材图层。插在花器里的花枝：←/→ 转向，↑/↓ 调整枝梗长度，Alt+方向键移动；其他花材方向键微调。[ 和 ] 旋转，Delete 删除，Ctrl/⌘+Z 撤销，Esc 取消选择。" data-aria-en="Ikebana canvas. Select a material and drag to adjust it; use two fingers to rotate and scale; right-click for layers. For a stem in the vessel, ←/→ turn it, ↑/↓ change its stem length and Alt+arrows move it; other materials move with the arrow keys. [ and ] rotate, Delete removes, Ctrl/⌘+Z undoes, Esc deselects." data-aria-ja="いけばなキャンバス。花材を選び、ドラッグで調整、2本指で回転・拡大縮小、右クリックでレイヤー。花器に挿した茎は←/→で向き、↑/↓で茎の長さ、Alt+矢印で移動。ほかの花材は矢印キーで移動。[ と ] で回転、Deleteで削除、Ctrl/⌘+Zで元に戻す、Escで選択解除。">
 <canvas id="scene-layer" aria-hidden="true">
 </canvas>
 <canvas id="light-layer" aria-hidden="true">
@@ -308,6 +308,7 @@
 </div>
 <div class="quick-material-bar" role="group" aria-label="画布旁选花" data-aria-zh="画布旁选花" data-aria-en="Choose materials beside the canvas" data-aria-ja="キャンバスのそばで花材を選ぶ">
 <button id="quick-material-open" class="quick-material-open" type="button" aria-controls="quick-material-drawer" aria-expanded="false" aria-label="添加花材" data-aria-zh="添加花材" data-aria-en="Add a stem" data-aria-ja="花材を追加"><span aria-hidden="true">＋</span><span data-zh="添加花材" data-en="Add a stem" data-ja="花材を追加">添加花材</span></button>
+<button id="quick-vessel-open" class="quick-material-open quick-vessel-open" type="button" aria-controls="quick-material-drawer" aria-expanded="false" aria-label="选择花器" data-aria-zh="选择花器" data-aria-en="Choose a vessel" data-aria-ja="花器を選ぶ"><span data-zh="花器" data-en="Vessels" data-ja="花器">花器</span></button>
 <div id="quick-material-recent" class="quick-material-recent" role="group" aria-label="最近使用的花材" data-aria-zh="最近使用的花材" data-aria-en="Recently used materials" data-aria-ja="最近使った花材" hidden>
 <span class="quick-material-recent-label" data-zh="最近" data-en="Recent" data-ja="最近">最近</span>
 <span class="quick-material-recent-slot" data-recent-slot="0" hidden><button type="button" class="quick-material-recent-item" data-quick-recent aria-label="最近使用的花材 1" disabled></button><button type="button" class="quick-material-recent-more" data-recent-more aria-label="换一种姿态" disabled><span aria-hidden="true">⋯</span></button></span>
@@ -353,7 +354,7 @@
 </div>
  </div>
 <section id="quick-material-drawer" class="quick-material-drawer" aria-label="挑选花材" data-aria-zh="挑选花材" data-aria-en="Choose a material" data-aria-ja="花材を選ぶ" hidden>
-<div class="quick-material-heading"><div><p class="eyebrow">BOTANICAL LIBRARY</p><h2 id="quick-material-title" tabindex="-1" data-zh="挑一枝" data-en="Choose a stem" data-ja="一枝を選ぶ">挑一枝</h2></div><button id="quick-material-close" class="icon-button" type="button" aria-label="关闭选花" data-aria-zh="关闭选花" data-aria-en="Close material picker" data-aria-ja="花材選びを閉じる"><span data-icon="close"></span></button><div id="quick-material-modes" class="quick-material-modes" role="group" aria-label="花材或花器" data-aria-zh="花材或花器" data-aria-en="Plants or vessels" data-aria-ja="花材か花器か"><button type="button" data-quick-mode="flowers" aria-pressed="true" data-zh="花与枝" data-en="Flowers" data-ja="花材">花与枝</button><button type="button" data-quick-mode="vessels" aria-pressed="false" data-zh="花器" data-en="Vessels" data-ja="花器">花器</button></div></div>
+<div class="quick-material-heading"><div><p class="eyebrow">BOTANICAL LIBRARY</p><h2 id="quick-material-title" tabindex="-1" data-zh="挑一枝" data-en="Choose a stem" data-ja="一枝を選ぶ">挑一枝</h2></div><button id="quick-material-close" class="icon-button" type="button" aria-label="关闭选花" data-aria-zh="关闭选花" data-aria-en="Close material picker" data-aria-ja="花材選びを閉じる"><span data-icon="close"></span></button></div>
 <label class="quick-material-search-label" for="quick-material-search"><span class="sr-only" data-zh="搜索花材" data-en="Search materials" data-ja="花材を検索">搜索花材</span><span aria-hidden="true">⌕</span><input id="quick-material-search" type="search" autocomplete="off" placeholder="搜索花材" data-placeholder-zh="搜索花材" data-placeholder-en="Search materials" data-placeholder-ja="花材を検索"></label>
 <div id="quick-material-filters" class="quick-material-filters" role="group" aria-label="花材分类" data-aria-zh="花材分类" data-aria-en="Material categories" data-aria-ja="花材の種類">
 <button type="button" data-quick-family-group="all" aria-pressed="true" data-zh="全部" data-en="All" data-ja="すべて">全部</button>

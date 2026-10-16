@@ -226,7 +226,7 @@ public sealed partial class HanamaGame : MonoBehaviour
                         cutLine.positionCount=cutPoints.Count;for(int i=0;i<cutPoints.Count;i++)cutLine.SetPosition(i,cutPoints[i]);
                     }
                     else if(scaling)ApplyScale(picked,startScale*Vector2.Distance(at,picked.root.transform.position)/scaleDistance);
-                    else if(turning)SetAngle(picked,touchGesture?startAngle+(at.x-down.x)/CssDistance(1)*.65f:startAngle-Mathf.DeltaAngle(turnStart,Angle(at-(Vector2)picked.root.transform.position)));
+                    else if(turning)SetAngle(picked,(touchGesture||settings.tool=="rotate")?startAngle+(at.x-down.x)/CssDistance(1)*.65f:startAngle-Mathf.DeltaAngle(turnStart,Angle(at-(Vector2)picked.root.transform.position)));
                     else if(bending)SolveBend(picked,at);
                     else
                     {
@@ -287,7 +287,7 @@ public sealed partial class HanamaGame : MonoBehaviour
     void DrawSelection()
     {
         if(!handle)return;
-        if(capturing||settings.photo||settings.coarsePointer||!pieces.TryGetValue(selected,out var p)||tool!="move"){HideSelection();return;}
+        if(capturing||settings.photo||settings.coarsePointer||settings.tool!="move"||!pieces.TryGetValue(selected,out var p)||tool!="move"){HideSelection();return;}
         float radius=Mathf.Clamp(Mathf.Min(p.data.width,p.data.height)*.43f,4,11)*p.scale;
         Vector2 center=p.root.transform.TransformPoint(BendLocal(p,new Vector2(p.data.width*(.5f-p.data.px),p.data.height*(p.data.py-.5f))));
         center=new Vector2(Mathf.Clamp(center.x,5,95),Mathf.Clamp(center.y,6,94));ring.positionCount=0;

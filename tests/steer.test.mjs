@@ -203,5 +203,5 @@ test('app.js: steer, manual reseating, vessel switch and duplicate are wired; pl
  assert.match(html,/id="seat-all"[^>]*data-zh="全部插回" data-en="Seat all" data-ja="すべて挿し直す"/);
  assert.match(html,/id="seat-banner-close"[^>]*data-aria-zh="关闭提示" data-aria-en="Dismiss" data-aria-ja="閉じる"/);
  const stageLabel=html.match(/<div class="stage" id="stage"[^>]*>/)[0];
- for(const lang of ['zh','en','ja'])assert.match(stageLabel,new RegExp(`data-aria-${lang}="[^"]*(拖动花头转向|drag the flower to swing it|花を引いて向きを変え)`));
+ for(const lang of ['zh','en','ja'])assert.match(stageLabel,new RegExp(`data-aria-${lang}="[^"]*(点选花材并拖动调整|Select a material and drag to adjust it|花材を選び、ドラッグで調整)`));
 });

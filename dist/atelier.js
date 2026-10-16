@@ -5,19 +5,20 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  const stage=document.querySelector('#stage');if(!stage)return null;
  const $=(s,root=document)=>root.querySelector(s);
  const words=(zh,en,ja)=>locale()==='zh'?zh:locale()==='ja'?ja:en;
- const flowerLabel=$('#quick-material-open>span:last-child');
+ const flowerLabel=$('#quick-material-open>span:last-child'),vesselLabel=$('#quick-vessel-open>span:last-child');
  Object.assign(flowerLabel.dataset,{zh:'花材',en:'Flowers',ja:'花材'});
+ Object.assign(vesselLabel.dataset,{zh:'花器',en:'Vessels',ja:'花器'});
  const reduced=matchMedia('(prefers-reduced-motion: reduce)'),coarsePointer=matchMedia('(pointer:coarse)');
  let touchTool='translate';
  let stored={};try{stored=JSON.parse(localStorage.getItem(PREFS))||{};}catch{}
- const settings={motion:stored.motion!==false,power:clamp(Number.isFinite(stored.power)?stored.power:.35,0,1),direction:clamp(Number.isFinite(stored.direction)?stored.direction:125,15,165),tool:coarsePointer.matches?touchTool:'move',coarsePointer:coarsePointer.matches,viewportPixels:1,photo:false,paused:false,reducedMotion:reduced.matches};
+ const settings={motion:stored.motion!==false,power:clamp(Number.isFinite(stored.power)?stored.power:.35,0,1),direction:clamp(Number.isFinite(stored.direction)?stored.direction:125,15,165),tool:touchTool,coarsePointer:coarsePointer.matches,viewportPixels:1,photo:false,paused:false,reducedMotion:reduced.matches};
  let sound=stored.sound===true,audio=null;
  document.body.classList.add('atelier-simple');
  const host=document.createElement('div');host.className='unity-container';
  host.innerHTML='<canvas id="unity-canvas" tabindex="0" aria-label="互动插花画布"></canvas>';
  stage.append(host);const canvas=$('canvas',host);canvas.width=canvas.height=1;
  const panel=document.createElement('section');panel.className='game-session';
- panel.innerHTML=`<div class="atelier-bench"><div class="atelier-add-slot"></div><div class="atelier-tool-slot"></div>
+ panel.innerHTML=`<div class="atelier-bench"><div class="atelier-add-slot"></div><div class="atelier-vessel-slot"></div><div class="atelier-tool-slot"></div>
   <span class="atelier-bench-space"></span><details class="atelier-disclosure" id="atelier-atmosphere"><summary><span class="atelier-atmosphere-label"></span></summary><div class="atelier-popover atelier-atmosphere-panel"><div class="atelier-presets" role="group"><button type="button" data-atmosphere="morning"><i></i><span></span></button><button type="button" data-atmosphere="shade"><i></i><span></span></button><button type="button" data-atmosphere="dusk"><i></i><span></span></button><button type="button" data-atmosphere="moon"><i></i><span></span></button></div><div class="atelier-toggles"><button type="button" id="game-motion" aria-pressed="true"></button><button type="button" id="game-sound" aria-pressed="false"></button></div><details class="atelier-fine"><summary class="atelier-fine-label"></summary><div class="atelier-light"><label for="game-light-direction"><span class="light-direction-label"></span><input id="game-light-direction" type="range" min="15" max="165" step="1"><output></output></label><label for="game-light-power"><span class="light-power-label"></span><input id="game-light-power" type="range" min="0" max="100" step="1"><output></output></label></div><div class="atelier-scene-slot"></div></details><details class="atelier-studies"><summary class="atelier-studies-label"></summary><div class="atelier-studies-slot"></div></details></div></details>
   <details class="atelier-disclosure" id="atelier-work"><summary><span class="atelier-work-label"></span></summary><div class="atelier-popover atelier-work-panel"><div class="atelier-title-slot"></div><div class="atelier-work-main"><div class="atelier-save-slot"></div><button type="button" id="game-capture" disabled></button><div class="atelier-fallback-export"></div><button type="button" id="atelier-gallery"></button><button type="button" id="game-photo" aria-pressed="false"></button></div><details class="atelier-work-more"><summary class="atelier-more-label"></summary><div class="atelier-work-secondary"><div class="atelier-advanced-tools"></div><button type="button" id="atelier-book"></button><button type="button" id="atelier-image-pack"></button></div></details></div></details></div>
   <div class="game-loading" role="status"><progress max="1" value="0"></progress><span></span><button type="button" id="game-retry" hidden></button></div>`;
@@ -25,8 +26,9 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  touchTools.innerHTML='<div class="atelier-touch-modes" role="group" aria-describedby="atelier-touch-hint"><button type="button" data-touch-tool="translate" aria-pressed="true"></button><button type="button" data-touch-tool="bend" aria-pressed="false"></button><button type="button" data-touch-tool="rotate" aria-pressed="false"></button></div><p id="atelier-touch-hint" aria-live="polite"></p>';
  panel.prepend(touchTools);
  $('.stage-frame').append(panel);
- // One material picker, one atmosphere panel, one place to keep or export the work.
+ // Flowers and vessels have their own direct entrances to the shared picker.
  $('.atelier-add-slot',panel).append($('#quick-material-open'));
+ $('.atelier-vessel-slot',panel).append($('#quick-vessel-open'));
  $('.atelier-tool-slot',panel).append($('.stage-tools'));
  $('.atelier-title-slot',panel).append($('.workspace-heading'));
  $('.atelier-save-slot',panel).append($('#save-button'));
@@ -35,7 +37,6 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  const secondary=$('.atelier-work-secondary',panel);
  for(const selector of ['.work-subtitle','#recipe-button','#share-current','#new-canvas-button','#help-button','#sources-button']){const node=$(selector);if(node)secondary.append(node);}
  const studies=$('.light-scene-gallery');if(studies)$('.atelier-studies-slot',panel).append(studies);
- const hint=document.createElement('p');hint.className='game-instruction';
  const fallbackAdjust=document.createElement('button');fallbackAdjust.type='button';fallbackAdjust.id='atelier-fallback-adjust';
  secondary.prepend(fallbackAdjust);
  $('.atelier-advanced-tools',panel).append($('#guide-button'));
@@ -85,17 +86,17 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  function cancel(){canvasPointers.clear();if(active)instance.SendMessage('HanamaGame','CancelGesture','');}
  function present(){
   settings.paused=!visible();settings.reducedMotion=reduced.matches;settings.coarsePointer=coarsePointer.matches;
-  settings.viewportPixels=Math.max(1,host.getBoundingClientRect().width);settings.tool=settings.coarsePointer?touchTool:'move';
+  settings.viewportPixels=Math.max(1,host.getBoundingClientRect().width);settings.tool=touchTool;
   if(active)instance.SendMessage('HanamaGame','SetPresentation',JSON.stringify(settings));
  }
  function updateTouchControls(){
   const coarse=coarsePointer.matches,mode=stage.dataset.tool||lastFrame?.mode||'move',pruning=mode!=='move';
-  touchTools.hidden=!coarse;document.body.classList.toggle('atelier-touch',coarse);
+  touchTools.hidden=false;document.body.classList.add('atelier-direct');document.body.classList.toggle('atelier-touch',coarse);
   $('.atelier-touch-modes',touchTools).setAttribute('aria-label',words('花材操作','Stem controls','花材の操作'));
   const labels={translate:words('移动','Move','移動'),bend:words('弯枝','Bend','曲げる'),rotate:words('旋转','Rotate','回転')};
   touchTools.querySelectorAll('[data-touch-tool]').forEach(b=>{b.textContent=labels[b.dataset.touchTool];b.disabled=!active;b.setAttribute('aria-pressed',String(!pruning&&b.dataset.touchTool===touchTool));});
   const hints={translate:words('按住花材任意位置移动','Drag anywhere on a stem to move','花材をつかんで移動'),bend:words('按住花头，轻柔弯枝','Hold the flower head to bend','花先をつかんで曲げる'),rotate:words('按住花材，左右滑动旋转','Hold a stem and slide sideways to rotate','花材をつかんで左右に動かすと回転')};
-  $('#atelier-touch-hint').textContent=!active?words('拖花头转向 · 拖根部移动','Drag the flower to turn · move at its base','花先で向きを調整・根元で移動'):pruning?(mode==='brush'?words('橡皮使用中 · 点移动退出','Erasing · tap Move to finish','消去中・移動で終了'):words('剪刀使用中 · 点移动退出','Cutting · tap Move to finish','切断中・移動で終了')):hints[touchTool];
+  $('#atelier-touch-hint').textContent=!active?words('拖动花材 · 在调整面板中造型','Drag stems · open Adjust to shape','花材をドラッグ・調整で形を整える'):pruning?(mode==='brush'?words('橡皮使用中 · 点移动退出','Erasing · tap Move to finish','消去中・移動で終了'):words('剪刀使用中 · 点移动退出','Cutting · tap Move to finish','切断中・移動で終了')):hints[touchTool];
  }
 
  function ping(kind){
@@ -136,7 +137,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
   $('.atelier-atmosphere-label').textContent=words('光景','Light','光と景');$('.atelier-work-label').textContent=words('作品','Keep','作品');
  atmosphereClose.setAttribute('aria-label',words('收起光景','Close light and backgrounds','光と景を閉じる'));
  workClose.setAttribute('aria-label',words('收起作品','Close work menu','作品メニューを閉じる'));
-  flowerLabel.textContent=words('花材','Flowers','花材');
+  flowerLabel.textContent=words('花材','Flowers','花材');vesselLabel.textContent=words('花器','Vessels','花器');
   $('#atelier-gallery').textContent=words('我的作品','My works','自分の作品');$('#atelier-book').textContent=words('灵感手帖','Inspiration book','インスピレーション');
   for(const [id,label] of [['flip-button',words('翻转','Flip','反転')],['duplicate-button',words('复制','Copy','複製')],['undo-button',words('撤销','Undo','戻す')],['redo-button',words('重做','Redo','やり直す')],['layers-tool',words('图层','Layers','レイヤー')],['delete-button',words('删除','Delete','削除')],['guide-button',words('构图参考','Composition guide','構図ガイド')]]){
    let text=$('.atelier-tool-name',$('#'+id));if(!text){text=document.createElement('span');text.className='atelier-tool-name';$('#'+id).append(text);}text.textContent=label;
@@ -148,13 +149,11 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
   $('.atelier-length-label').textContent=words('枝长','Length','茎の長さ');lengthButton.title=words('拉伸枝干','Stretch the stem','茎を伸ばす');lengthButton.setAttribute('aria-label',lengthButton.title);lengthClose.setAttribute('aria-label',words('收起枝长','Close stem length','茎の長さを閉じる'));
   $('.atelier-more-label').textContent=words('更多','More','その他');$('#atelier-image-pack').textContent=words('AI 生图','AI image','AI 画像');$('#atelier-image-pack').title=words('准备 AI 生图包','Prepare an AI image pack','AI生成用パックを準備');
   $('.light-direction-label').textContent=words('光从哪里来','Light direction','光の向き');$('.light-power-label').textContent=words('光的浓淡','Light presence','光の濃さ');
-  hint.textContent=active?words('拖花头弯枝 · 拖根部移动','Pull the flower to bend · move at its base','花先で曲げる・根元で移動'):words('拖花头转向 · 拖根部移动','Drag the flower to turn · move at its base','花先で向きを調整・根元で移動');
   $('[data-atelier-action="straighten"]').textContent=words('还原枝形','Unbend','曲げを戻す');$('#atelier-adjust').textContent=words('调整','Adjust','調整');
   closeInspector.setAttribute('aria-label',words('收起调整','Close adjustments','調整を閉じる'));fallbackAdjust.textContent=words('调整花材','Adjust stem','花材を調整');
   $('#game-capture').textContent=words('拍下这一刻','Take a photo','この瞬間を撮る');$('#game-retry').textContent=words('重试','Retry','再試行');
-  canvas.setAttribute('aria-label',words('插花画布：拖花头弯枝，拖根部圆点移动；棕色圆点旋转，绿色圆点缩放。方向键微调，Ctrl Z 撤销，Escape 取消。','Flower canvas: pull the flower to bend, drag its base to move, amber handle to rotate, green handle to scale. Arrow keys adjust, Ctrl Z undoes, Escape cancels.','花先を引いて曲げ、根元の点で移動。茶色で回転、緑で拡大縮小。矢印で微調整、Ctrl Zで元に戻す、Escで取消。'));
+  canvas.setAttribute('aria-label',active?words('插花画布：先选移动、弯枝或旋转，再按住花材操作。双指缩放与旋转，方向键微调，Ctrl Z 撤销，Escape 取消。','Flower canvas: choose Move, Bend or Rotate, then drag the stem. Two fingers scale and rotate. Arrow keys adjust, Ctrl Z undoes, Escape cancels.','花材のキャンバス：移動・曲げる・回転を選び、花材を操作。2本指で拡大縮小と回転。矢印で微調整、Ctrl Zで戻す、Escで取消。'):words('插花画布：拖动花材，在调整面板中造型。','Flower canvas: drag stems and use Adjust to shape them.','花材のキャンバス：花材をドラッグし、調整で形を整えます。'));
   $('#delete-button').setAttribute('aria-label',words('删除选中花材','Delete selected stem','選択した花材を削除'));$('#delete-button').title=words('删除选中花材','Delete selected stem','選択した花材を削除');
-  if(coarsePointer.matches)canvas.setAttribute('aria-label',words('插花画布：先选移动、弯枝或旋转，再按住花材操作。双指缩放与旋转。','Flower canvas: choose Move, Bend or Rotate, then drag the stem. Two fingers scale and rotate.','花材のキャンバス：移動・曲げる・回転を選び、花材を操作。2本指で拡大縮小と回転。'));
   lastLocale=locale();updateControls();
  }
  function readout(event){const node=lastFrame?.nodes.find(n=>n.id===(event?.id||lastFrame.selected));$('.atelier-hud-name',hud).textContent=node?.name||'';}
@@ -223,7 +222,10 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  lengthButton.onclick=()=>setLength(lengthPanel.hidden);lengthClose.onclick=()=>{setLength(false);lengthButton.focus({preventScroll:true});};
  $('#atelier-gallery').onclick=()=>{closeMenus();$('.main-nav [data-view="gallery"]').click();};
  $('#atelier-book').onclick=()=>{closeMenus();$('.main-nav [data-view="inspiration"]').click();};
- $('#quick-material-open').addEventListener('click',()=>{setLength(false);closeMenus();setInspector(false);});
+ for(const id of ['quick-material-open','quick-vessel-open']){
+  $('#'+id).addEventListener('click',cancel,true);
+  $('#'+id).addEventListener('click',()=>{setLength(false);closeMenus();setInspector(false);});
+ }
  $('#layers-tool').addEventListener('click',()=>{setLength(false);closeMenus();setInspector(false);});
  for(const id of ['flip-button','duplicate-button','delete-button'])$('#'+id).addEventListener('click',()=>{setLength(false);closeMenus();setInspector(false);if(active)canvas.focus({preventScroll:true});});
  for(const id of ['prune-tool','erase-tool']){

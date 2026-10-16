@@ -75,8 +75,8 @@ test('app.js: stems re-rasterise after a resize, zoom marks the viewport, and th
  assert.match(app,/new ResizeObserver\(\(\)=>\{applyCanvasZoom\(\);drawPruneOverlay\(\);mountLayerDock\(\);renderGuide\(\);if\(stage\.getBoundingClientRect\(\)\.width<40\)return;renderVesselLayers\(\);clearTimeout\(stemResizeTimer\);stemResizeTimer=setTimeout\(\(\)=>\{if\(stage\.getBoundingClientRect\(\)\.width>=40\)redrawStemCanvases\(\)\},120\)\}\)\.observe\(\$\('#stage'\)\);/);
  assert.match(app,/document\.documentElement\.style\.setProperty\('--frame-h',`\$\{h\}px`\)\}\)\.observe\(\$\('\.stage-frame'\)\);/);
  assert.match(app,/viewport\.classList\.toggle\('is-zoomed',zoomLevel>1\)/);
- const open=app.slice(app.indexOf('function openQuickMaterialDrawer('),app.indexOf('\n',app.indexOf('function openQuickMaterialDrawer(')));
- assert.match(open,/mediaMatches\('\(hover:hover\) and \(pointer:fine\)'\)\?\$\('#quick-material-search'\):\$\('#quick-material-title'\)/,'search focus only with a fine pointer');
+ const open=app.slice(app.indexOf('function openQuickMaterialDrawer('),app.indexOf('for(const [id,mode] of',app.indexOf('function openQuickMaterialDrawer(')));
+ assert.match(open,/mediaMatches\('\(hover:hover\) and \(pointer:fine\)'\)\?search:\$\('#quick-material-title'\)/,'search focus only with a fine pointer');
  assert.match(open,/window\.scrollBy\(\{top,behavior:'instant'\}\)/,'the canvas comes into view on portrait phones');
  assert.match(app,/function setView\(view\)\{closeQuickMaterialDrawer\(\);closeLayerMenu\(\);/);
  assert.match(app,/\$\('#sheet-scrim'\)\.addEventListener\('click',\(\)=>closeQuickMaterialDrawer\(\{focus:true\}\)\)/);

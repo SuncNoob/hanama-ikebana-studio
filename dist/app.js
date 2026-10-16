@@ -33,7 +33,7 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=7';
+import {mountUnityGame} from './atelier.js?v=8';
 import {normalizeFlex} from './flex.js?v=2';
 import {stemLengthRatio,setStemLength,normalizeStemSplit,supportsStemStretch,stemStretchSplit} from './stem-length.js';
 import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene} from './organic-room.js?v=restore1';
@@ -837,6 +837,8 @@ function renderMaterials(){
  */
 const RECENT_MATERIALS='hanama-recent-materials',RECENT_POSES='hanama-recent-materials-v2',RECENT_SLOTS=3;
 let quickFilter='all',quickColorFilter='all',quickBook=false,quickMode='flowers',quickVesselFilter='all',quickRecent=[];
+const quickQueries={flowers:'',vessels:''},quickScroll={flowers:0,vessels:0};
+let quickReturnTarget='quick-material-open';
 const recentPose=id=>{const a=typeof id==='string'&&Object.hasOwn(assetById,id)?assetById[id]:null;return a?.family?a:null};
 {
  const read=key=>{try{const saved=JSON.parse(localStorage.getItem(key)||'null');return Array.isArray(saved)?saved:null}catch{return null}};
@@ -848,7 +850,7 @@ if(!quickRecent.length)quickRecent=[...new Set([...state.items].reverse().map(i=
 function rememberMaterial(type){if(!recentPose(type))return;quickRecent=[type,...quickRecent.filter(id=>id!==type)].slice(0,RECENT_SLOTS);try{localStorage.setItem(RECENT_POSES,JSON.stringify(quickRecent))}catch{}renderRecentMaterials()}
 function renderRecentMaterials(){
  const group=$('#quick-material-recent');if(!group)return;
- const recent=quickRecent.map(recentPose).filter(Boolean);group.hidden=!recent.length;
+ const recent=quickRecent.map(recentPose).filter(Boolean);group.hidden=quickMode==='vessels'||!recent.length;
  $$('[data-recent-slot]',group).forEach((slot,index)=>{
   const a=recent[index],add=$('[data-quick-recent]',slot),more=$('[data-recent-more]',slot);slot.hidden=!a;add.disabled=more.disabled=!a;if(!a)return;
   const name=assetName(a),pose=displayPose(a,lang);add.dataset.quickRecent=a.id;more.dataset.recentMore=a.family;
@@ -873,10 +875,10 @@ function renderLibraryScope(){
 }
 function renderQuickMaterials(){
  const vesselMode=quickMode==='vessels',words=QUICK_WORDS[quickMode],search=$('#quick-material-search'),query=search.value,grid=$('#quick-material-grid'),empty=$('#quick-material-empty');
- $$('[data-quick-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.quickMode===quickMode)));
  $('#quick-material-filters').hidden=vesselMode;$('#quick-material-color-filters').hidden=vesselMode;$('#quick-vessel-filters').hidden=!vesselMode;
  const drawer=$('#quick-material-drawer');drawer.dataset.mode=quickMode;setWords(drawer,words.aria,'aria');setWords($('#quick-material-title'),words.title);setWords(search,words.search,'placeholder');setWords($('.quick-material-search-label .sr-only'),words.search);setWords($('#quick-material-hint'),!vesselMode?['选择花材，再挑姿态与花色','Choose a material, then a pose and color','花材を選び、姿と色を決めます']:words.hint);
  const eyebrow=$('.quick-material-heading .eyebrow');if(eyebrow)eyebrow.textContent=words.eyebrow;
+ setWords($('#quick-material-close'),vesselMode?['关闭花器选择','Close vessel picker','花器選びを閉じる']:['关闭花材选择','Close material picker','花材選びを閉じる'],'aria');
  const materials=vesselMode?libraryVessels(quickVesselFilter,query):libraryFlowers(quickFilter,quickBook,quickColorFilter,query),n=materials.length;
  const filters=vesselMode?[quickVesselFilter!=='all'?vesselStyleName(quickVesselFilter):''].filter(Boolean):[quickFilter!=='all'?filterName(quickFilter):'',quickBook?vesselStyleName('book'):'',quickColorFilter!=='all'?colorChipName(quickColorFilter):''].filter(Boolean);
  $('#quick-material-count').textContent=vesselMode?L(`${n} 款花器`,`${n} vessels`,`${n}点の花器`):libraryCount(materials);
@@ -887,17 +889,37 @@ function renderQuickMaterials(){
  const recent=$('#quick-material-recent'),scope=$('#library-scope-toggle');if(recent&&scope&&recent.parentElement!==drawer)scope.before(recent);
  renderRecentMaterials();renderLibraryScope();
 }
-function closeQuickMaterialDrawer({focus=false}={}){const drawer=$('#quick-material-drawer');if(drawer.hidden)return;drawer.hidden=true;drawer.style.transform='';sheetDrag=null;document.body.classList.remove('material-sheet-open');$('#quick-material-open').setAttribute('aria-expanded','false');if(focus)$('#quick-material-open').focus({preventScroll:true})}
+function closeQuickMaterialDrawer({focus=false}={}){
+ const drawer=$('#quick-material-drawer');if(drawer.hidden)return;
+ quickQueries[quickMode]=$('#quick-material-search').value;quickScroll[quickMode]=$('#quick-material-grid').scrollTop;
+ drawer.hidden=true;drawer.style.transform='';sheetDrag=null;document.body.classList.remove('material-sheet-open');
+ for(const id of ['quick-material-open','quick-vessel-open'])$('#'+id).setAttribute('aria-expanded','false');
+ if(focus)$('#'+quickReturnTarget).focus({preventScroll:true});
+}
 /** Open the quick material sheet on plants (optionally on one filter: 'line' for the start card's "Start with a line") or on
  vessels (`mode`). On a portrait
  phone the canvas scrolls to the top of the screen first (scrollBy: the sticky layout's scroll-padding would offset a
  scrollIntoView), so the art shows above the sheet. Only a fine pointer with hover (a desktop) gets
  the search field focused; touch focuses the heading, which keeps the keyboard (and iOS input zoom) down. */
-function openQuickMaterialDrawer({filter=null,mode='flowers'}={}){const drawer=$('#quick-material-drawer');mode=mode==='vessels'?'vessels':'flowers';if(mode!==quickMode){quickMode=mode;$('#quick-material-search').value=''}if(filter){quickFilter=filter;quickBook=false;quickColorFilter='all';$('#quick-material-search').value=''}closeLayerMenu();setEditMode('move');if(drawer.hidden&&!document.body.classList.contains('atelier-simple')&&mediaMatches('(max-width:900px) and (orientation:portrait)')){const frame=$('.stage-frame'),top=(getComputedStyle(frame).position==='sticky'?frame:$('#canvas-viewport')).getBoundingClientRect().top;if(Math.abs(top)>1)window.scrollBy({top,behavior:'instant'})}drawer.hidden=false;drawer.style.transform='';document.body.classList.add('material-sheet-open');$('#quick-material-open').setAttribute('aria-expanded','true');renderQuickMaterials();(filter?$(`[data-quick-family-group="${filter}"]`):mediaMatches('(hover:hover) and (pointer:fine)')?$('#quick-material-search'):$('#quick-material-title'))?.focus({preventScroll:true})}
-$('#quick-material-open').onclick=()=>{if(!$('#quick-material-drawer').hidden){closeQuickMaterialDrawer({focus:true});return}openQuickMaterialDrawer()};
+function openQuickMaterialDrawer({filter=null,mode='flowers'}={}){
+ gameBridge?.cancel?.();
+ const drawer=$('#quick-material-drawer'),search=$('#quick-material-search'),grid=$('#quick-material-grid');
+ mode=mode==='vessels'?'vessels':'flowers';quickQueries[quickMode]=search.value;if(!drawer.hidden)quickScroll[quickMode]=grid.scrollTop;
+ quickMode=mode;quickReturnTarget=mode==='vessels'?'quick-vessel-open':'quick-material-open';search.value=quickQueries[mode];
+ if(filter){quickFilter=filter;quickBook=false;quickColorFilter='all';search.value=quickQueries[mode]='';quickScroll[mode]=0;}
+ closeLayerMenu();setEditMode('move');
+ if(drawer.hidden&&!document.body.classList.contains('atelier-simple')&&mediaMatches('(max-width:900px) and (orientation:portrait)')){const frame=$('.stage-frame'),top=(getComputedStyle(frame).position==='sticky'?frame:$('#canvas-viewport')).getBoundingClientRect().top;if(Math.abs(top)>1)window.scrollBy({top,behavior:'instant'});}
+ drawer.hidden=false;drawer.style.transform='';document.body.classList.add('material-sheet-open');
+ for(const id of ['quick-material-open','quick-vessel-open'])$('#'+id).setAttribute('aria-expanded',String(id===quickReturnTarget));
+ renderQuickMaterials();grid.scrollTop=quickScroll[mode];
+ (filter?$(`[data-quick-family-group="${filter}"]`):mediaMatches('(hover:hover) and (pointer:fine)')?search:$('#quick-material-title'))?.focus({preventScroll:true});
+}
+for(const [id,mode] of [['quick-material-open','flowers'],['quick-vessel-open','vessels']])$('#'+id).onclick=()=>{
+ if(!$('#quick-material-drawer').hidden&&quickMode===mode){closeQuickMaterialDrawer({focus:true});return;}
+ openQuickMaterialDrawer({mode});
+};
 $('#quick-material-close').onclick=()=>closeQuickMaterialDrawer({focus:true});
-$('#quick-material-search').oninput=renderQuickMaterials;
-$('#quick-material-modes').onclick=e=>{const button=e.target.closest('[data-quick-mode]');if(!button||button.dataset.quickMode===quickMode)return;quickMode=button.dataset.quickMode==='vessels'?'vessels':'flowers';$('#quick-material-search').value='';renderQuickMaterials();$('#quick-material-grid').scrollTop=0};
+$('#quick-material-search').oninput=()=>{quickQueries[quickMode]=$('#quick-material-search').value;quickScroll[quickMode]=0;renderQuickMaterials();$('#quick-material-grid').scrollTop=0;};
 $('#quick-material-filters').onclick=e=>{if(e.target.closest('[data-quick-book]')){quickBook=!quickBook;renderQuickMaterials();return}const button=e.target.closest('[data-quick-family-group]');if(!button)return;if(button.dataset.quickFamilyGroup==='season'&&quickFilter==='season'){cycleSeason();renderMaterials()}quickFilter=button.dataset.quickFamilyGroup;renderQuickMaterials()};
 $('#quick-vessel-filters').onclick=e=>{const button=e.target.closest('[data-quick-vessel-style]');if(!button)return;quickVesselFilter=button.dataset.quickVesselStyle;renderQuickMaterials()};
 $('#quick-material-empty').onclick=e=>{if(!e.target.closest('[data-clear-filters]'))return;if(quickMode==='vessels')quickVesselFilter='all';else{quickFilter='all';quickBook=false;quickColorFilter='all'}$('#quick-material-search').value='';renderQuickMaterials();$(quickMode==='vessels'?'[data-quick-vessel-style="all"]':'[data-quick-family-group="all"]')?.focus({preventScroll:true})};
@@ -1484,7 +1506,7 @@ function help(){
  const copy=lang==='en'?{
   title:'Take a moment and arrange slowly.',
   steps:[
-   ['Choose a stem, then shape it.','Use Flowers to choose plants or vessels. On a phone, choose Move to drag any part of a stem, Bend to shape it, or Rotate to turn it by dragging sideways. Two fingers rotate and scale. Desktop handles adjust angle and size. Tap Length below the flowers to stretch a stem without enlarging its flower head.'],
+   ['Choose a stem, then shape it.','Use Flowers for plants and Vessels for containers. Choose Move to drag any part of a stem, Bend to shape it, or Rotate to turn it by dragging sideways. Two fingers rotate and scale. Tap Length below the flowers to stretch a stem without enlarging its flower head.'],
    ['Cut or refine.','Tap the scissors to cut a twig, or the eraser to brush away details. Both pieces stay on the canvas after a cut and can be moved separately. Tap the active tool again or press Esc to return to arranging. Undo and Redo are always beside the tools.'],
    ['Find the light, keep the moment.','Light offers all nine backgrounds, four atmosphere presets and direct light controls. Open Keep to save a draft, take a photo or immerse yourself in the arrangement. AI image at the top right opens the image pack. More contains the recipe and sharing. Imported photos stay with your drafts in My Works.']
   ],
@@ -1493,7 +1515,7 @@ function help(){
  }:lang==='ja'?{
   title:'ゆっくり、ひと枝ずつ。',
   steps:[
-   ['花材を選び、枝を曲げる。','「花材」から花材や花器を選びます。スマホでは「移動」で花材のどこからでも移動、「曲げる」で枝を曲げ、「回転」で左右にドラッグして回転できます。2本指で回転・拡大縮小。花の下の「茎の長さ」で花先の大きさを保って茎を伸ばせます。'],
+   ['花材を選び、枝を曲げる。','「花材」で植物、「花器」で器を選びます。「移動」で花材のどこからでも移動、「曲げる」で枝を曲げ、「回転」で左右にドラッグして回転できます。2本指で回転・拡大縮小。花の下の「茎の長さ」で花先の大きさを保って茎を伸ばせます。'],
    ['切って、細部を整える。','ハサミを選んで小枝を切り、消しゴムで細部をなぞって消します。切った両方の部分はそのまま残り、別々に動かせます。同じツールをもう一度タップするか、Escで終了します。「元に戻す」と「やり直す」はすぐ隣にあります。'],
    ['光を選び、この瞬間を残す。','「光と景」には9つの背景、4つの光のプリセット、直接使える光の調整があります。「作品」から下書き保存、撮影、鑑賞ができます。右上の「AI 画像」から生成用パックへ進めます。「その他」にはレシピと共有があります。取り込んだ写真は下書きと一緒に「マイ作品」に残ります。']
   ],
@@ -1502,7 +1524,7 @@ function help(){
  }:{
   title:'给自己一刻，慢慢插花。',
   steps:[
-   ['挑一枝，弯出姿态。','从「花材」选择花与枝或花器。手机点「移动」可拖花材任意位置，点「弯枝」调整姿态，点「旋转」后左右拖动；双指可旋转和缩放。点画布下方「枝长」直接拉伸枝干，花头大小保持不变。'],
+   ['挑一枝，弯出姿态。','「花材」选花与枝，「花器」单独选器。点「移动」可拖花材任意位置，点「弯枝」调整姿态，点「旋转」后左右拖动；双指可旋转和缩放。点画布下方「枝长」直接拉伸枝干，花头大小保持不变。'],
    ['剪一剪，留出呼吸。','点剪刀横划细枝，点橡皮涂抹细节。剪开的两段直接留在画布上，可以分别移动。再点一次当前工具或按 Esc 即可继续插花，撤销与重做就在工具旁。'],
    ['选一束光，留住这一刻。','「光景」直接展示 9 款背景、四种自然氛围和光照调节。「作品」里可保存草稿、拍照或全屏赏花；右上角「AI 生图」可进入生图包；「更多」里有配方和分享。导入的照片会与草稿一起保存在「我的作品」。']
   ],
