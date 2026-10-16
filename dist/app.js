@@ -32,7 +32,7 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=3';
+import {mountUnityGame} from './atelier.js?v=4';
 import {normalizeFlex} from './flex.js?v=1';
 import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms} from './organic-room.js';
 let gameBridge=null;
@@ -405,7 +405,7 @@ const lightCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.h
 function renderLightLayer(){
  clearTimeout(lightTimer);lightTimer=0;lightDirty=false;
  const canvas=$('#light-layer'),stageEl=$('#stage');if(!canvas||!stageEl)return;
- const key=lightOf(state.light);stageEl.classList.toggle('has-light',!!key);
+ const key=['generated-atelier','generated-editorial'].includes(assetById[state.vessel]?.source)?null:lightOf(state.light);stageEl.classList.toggle('has-light',!!key);
  if(!key){layerContext(canvas,0);return}
  lightPaintedAt=performance.now();
  const density=Math.min(2,window.devicePixelRatio||1),S=lightWorkSize(Math.min(LAYER_MAX,Math.round((stageEl.offsetWidth||stageWidth())*density)));
@@ -892,7 +892,7 @@ function closeQuickMaterialDrawer({focus=false}={}){const drawer=$('#quick-mater
  phone the canvas scrolls to the top of the screen first (scrollBy: the sticky layout's scroll-padding would offset a
  scrollIntoView), so the art shows above the sheet. Only a fine pointer with hover (a desktop) gets
  the search field focused; touch focuses the heading, which keeps the keyboard (and iOS input zoom) down. */
-function openQuickMaterialDrawer({filter=null,mode='flowers'}={}){const drawer=$('#quick-material-drawer');mode=mode==='vessels'?'vessels':'flowers';if(mode!==quickMode){quickMode=mode;$('#quick-material-search').value=''}if(filter){quickFilter=filter;quickBook=false;quickColorFilter='all';$('#quick-material-search').value=''}closeLayerMenu();setEditMode('move');if(drawer.hidden&&mediaMatches('(max-width:900px) and (orientation:portrait)')){const frame=$('.stage-frame'),top=(getComputedStyle(frame).position==='sticky'?frame:$('#canvas-viewport')).getBoundingClientRect().top;if(Math.abs(top)>1)window.scrollBy({top,behavior:'instant'})}drawer.hidden=false;drawer.style.transform='';document.body.classList.add('material-sheet-open');$('#quick-material-open').setAttribute('aria-expanded','true');renderQuickMaterials();(filter?$(`[data-quick-family-group="${filter}"]`):mediaMatches('(hover:hover) and (pointer:fine)')?$('#quick-material-search'):$('#quick-material-title'))?.focus({preventScroll:true})}
+function openQuickMaterialDrawer({filter=null,mode='flowers'}={}){const drawer=$('#quick-material-drawer');mode=mode==='vessels'?'vessels':'flowers';if(mode!==quickMode){quickMode=mode;$('#quick-material-search').value=''}if(filter){quickFilter=filter;quickBook=false;quickColorFilter='all';$('#quick-material-search').value=''}closeLayerMenu();setEditMode('move');if(drawer.hidden&&!document.body.classList.contains('atelier-simple')&&mediaMatches('(max-width:900px) and (orientation:portrait)')){const frame=$('.stage-frame'),top=(getComputedStyle(frame).position==='sticky'?frame:$('#canvas-viewport')).getBoundingClientRect().top;if(Math.abs(top)>1)window.scrollBy({top,behavior:'instant'})}drawer.hidden=false;drawer.style.transform='';document.body.classList.add('material-sheet-open');$('#quick-material-open').setAttribute('aria-expanded','true');renderQuickMaterials();(filter?$(`[data-quick-family-group="${filter}"]`):mediaMatches('(hover:hover) and (pointer:fine)')?$('#quick-material-search'):$('#quick-material-title'))?.focus({preventScroll:true})}
 $('#quick-material-open').onclick=()=>{if(!$('#quick-material-drawer').hidden){closeQuickMaterialDrawer({focus:true});return}openQuickMaterialDrawer()};
 $('#quick-material-close').onclick=()=>closeQuickMaterialDrawer({focus:true});
 $('#quick-material-search').oninput=renderQuickMaterials;
@@ -961,6 +961,8 @@ function pickStem(clientX,clientY,{touch=false,radius=touch?12:6,keep=radius,sel
 function selectItem(id){selected=id??null;gameBridge?.schedule();$$('.stem').forEach(n=>{const on=n.dataset.id===id;n.classList.toggle('selected',on);n.setAttribute('aria-pressed',String(on))});renderSelection();renderCutChoice();renderSeatCues();queueGuide();if(!$('#layer-menu').hidden)renderLayerList()}
 function renderCutChoice(){
  const choice=$('#cut-choice');if(!choice)return;
+ // Cutting keeps both pieces immediately; arranging needs no confirmation step.
+ if(document.body.classList.contains('atelier-simple')){cutSession=null;choice.hidden=true;choice.closest('.stage-shell').classList.remove('has-cut-choice');return;}
  if(cutSession&&!cutSession.ids.every(id=>state.items.some(i=>i.id===id)))cutSession=null;
  choice.hidden=!cutSession;choice.closest('.stage-shell').classList.toggle('has-cut-choice',!!cutSession);if(!cutSession)return;
  $$('[data-cut-piece]',choice).forEach(button=>{const item=state.items.find(i=>i.id===cutSession.ids[Number(button.dataset.cutPiece)]);button.textContent=item?.pieceLabel||'?';button.setAttribute('aria-label',lang==='ja'?`${item?.pieceLabel||'?'}を選択`:L(`选择 ${item?.pieceLabel||'?'} 段`,`Select piece ${item?.pieceLabel||'?'}`));button.setAttribute('aria-pressed',String(item?.id===selected))});
@@ -1286,8 +1288,8 @@ stage.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||e.buttons||
 stage.addEventListener('pointerleave',()=>{hoverAt=null;stage.classList.remove('over-stem','over-base')});
 function setEditMode(mode){
  if(drag||gesture||canvasPan||movePointers.size)finishMoveInteraction(true);
- if(mode!=='move'&&!current()){toast(L('先选中要修剪的那一枝。','Select a material to cut first.','先に切る花材を選んでください。'));return}
- editMode=mode;gameBridge?.schedule();if(mode!=='move'){setEditorTab('shape');$('#stem-details').open=true}stroke=null;$('#stage').dataset.tool=mode;
+ if(mode!=='move'&&!current()){if(!state.items.length)return;selectItem(state.items.at(-1).id)}
+ editMode=mode;gameBridge?.schedule();stroke=null;$('#stage').dataset.tool=mode;
  $('#move-tool').setAttribute('aria-pressed',String(mode==='move'));$('#prune-tool').setAttribute('aria-pressed',String(mode==='split'));$('#erase-tool').setAttribute('aria-pressed',String(mode==='brush'));
  $$('[data-prune]').forEach(b=>b.classList.toggle('active',b.dataset.prune===mode));$('#brush-setting').hidden=mode!=='brush';
  renderModePill();renderSeatCues();
@@ -1296,7 +1298,7 @@ function setEditMode(mode){
 /** The pill over the canvas in cut and erase modes: the target stem, a one-line instruction, the brush size (erase), how
  to leave, and Done. DOM only; exports never include it. */
 function renderModePill(){
- const pill=$('#mode-pill');if(!pill)return;const item=current(),on=editMode!=='move'&&!!item;pill.hidden=!on;if(!on)return;
+ const pill=$('#mode-pill');if(!pill)return;if(document.body.classList.contains('atelier-simple')){pill.hidden=true;return;}const item=current(),on=editMode!=='move'&&!!item;pill.hidden=!on;if(!on)return;
  const brush=editMode==='brush';pill.dataset.mode=editMode;
  $('#mode-pill-target').textContent=itemName(item);
  $('#mode-pill-text').textContent=brush?L('涂抹去除细节','Brush away details','なぞって細部を消します'):L('从目标枝一侧起笔，横划过连接处','Start beside the target twig; draw across its attachment','切りたい枝の側から付け根を横切ってください');
@@ -1306,7 +1308,7 @@ function renderModePill(){
 $('#mode-pill-done').onclick=()=>{setEditMode('move');renderStage()};
 for(const [id,step] of [['brush-smaller',-3],['brush-larger',3]])$('#'+id).onclick=()=>{const input=$('#brush-size'),next=clamp(Number(input.value)+step,Number(input.min)||5,Number(input.max)||35);if(String(next)===input.value)return;input.value=String(next);input.dispatchEvent(new Event('input',{bubbles:true}))};
 $('#move-tool').onclick=()=>setEditMode('move');$('#prune-tool').onclick=()=>setEditMode(editMode==='split'?'move':'split');$('#erase-tool').onclick=()=>setEditMode(editMode==='brush'?'move':'brush');$$('[data-prune]').forEach(b=>b.onclick=()=>setEditMode(editMode===b.dataset.prune?'move':b.dataset.prune));
-$('#stem-details').addEventListener('toggle',()=>{if(!$('#stem-details').open&&editMode!=='move')setEditMode('move')});
+$('#stem-details').addEventListener('toggle',()=>{if(!document.body.classList.contains('atelier-simple')&&!$('#stem-details').open&&editMode!=='move')setEditMode('move')});
 $('#brush-size').oninput=e=>{$('#brush-value').value=e.target.value;const pillSize=$('#mode-pill-size');if(pillSize)pillSize.value=e.target.value};
 $('#restore-cuts').onclick=()=>{if(!current()?.cuts.length)return;checkpoint();current().cuts=[];current().sv=stemVersion(current());renderStage();persist();undoToast(L('已恢复细部擦除。','Brushwork restored.','細部消去を戻しました。'))};
 function drawPruneOverlay(){const c=$('#prune-overlay');if(!c)return;const size=Math.max(1,Math.round($('#stage').getBoundingClientRect().width));c.width=c.height=size;const ctx=c.getContext('2d');if(!stroke?.points.length||!current())return;const item=current(),asset=assetById[item.type],points=stroke.kind==='split'?[stroke.points[0],stroke.points.at(-1)]:stroke.points;ctx.beginPath();points.forEach((p,k)=>{const q=sourceToStage(p,item,asset);ctx[k?'lineTo':'moveTo'](q[0]*size,q[1]*size)});ctx.strokeStyle='#a5533e';ctx.lineWidth=stroke.kind==='split'?2.5:2;ctx.setLineDash(stroke.kind==='split'?[7,4]:[5,4]);ctx.stroke();}
@@ -1326,8 +1328,7 @@ function retargetPrune(e){
  const touch=e.pointerType==='touch',brush=editMode==='brush',radius=brush?Math.max(1,Number($('#brush-size').value)/2):touch?12:6;
  const id=pickStem(e.clientX,e.clientY,{touch,radius,keep:brush?radius:24,selectedFirst:true}).id;
  if(!id||id===selected)return;
- selectItem(id);const name=itemName(current());
- toast(brush?L(`现在擦除：${name}`,`Now erasing: ${name}`,`${name}を消します`):L(`现在剪：${name}`,`Now cutting: ${name}`,`${name}を切ります`));
+ selectItem(id);
 }
 $('#stage').addEventListener('pointerdown',e=>{if(editMode==='move'||e.button!==0||!current()||stroke)return;e.preventDefault();lastPointerType=e.pointerType;retargetPrune(e);if(editMode==='split'&&(current().localCuts||[]).length>=8)return toast(L('这一段已经剪得很细，可先整理现有片段。','This piece has reached the cut limit. Arrange its pieces first.','この部分はこれ以上分割できません。'));if(editMode!=='split'&&current().cuts.length>=24)return toast(L('这枝已有 24 处剪口；可恢复剪枝后重剪。','This stem already has 24 cuts. Restore it before pruning again.'));const total=state.items.reduce((n,i)=>n+i.cuts.reduce((m,c)=>m+c.points.length,0),0);if(editMode!=='split'&&total>7800)return toast(L('剪枝细节已很多，请先恢复部分剪口。','There is extensive pruning detail. Restore some cuts first.'));const item=current(),p=stageToSource(pointerStage(e),item,assetById[item.type]);stroke={kind:editMode,points:[p],radius:clamp(Number($('#brush-size').value)/$('#stage').getBoundingClientRect().width/(item.h/100)/2,.002,.3),pointer:e.pointerId};$('#stage').setPointerCapture(e.pointerId);drawPruneOverlay()});
 let brushPreviewFrame=0;
@@ -1336,7 +1337,7 @@ function splitSelected(cut){
  const item=current(),asset=item&&assetById[item.type],img=item&&images[item.type];if(!item||!img)return false;
  if(state.items.length>=24){toast(L('画布最多放置 24 段花材。','The canvas can hold up to 24 pieces.','キャンバスには24点まで配置できます。'));return false}
  const p0=cut.points[0],p1=cut.points.at(-1),stage0=sourceToStage(p0,item,asset),stage1=sourceToStage(p1,item,asset);
- if(Math.hypot(stage1[0]-stage0[0],stage1[1]-stage0[1])*$('#stage').getBoundingClientRect().width<6){toast(L('横划过要剪的细枝，划过连接处即可。','Draw across the twig at its attachment.','切りたい小枝の付け根を横切ってください。'));return false}
+ if(Math.hypot(stage1[0]-stage0[0],stage1[1]-stage0[1])*$('#stage').getBoundingClientRect().width<6){if(!document.body.classList.contains('atelier-simple'))toast(L('横划过要剪的细枝，划过连接处即可。','Draw across the twig at its attachment.','切りたい小枝の付け根を横切ってください。'));return false}
  let result;try{
   const sprite=specimenCanvas(item),g=dimensions(item,asset),w=sprite?.crop?.fullWidth||sprite?.width,h=sprite?.crop?.fullHeight||sprite?.height;
   if(!sprite||!w||!h)return false;
@@ -1347,10 +1348,10 @@ function splitSelected(cut){
   result=analyzeLocalCut(sprite,{a:point(p0),b:point(p1)},cutOptions);
   if(result.ok)result.cut={...result.cut,v:2,frame:{split:g.split,length:g.length,end:g.end}};
  }catch(err){canvasTrouble(err);return false}
- if(!result.ok){toast(result.reason==='short'?L('请横划过想剪开的连接处。','Draw across the attachment to cut it.','切りたい付け根を横切ってください。'):L('这一剪还没把局部剪开，请靠近枝叶连接处再试。','That stroke did not separate a local piece. Try near its attachment.','まだ切り離されていません。枝葉の付け根で試してください。'));return false}
+ if(!result.ok){if(!document.body.classList.contains('atelier-simple'))toast(result.reason==='short'?L('请横划过想剪开的连接处。','Draw across the attachment to cut it.','切りたい付け根を横切ってください。'):L('这一剪还没把局部剪开，请靠近枝叶连接处再试。','That stroke did not separate a local piece. Try near its attachment.','まだ切り離されていません。枝葉の付け根で試してください。'));return false}
  const root=item.originId||item.id,prefix=item.pieceLabel||'',makePiece=(part,label)=>({...clone(item),id:uid(),originId:root,pieceLabel:label,localCuts:[...(item.localCuts||[]),{cut:result.cut,part,anchor:result.anchors[part]}]});
  const pieces=[makePiece('main',prefix?`${prefix}1`:'A'),makePiece('detached',prefix?`${prefix}2`:'B')];
- checkpoint();const index=state.items.findIndex(i=>i.id===item.id);state.items.splice(index,1,...pieces);selected=pieces[1].id;cutSession={ids:pieces.map(i=>i.id)};dropSprite(item.id);setEditMode('move');$('#stem-details').open=false;renderStage();persist();undoToast(L('已剪成两段','Cut into two pieces','二つに切りました'));return true;
+ checkpoint();const index=state.items.findIndex(i=>i.id===item.id);state.items.splice(index,1,...pieces);selected=pieces[1].id;cutSession=null;dropSprite(item.id);setEditMode('move');renderStage();persist();return true;
 }
 function finishPrune(e,cancel=false){
  if(!stroke||stroke.pointer!==e.pointerId)return;const cut=stroke;stroke=null;
@@ -1359,11 +1360,10 @@ function finishPrune(e,cancel=false){
  if(!cancel&&cut.kind==='brush'){
   const item=current();
   // A stroke that reaches no visible pixel of the stem (on the pre-cut mask) is not a cut: no undo step, nothing stored.
-  if(!strokeTouches(specimenCanvas(item)?.mask,cut,item,assetById[item.type])){renderStage();toast(L('这一笔没有碰到选中的花材','The brush didn’t touch the selected stem','ブラシが選んだ花材に触れていません'));return}
+  if(!strokeTouches(specimenCanvas(item)?.mask,cut,item,assetById[item.type])){renderStage();return}
   checkpoint();item.cuts.push({kind:cut.kind,points:simplifyPoints(cut.points),radius:clamp(cut.radius,.002,.3)});
   const mask=specimenCanvas(item)?.mask,fullyErased=!!mask&&!mask.data.some(alpha=>alpha>12);
-  if(fullyErased){state.items=state.items.filter(entry=>entry.id!==item.id);dropSprite(item.id);selected=state.items.find(entry=>entry.originId&&entry.originId===item.originId)?.id||state.items.at(-1)?.id||null;cutSession=null;setEditMode('move');undoToast(L('这一小段已擦除','This piece was erased','この部分を消去しました'))}
-  else undoToast(L('已剪去选中的枝叶','Selected foliage removed','選んだ枝葉を消しました'));
+  if(fullyErased){state.items=state.items.filter(entry=>entry.id!==item.id);dropSprite(item.id);selected=state.items.find(entry=>entry.originId&&entry.originId===item.originId)?.id||state.items.at(-1)?.id||null;cutSession=null;setEditMode('move')}
  }
  renderStage();if(!cancel)persist();
 }
@@ -1478,17 +1478,17 @@ function help(){
  const copy=lang==='en'?{
   title:'Take a moment and arrange slowly.',
   steps:[
-   ['Choose a stem, then shape it.','Use Add a stem to choose plants or vessels. Pull a flower head to bend its branch, drag the base dot to move it, and use two fingers to rotate and scale. The coloured handles adjust angle and size; Adjust opens the precise controls.'],
-   ['Cut or refine.','The scissors and eraser are always below the canvas. Scissors split a local connection into an independent piece you can move or remove; the eraser brushes away details. The mode bar names the active stem. Choose Done, tap the tool again, or press Esc to return to shaping.'],
-   ['Find the light, keep the moment.','Atmosphere offers four natural settings and optional fine tuning. Open Keep to save a draft, take a photo or immerse yourself in the arrangement. More contains the recipe, sharing and an AI image pack. Imported photos stay with your drafts in My Works.']
+   ['Choose a stem, then shape it.','Use Flowers to choose plants or vessels. Pull a flower head to bend its branch, drag the base dot to move it, and use two fingers to rotate and scale. The coloured handles adjust angle and size; Keep → More contains precise adjustments.'],
+   ['Cut or refine.','Tap the scissors to cut a twig, or the eraser to brush away details. Both pieces stay on the canvas after a cut and can be moved separately. Tap the active tool again or press Esc to return to arranging. Undo is always beside the tools.'],
+   ['Find the light, keep the moment.','Light offers four natural settings and optional fine tuning. Open Keep to save a draft, take a photo or immerse yourself in the arrangement. More contains the recipe, sharing and an AI image pack. Imported photos stay with your drafts in My Works.']
   ],
   note:'Ctrl/⌘+Z undoes, Ctrl/⌘+Shift+Z redoes, Delete removes, and Esc leaves the current tool. Drafts and artworks stay in this browser; export a file to keep a backup.',
   done:'Start arranging',import:'Import draft file'
  }:lang==='ja'?{
   title:'ゆっくり、ひと枝ずつ。',
   steps:[
-   ['花材を選び、枝を曲げる。','「花材を追加」から花材や花器を選びます。花先を引くと枝が曲がり、根元の点で移動できます。2本指で回転・拡大縮小。色付きハンドルで角度や大きさを変え、「調整」で細かく整えます。'],
-   ['切って、細部を整える。','ハサミと消しゴムは常にキャンバスの下にあります。ハサミで付け根を横切ると、切り離した部分を移動・削除できます。消しゴムで細部をなぞって消せます。操作バーには対象の花材が表示されます。「完了」、ツールの再タップ、またはEscで枝の調整に戻ります。'],
+   ['花材を選び、枝を曲げる。','「花材」から花材や花器を選びます。花先を引くと枝が曲がり、根元の点で移動できます。2本指で回転・拡大縮小。色付きハンドルで角度や大きさを変え、「作品 → その他 → 調整」で細かく整えます。'],
+   ['切って、細部を整える。','ハサミを選んで小枝を切り、消しゴムで細部をなぞって消します。切った両方の部分はそのまま残り、別々に動かせます。同じツールをもう一度タップするか、Escで終了します。「元に戻す」はすぐ隣にあります。'],
    ['光を選び、この瞬間を残す。','「光と景」には4つの自然な光と微調整があります。「作品」から下書き保存、撮影、鑑賞ができます。「その他」にはレシピ、共有、AI生成用パックがあります。取り込んだ写真は下書きと一緒に「マイ作品」に残ります。']
   ],
   note:'Ctrl/⌘+Zで元に戻す、Ctrl/⌘+Shift+Zでやり直し、Deleteで削除、Escで現在のツールを終了します。下書きと作品はこのブラウザに保存されます。ファイルを書き出すとバックアップできます。',
@@ -1496,8 +1496,8 @@ function help(){
  }:{
   title:'给自己一刻，慢慢插花。',
   steps:[
-   ['挑一枝，弯出姿态。','从「添加花材」选择花与枝或花器。拖花头弯枝，拖根部圆点移位，双指旋转和缩放；彩色手柄可单独调角度与大小，点「调整」可精细修改。'],
-   ['剪一剪，留出呼吸。','剪刀和橡皮始终在画布下方。用剪刀横划局部连接，剪下部分可独立移动或删除；用橡皮涂抹去掉细节。模式条会写明正在操作的花材，点「完成」、再点一次工具或按Esc即可回到弯枝。'],
+   ['挑一枝，弯出姿态。','从「花材」选择花与枝或花器。拖花头弯枝，拖根部圆点移位，双指旋转和缩放；彩色手柄可单独调角度与大小，在「作品 → 更多 → 调整」中可精细修改。'],
+   ['剪一剪，留出呼吸。','点剪刀横划细枝，点橡皮涂抹细节。剪开的两段直接留在画布上，可以分别移动。再点一次当前工具或按 Esc 即可继续插花，撤销就在工具旁。'],
    ['选一束光，留住这一刻。','「光景」提供四种自然氛围和折叠细调。「作品」里可保存草稿、拍照或全屏赏花；「更多」里还有配方、分享和AI生图包。导入的照片会与草稿一起保存在「我的作品」。']
   ],
   note:'Ctrl/⌘+Z撤销，Ctrl/⌘+Shift+Z重做，Delete删除，Esc退出当前工具。草稿与作品保存在当前浏览器，可导出文件备份。',

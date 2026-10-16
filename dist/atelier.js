@@ -5,6 +5,8 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  const stage=document.querySelector('#stage');if(!stage)return null;
  const $=(s,root=document)=>root.querySelector(s);
  const words=(zh,en,ja)=>locale()==='zh'?zh:locale()==='ja'?ja:en;
+ const flowerLabel=$('#quick-material-open>span:last-child');
+ Object.assign(flowerLabel.dataset,{zh:'花材',en:'Flowers',ja:'花材'});
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  let stored={};try{stored=JSON.parse(localStorage.getItem(PREFS))||{};}catch{}
  const settings={motion:stored.motion!==false,power:clamp(Number.isFinite(stored.power)?stored.power:.35,0,1),direction:clamp(Number.isFinite(stored.direction)?stored.direction:125,15,165),tool:'move',photo:false,paused:false,reducedMotion:reduced.matches};
@@ -14,28 +16,31 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  host.innerHTML='<canvas id="unity-canvas" tabindex="0" aria-label="互动插花画布"></canvas>';
  stage.append(host);const canvas=$('canvas',host);canvas.width=canvas.height=1;
  const panel=document.createElement('section');panel.className='game-session';
- panel.innerHTML=`<div class="atelier-bench"><div class="atelier-add-slot"></div>
-  <details class="atelier-disclosure" id="atelier-atmosphere"><summary><span class="atelier-atmosphere-label"></span><span aria-hidden="true">⌄</span></summary><div class="atelier-popover atelier-atmosphere-panel"><div class="atelier-presets" role="group"><button type="button" data-atmosphere="morning"><i></i><span></span></button><button type="button" data-atmosphere="shade"><i></i><span></span></button><button type="button" data-atmosphere="dusk"><i></i><span></span></button><button type="button" data-atmosphere="moon"><i></i><span></span></button></div><details class="atelier-fine"><summary class="atelier-fine-label"></summary><div class="atelier-light"><label for="game-light-direction"><span class="light-direction-label"></span><input id="game-light-direction" type="range" min="15" max="165" step="1"><output></output></label><label for="game-light-power"><span class="light-power-label"></span><input id="game-light-power" type="range" min="0" max="100" step="1"><output></output></label></div><div class="atelier-scene-slot"></div><div class="atelier-toggles"><button type="button" id="game-motion" aria-pressed="true"></button><button type="button" id="game-sound" aria-pressed="false"></button></div></details><details class="atelier-studies"><summary class="atelier-studies-label"></summary><div class="atelier-studies-slot"></div></details></div></details>
-  <span class="atelier-bench-space"></span><details class="atelier-disclosure" id="atelier-work"><summary><span class="atelier-work-label"></span><span aria-hidden="true">⌄</span></summary><div class="atelier-popover atelier-work-panel"><div class="atelier-work-main"><div class="atelier-save-slot"></div><button type="button" id="game-capture" disabled></button><div class="atelier-fallback-export"></div><button type="button" id="game-photo" aria-pressed="false"></button></div><details class="atelier-work-more"><summary class="atelier-more-label"></summary><div class="atelier-work-secondary"><button type="button" id="atelier-image-pack"></button></div></details></div></details></div>
+ panel.innerHTML=`<div class="atelier-bench"><div class="atelier-add-slot"></div><div class="atelier-tool-slot"></div>
+  <span class="atelier-bench-space"></span><details class="atelier-disclosure" id="atelier-atmosphere"><summary><span class="atelier-atmosphere-label"></span></summary><div class="atelier-popover atelier-atmosphere-panel"><div class="atelier-presets" role="group"><button type="button" data-atmosphere="morning"><i></i><span></span></button><button type="button" data-atmosphere="shade"><i></i><span></span></button><button type="button" data-atmosphere="dusk"><i></i><span></span></button><button type="button" data-atmosphere="moon"><i></i><span></span></button></div><div class="atelier-toggles"><button type="button" id="game-motion" aria-pressed="true"></button><button type="button" id="game-sound" aria-pressed="false"></button></div><details class="atelier-fine"><summary class="atelier-fine-label"></summary><div class="atelier-light"><label for="game-light-direction"><span class="light-direction-label"></span><input id="game-light-direction" type="range" min="15" max="165" step="1"><output></output></label><label for="game-light-power"><span class="light-power-label"></span><input id="game-light-power" type="range" min="0" max="100" step="1"><output></output></label></div><div class="atelier-scene-slot"></div></details><details class="atelier-studies"><summary class="atelier-studies-label"></summary><div class="atelier-studies-slot"></div></details></div></details>
+  <details class="atelier-disclosure" id="atelier-work"><summary><span class="atelier-work-label"></span></summary><div class="atelier-popover atelier-work-panel"><div class="atelier-title-slot"></div><div class="atelier-work-main"><div class="atelier-save-slot"></div><button type="button" id="game-capture" disabled></button><div class="atelier-fallback-export"></div><button type="button" id="atelier-gallery"></button><button type="button" id="game-photo" aria-pressed="false"></button></div><details class="atelier-work-more"><summary class="atelier-more-label"></summary><div class="atelier-work-secondary"><div class="atelier-advanced-tools"></div><button type="button" id="atelier-book"></button><button type="button" id="atelier-image-pack"></button></div></details></div></details></div>
   <div class="game-loading" role="status"><progress max="1" value="0"></progress><span></span><button type="button" id="game-retry" hidden></button></div>`;
- $('.workspace-heading').after(panel);
+ $('.stage-frame').append(panel);
  // One material picker, one atmosphere panel, one place to keep or export the work.
  $('.atelier-add-slot',panel).append($('#quick-material-open'));
+ $('.atelier-tool-slot',panel).append($('.stage-tools'));
+ $('.atelier-title-slot',panel).append($('.workspace-heading'));
  $('.atelier-save-slot',panel).append($('#save-button'));
  $('.atelier-fallback-export',panel).append($('#export-draft'));
  $('.atelier-scene-slot',panel).append($('.scene-picker'));
  const secondary=$('.atelier-work-secondary',panel);
  for(const selector of ['.work-subtitle','#recipe-button','#share-current','#new-canvas-button','#help-button','#sources-button']){const node=$(selector);if(node)secondary.append(node);}
  const studies=$('.light-scene-gallery');if(studies)$('.atelier-studies-slot',panel).append(studies);
- const actionBar=document.createElement('div');actionBar.className='atelier-canvas-actions';
  const hint=document.createElement('p');hint.className='game-instruction';
  const fallbackAdjust=document.createElement('button');fallbackAdjust.type='button';fallbackAdjust.id='atelier-fallback-adjust';
- actionBar.append($('.stage-tools'),fallbackAdjust,hint);$('.stage-frame').append(actionBar);
+ secondary.prepend(fallbackAdjust);
+ for(const id of ['redo-button','layers-tool','guide-button'])$('.atelier-advanced-tools',panel).append($('#'+id));
+ secondary.append($('.zoom-controls'));
  const inspector=$('.design-panel');
  const closeInspector=document.createElement('button');closeInspector.className='atelier-inspector-close';closeInspector.type='button';closeInspector.textContent='×';inspector.prepend(closeInspector);
  const hud=document.createElement('div');hud.className='atelier-hud';hud.setAttribute('aria-live','off');
  hud.innerHTML='<span class="atelier-hud-name"></span><button type="button" data-atelier-action="straighten"></button><button type="button" id="atelier-adjust" aria-controls="selection-controls" aria-expanded="false"></button>';
- $('#canvas-viewport').append(hud);
+ secondary.prepend(hud);
  const feedback=document.createElement('div');feedback.className='atelier-feedback';feedback.setAttribute('role','status');stage.append(feedback);
  let instance=null,active=false,busy=false,frameHandle=0,startPromise=null,lastFrame=null,lastLight=null,feedbackTimer=0,captureTimer=0,capturePending=false,lastLocale='';
  const sentTextures=new Map(),pendingEvents=[];
@@ -81,7 +86,12 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
   const light=lastFrame?.light;document.querySelectorAll('[data-atmosphere]').forEach(b=>b.setAttribute('aria-pressed',String(presets[b.dataset.atmosphere].light===light)));
  }
  function language(){
-  $('.atelier-atmosphere-label').textContent=words('光景','Atmosphere','光と景');$('.atelier-work-label').textContent=words('作品','Keep','作品');
+  $('.atelier-atmosphere-label').textContent=words('光景','Light','光と景');$('.atelier-work-label').textContent=words('作品','Keep','作品');
+  flowerLabel.textContent=words('花材','Flowers','花材');
+  $('#atelier-gallery').textContent=words('我的作品','My works','自分の作品');$('#atelier-book').textContent=words('灵感手帖','Inspiration book','インスピレーション');
+  for(const [id,label] of [['redo-button',words('重做','Redo','やり直す')],['layers-tool',words('花材列表','Flower list','花材の一覧')],['guide-button',words('构图参考','Composition guide','構図ガイド')]]){
+   let text=$('.atelier-tool-name',$('#'+id));if(!text){text=document.createElement('span');text.className='atelier-tool-name';$('#'+id).append(text);}text.textContent=label;
+  }
   const labels={morning:words('窗边','Window','窓辺'),shade:words('阴日','Overcast','曇り'),dusk:words('夕照','Evening','夕映え'),moon:words('月色','Moon','月影')};
   document.querySelectorAll('[data-atmosphere]').forEach(b=>$('span',b).textContent=labels[b.dataset.atmosphere]);
   $('.atelier-presets').setAttribute('aria-label',words('自然光景','Natural atmospheres','自然な光と景'));
@@ -151,12 +161,14 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  document.querySelectorAll('[data-atelier-action]').forEach(b=>b.onclick=()=>{onAction?.(b.dataset.atelierAction);canvas.focus({preventScroll:true});});
  $('#atelier-adjust').onclick=()=>setInspector(!document.body.classList.contains('atelier-inspector-open'));
  fallbackAdjust.onclick=()=>setInspector(!document.body.classList.contains('atelier-inspector-open'));
- closeInspector.onclick=()=>{setInspector(false);$('#atelier-adjust').focus({preventScroll:true});};
+ closeInspector.onclick=()=>{setInspector(false);$('#atelier-work>summary').focus({preventScroll:true});};
  $('#atelier-image-pack').onclick=()=>setInspector(true,'create');
+ $('#atelier-gallery').onclick=()=>{closeMenus();$('.main-nav [data-view="gallery"]').click();};
+ $('#atelier-book').onclick=()=>{closeMenus();$('.main-nav [data-view="inspiration"]').click();};
  $('#quick-material-open').addEventListener('click',()=>{closeMenus();setInspector(false);});
  $('#layers-tool').addEventListener('click',()=>{closeMenus();setInspector(false);});
  for(const id of ['prune-tool','erase-tool']){
-  // A first click is immediately usable; the mode pill names the chosen stem.
+  // A first click is immediately usable; the pressed tool is the only mode indicator.
   $('#'+id).addEventListener('click',()=>{if(!$('.stem.selected',stage)){const target=lastFrame?.nodes.filter(n=>n.interactive).at(-1)?.id||$('.stem',stage)?.dataset.id;if(target)onEvent({type:'select',id:target});}},true);
   $('#'+id).addEventListener('click',()=>{closeMenus();setInspector(false);if(active)canvas.focus({preventScroll:true});});
  }
@@ -180,7 +192,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  host.addEventListener('contextmenu',e=>e.preventDefault());
  for(const type of ['pointerdown','pointermove','pointerup','pointercancel','dblclick'])host.addEventListener(type,e=>{if(active)e.stopPropagation();});
  host.addEventListener('wheel',e=>{if(active){e.stopPropagation();if(e.altKey||e.shiftKey)e.preventDefault();}},{passive:false});
- // Choosing a pruning action leaves the unobstructed canvas and its Done control in view.
+ // Choosing a tool returns directly to the unobstructed canvas.
  inspector.querySelectorAll('[data-prune]').forEach(b=>b.addEventListener('click',()=>setInspector(false)));
  function visibility(){present();if(visible()){resizeBuffer();busy=false;schedule();}}
  const observer=new MutationObserver(visibility);observer.observe($('#studio-view'),{attributes:true,attributeFilter:['hidden']});observer.observe($('#modal'),{attributes:true,attributeFilter:['open']});document.addEventListener('visibilitychange',visibility);

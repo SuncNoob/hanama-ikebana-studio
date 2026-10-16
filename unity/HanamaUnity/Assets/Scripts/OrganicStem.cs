@@ -8,7 +8,7 @@ public sealed partial class HanamaGame
     {
         public readonly float[] rest=new float[Bones],angles=new float[Bones],speed=new float[Bones],start=new float[Bones];
         public readonly Vector2[] joints=new Vector2[Bones+1],solve=new Vector2[Bones+1];
-        public float extent,length,phase,stiffness,limit;public bool dirty=true;
+        public float extent,length,phase,stiffness,limit,windBlend;public bool dirty=true;
     }
     bool bending;int grip;Vector2 gripOffset;
     float lastOrganicTime;
@@ -17,12 +17,13 @@ public sealed partial class HanamaGame
         if(!p.data.interactive)return;
         bool fresh=p.chain==null;if(fresh)p.chain=new StemChain();var c=p.chain;
         c.extent=Mathf.Max(1,p.data.extent);c.length=c.extent/Bones;
-        c.phase=StablePhase(p.data.key);c.stiffness=Mathf.Lerp(70,32,p.data.flexibility);c.limit=Mathf.Lerp(.055f,.16f,p.data.flexibility);
+        c.phase=StablePhase(p.data.id);c.stiffness=Mathf.Lerp(70,32,p.data.flexibility);c.limit=Mathf.Lerp(.055f,.16f,p.data.flexibility);
         for(int i=0;i<Bones;i++)
         {
             c.rest[i]=p.data.flex!=null&&i<p.data.flex.Length?Mathf.Clamp(p.data.flex[i],-.6f,.6f):0;
             if(fresh)c.angles[i]=c.rest[i];
         }
+        if(tool!="move"||!settings.motion||settings.reducedMotion||settings.paused){Array.Copy(c.rest,c.angles,Bones);Array.Clear(c.speed,0,Bones);c.windBlend=0;}
         c.dirty=true;Forward(c,c.angles,c.joints);
         if(p.shadowTex==null&&p.tex)BuildSoftShadow(p);
     }
@@ -33,6 +34,12 @@ public sealed partial class HanamaGame
     static void Forward(StemChain c,float[] angles,Vector2[] joints)
     {
         joints[0]=Vector2.zero;for(int i=0;i<Bones;i++)joints[i+1]=joints[i]+new Vector2(Mathf.Sin(angles[i]),Mathf.Cos(angles[i]))*c.length;
+    }
+    void RestOrganic(Piece p)
+    {
+        var c=p?.chain;if(c==null)return;
+        Array.Copy(c.rest,c.angles,Bones);Array.Clear(c.speed,0,Bones);c.windBlend=0;
+        Forward(c,c.angles,c.joints);UpdateOrganicMesh(p);
     }
     Vector2 BendLocal(Piece p,Vector2 at)
     {
@@ -106,7 +113,8 @@ public sealed partial class HanamaGame
         if(frame==null||settings.paused)return;
         float now=Time.unscaledTime;
         // Simulation is bounded to 30 Hz off-gesture; the root remains exact at every render.
-        if(!held&&now-lastOrganicTime<1f/30)return;
+        float cadence=Time.unscaledDeltaTime>.05f?1f/20:1f/30;
+        if(!held&&now-lastOrganicTime<cadence)return;
         float step=Mathf.Min(.04f,Mathf.Max(.001f,now-lastOrganicTime));lastOrganicTime=now;
         float angle=settings.direction*Mathf.Deg2Rad;var dir=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle));
         lightVector=Vector2.Lerp(lightVector,dir,1-Mathf.Exp(-step*4));lightPower=Mathf.Lerp(lightPower,settings.power,1-Mathf.Exp(-step*4));
@@ -116,17 +124,25 @@ public sealed partial class HanamaGame
         {
             if(!p.data.interactive||p.chain==null)continue;var c=p.chain;
             Vector2 pos=p.root.transform.position;float impulse=Mathf.Clamp(-(pos.x-p.previous.x)*.012f,-.1f,.1f);p.previous=pos;
-            bool motion=settings.motion&&!settings.reducedMotion;
+            // Source-space scissors/eraser must see the saved resting curve, never a wind offset.
+            bool motion=settings.motion&&!settings.reducedMotion&&tool=="move"&&!(held&&picked==p);
             bool changed=c.dirty;
             if(!(held&&picked==p&&bending))
             {
-                float gust=(Mathf.PerlinNoise(c.phase+now*.115f,.37f)-.5f)*.023f+(Mathf.PerlinNoise(c.phase*.7f+now*.29f,3.1f)-.5f)*.009f;
+                // A slow coherent breeze is visibly alive within a second, without jittering petals.
+                // Distinct stable phases keep neighbouring stems from swinging as one flat card.
+                c.windBlend=motion?Mathf.MoveTowards(c.windBlend,1,step/.85f):0;
+                float wave=Mathf.Sin(now*.83f+c.phase)*.67f+Mathf.Sin(now*1.31f+c.phase*.71f)*.23f+Mathf.Sin(now*.37f+c.phase*1.7f)*.10f;
+                float gust=wave*Mathf.Lerp(.026f,.052f,Mathf.Clamp01(p.data.flexibility))*c.windBlend;
                 for(int i=0;i<Bones;i++)
                 {
-                    float weight=(i+1f)/Bones;float wanted=c.rest[i]+(motion?gust*weight*p.data.flexibility:0);
+                    // Identical upper offsets move the flower crown as one form. The root joint stays zero.
+                    float t=Mathf.Min(i,4)/4f,weight=.08f+.92f*t*t*(3-2*t);
+                    float wanted=c.rest[i]+(motion?gust*weight:0);
                     c.speed[i]+=impulse*weight;
                     c.speed[i]+=((wanted-c.angles[i])*c.stiffness-2*Mathf.Sqrt(c.stiffness)*.82f*c.speed[i])*step;
                     float next=motion?c.angles[i]+c.speed[i]*step:c.rest[i];
+                    if(!motion)c.speed[i]=0;
                     if(Mathf.Abs(next-c.angles[i])>.000015f)changed=true;c.angles[i]=next;
                 }
                 if(changed){Forward(c,c.angles,c.joints);UpdateOrganicMesh(p);}

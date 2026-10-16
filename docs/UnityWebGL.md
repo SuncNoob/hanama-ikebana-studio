@@ -16,7 +16,7 @@ Each botanical has a 4 × 16 mesh driven by eight equal-length segments. Pulling
 
 `item.flex` stores eight absolute directions in radians from local upward Y, bounded to −0.6…0.6. Missing/zero flex preserves the old geometry path. Chain extent comes from the original source-to-pivot distance, not cropped sprite height. `dist/flex.js`, `geometry.js` and the final Canvas2D compositor share that deformation before mirror/rotation. Pruning masks stay in unbent source coordinates; the Unity texture is not pre-bent. Portable files store the resting curve, not transient wind.
 
-Low-frequency varied gusts drive damped segment motion; stiffness, flexibility and limits vary by botanical profile. Reduced-motion preferences disable it. The shader preserves the source image's modeling and adds broad wrapped illumination; flower colour variation is no longer converted into relief normals.
+Slow multi-frequency gusts drive damped segment motion with stable phases per stem ID. The target angle scale ranges from 0.026 to 0.052 radians by botanical flexibility and fades in over 0.85 seconds; upper segments share the same wind offset to keep the crown intact. A held stem and all stems during cutting/erasing use their saved resting curves, keeping source-space pruning aligned with the picture. Breeze off, reduced-motion preferences and a hidden studio restore the resting curve. The shader preserves the source image's modeling and adds broad wrapped illumination; flower colour variation is no longer converted into relief normals.
 
 Shadow alpha is downsampled to 128 × 128, padded and separably blurred only when the specimen texture changes. The cached texture follows the stem mesh and costs one fragment texture lookup. The upper silhouette is softer and lighter. `organic-room.js` preloads/decodes the blush, ivory and plum rooms before the host caches its background. The rooms share a frontal viewpoint and a softly lit tabletop; dusk is a gentle grade of the warm room. Ground contact is a separate diffuse pass. Optional vessel `footY` metadata positions the actual source-image foot on the shared table contact at stage y=85.5; transparent source padding no longer determines where a low bowl appears to stand.
 
@@ -26,7 +26,7 @@ The approach draws on [three.js contact shadows](https://threejs.org/examples/we
 
 ## One workbench
 
-Main actions are Add, Atmosphere and Keep (添加、光景、作品), with scissors and eraser beside the canvas. Detailed material adjustments, light controls, breeze, optional sound and secondary exports open when needed. The separate free-play/practice mode chooser and repeated first-screen actions have been removed. Stems may remain outside the vessel without persistent reseating reminders.
+The canvas comes first, directly beneath a compact header. One row holds Flowers, scissors, eraser, Undo, Atmosphere and Keep. The work title, gallery and advanced adjustments live in Keep; the canvas has no floating HUD or zoom pill. Cutting and erasing never open the inspector, mode banner or Done flow. A successful split keeps both pieces immediately and returns to arranging; erasing continues until the same tool is tapped again or Escape is pressed. Undo remains adjacent. Atmosphere exposes Breeze directly, with light tuning folded away. Stems may remain outside the vessel without persistent reseating reminders.
 
 Window, Overcast, Evening and Moon are the four atmosphere presets. Generated rooms and gentle shading replace the earlier hard window treatment on the native canvas. Existing gallery, recipe, study links, sharing, JSON import/export and AI image packs remain. Controls support Chinese, English and Japanese.
 
@@ -34,7 +34,7 @@ Take a photo captures the Unity camera at 1600 × 1600, including native shading
 
 ## Pixel budget and measured limits
 
-The interactive buffer's longest edge is capped at 720 pixels on desktop and 640 when viewport width is at most 900 pixels; device pixel ratio is also capped at two. Stem simulation runs at up to 30 Hz off-gesture, reuses arrays/meshes and avoids updates when unchanged. Presentation pauses outside the active studio. Optional synthesized interaction sound starts after user input and is off by default.
+The interactive buffer's longest edge is capped at 720 pixels on desktop and 640 when viewport width is at most 900 pixels; device pixel ratio is also capped at two. Stem simulation runs at up to 30 Hz off-gesture, drops to 20 Hz when frame time exceeds 50 ms, reuses arrays/meshes and avoids updates when unchanged. Presentation pauses outside the active studio. Optional synthesized interaction sound starts after user input and is off by default.
 
 An instrumented Edge 152 / ANGLE SwiftShader comparison against `f99454e`, with the same 598 × 598 buffer and compositions, reduced mean requestAnimationFrame intervals from 28.56 to 21.07 ms in the default three-stem scene and from 35.54 to 28.03 ms in the nine-stem spring scene: approximately 26% and 21%. These 7.5-second software-GPU samples predate the current 12-material editorial set. They measure browser scheduling under the earlier workloads, not hardware GPU time, the final five-stem default, all new materials or a guaranteed frame rate. Safari/iPhone hardware needs separate validation.
 

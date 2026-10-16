@@ -1,7 +1,7 @@
 {
-  "frameworkUrl": "/unity/Build/unity.framework.js.unityweb?v=b10f70a94a69",
-  "dataUrl": "/unity/Build/unity.data.unityweb?v=b10f70a94a69",
-  "codeUrl": "/unity/Build/unity.wasm.unityweb?v=b10f70a94a69",
+  "frameworkUrl": "/unity/Build/unity.framework.js.unityweb?v=5dfc0dd6ac88",
+  "dataUrl": "/unity/Build/unity.data.unityweb?v=5dfc0dd6ac88",
+  "codeUrl": "/unity/Build/unity.wasm.unityweb?v=5dfc0dd6ac88",
   "streamingAssetsUrl": "/unity/StreamingAssets",
-  "loader": "/unity/Build/unity.loader.js?v=b10f70a94a69"
+  "loader": "/unity/Build/unity.loader.js?v=5dfc0dd6ac88"
 }

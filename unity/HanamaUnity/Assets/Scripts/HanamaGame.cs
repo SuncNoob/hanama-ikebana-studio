@@ -150,7 +150,7 @@ public sealed partial class HanamaGame : MonoBehaviour
             picked=(hitTurn||hitScale||hitRoot)&&pieces.ContainsKey(selected)?pieces[selected]:Pick(at);
             if(picked==null&&tool!="move")pieces.TryGetValue(selected,out picked);
             if(picked==null){selected="";DrawSelection();Emit(new GameEvent{type="select",id=""});return;}
-            selected=picked.data.id;down=at;offset=(Vector2)picked.root.transform.position-at;startAngle=picked.data.angle;startScale=picked.scale;
+            RestOrganic(picked);selected=picked.data.id;down=at;offset=(Vector2)picked.root.transform.position-at;startAngle=picked.data.angle;startScale=picked.scale;
             turnStart=Angle(at-(Vector2)picked.root.transform.position);scaleDistance=Mathf.Max(2,Vector2.Distance(at,picked.root.transform.position));
             turning=tool=="move"&&(hitTurn||(!hitRoot&&(settings.tool=="rotate"||Shift())));
             scaling=tool=="move"&&(hitScale||(!hitRoot&&settings.tool=="scale"));
@@ -266,7 +266,9 @@ public sealed partial class HanamaGame : MonoBehaviour
     public void SetPresentation(string json)
     {
         settings=JsonUtility.FromJson<Presentation>(json)??new Presentation();settings.power=Mathf.Clamp01(settings.power);idle=0;
-        if(settings.paused)CancelGesture("");DrawSelection();
+        if(settings.paused)CancelGesture("");
+        if(settings.paused||settings.reducedMotion||!settings.motion)foreach(var p in pieces.Values)RestOrganic(p);
+        DrawSelection();
     }
     void Animate(float dt){AnimateOrganic(dt);}
     public void Capture(string unused)
