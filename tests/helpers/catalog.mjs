@@ -16,7 +16,7 @@ import {atelierSpecimens,atelierVessels} from '../../dist/editorial-catalog.js?v
 import {atelierSpecimens as legacyAtelierSpecimens,atelierVessels as legacyAtelierVessels} from '../../dist/atelier-catalog.js?v=1';
 import {studies} from '../../dist/studies.js?v=hn3';
 import {applyRealScale} from '../../dist/scale.js?v=scale4';
-import {legacyFlowers,legacyVessels,scenes,applyTone} from '../../dist/legacy-catalog.js?v=xia1';
+import {legacyFlowers,legacyVessels,scenes,applyTone} from '../../dist/legacy-catalog.js?v=quiet2';
 import {createItem,buildStudyState,buildDemoItems} from '../../dist/study-state.js?v=scale4';
 
 export const dist=fileURLToPath(new URL('../../dist/',import.meta.url));

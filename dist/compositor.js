@@ -7,7 +7,7 @@ import {naturalStemRoutesV1,naturalStemRoutes,stemRoots,stemPath} from './natura
 import {seatClip,vesselFoot,seatState,stemWidthCm,isKenzan,isDetachedPiece,KENZAN,kenzanHolders,kenzanPins,onHolder} from './scale.js?v=scale4';
 import {stemMmOf} from './botany.js?v=hn2';
 import {lightOf,paintLight} from './ambience.js?v=hn3';
-import {paintOrganicRoom,paintOrganicGround,isNightScene,isPhotographicScene} from './organic-room.js?v=xia1';
+import {paintOrganicRoom,paintOrganicGround,isNightScene,isPhotographicScene} from './organic-room.js?v=quiet2';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
@@ -524,7 +524,7 @@ function softEllipse(ctx,x,y,rx,ry,blur,color){
  */
 export function paintGroundPass(ctx,size,s,assets,images){
  const vessel=assets[s.vessel];if(!vessel)return;
- if(['generated-atelier','generated-editorial'].includes(vessel.source)){paintOrganicGround(ctx,size,vessel,isNightScene(s.scene));return;}
+ if(isPhotographicScene(s.scene)||['generated-atelier','generated-editorial'].includes(vessel.source)){paintOrganicGround(ctx,size,vessel,isNightScene(s.scene));return;}
  const night=isNightScene(s.scene),k=size/100,foot=vesselFoot(vessel);
  softEllipse(ctx,(foot.cx+1.2)*k,(foot.bottom-.4)*k,foot.half*1.15*k,Math.max(.8,foot.arc*1.3)*k,size*.024,night?'#07100b2e':'#2f332b1f');
  // The foot ring seen from above the table is an ellipse whose front edge is the vessel's lowest point: centred a little

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
-import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow,paintLightPass,paintLightSilhouette} from './compositor.js?v=xia1';
+import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow,paintLightPass,paintLightSilhouette} from './compositor.js?v=quiet2';
 import {LIGHTS,lightOf,lightPatch,lightWorkSize,paintLightAmbient} from './ambience.js?v=hn3';
 import {zipFiles,backupFiles,backupName,readBackup,keepIncoming,withTimeout,failedIds,BackupError,MAX_BACKUP_FILE} from './my-works.js?v=hn3';
 import {compositorLayerPlan,compositorManifest} from './compositor-project.js?v=hn3';
@@ -25,7 +25,7 @@ import {nameOf,colorOf,poseOf,displayPose,provenance,cardName,supportName,coverF
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints,flexExtent} from './geometry.js?v=soft2';
 import {mouthTargets} from './mouth-targets.js?v=1';
 import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=31';
-import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=xia1';
+import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=quiet2';
 import {lightScenes} from './light-scenes.js';
 import {atelierCase} from './atelier-cases.js';
 import {createItem,stemVersion,buildStudyState,buildDemoItems} from './study-state.js?v=scale4';
@@ -33,10 +33,10 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=11';
+import {mountUnityGame} from './atelier.js?v=12';
 import {normalizeFlex} from './flex.js?v=2';
 import {stemLengthRatio,setStemLength,normalizeStemSplit,supportsStemStretch,stemStretchSplit} from './stem-length.js';
-import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene,isPhotographicScene} from './organic-room.js?v=xia1';
+import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene,isPhotographicScene} from './organic-room.js?v=quiet2';
 let gameBridge=null;
 const $ = (s,root=document) => root.querySelector(s);
 const $$ = (s,root=document) => [...root.querySelectorAll(s)];
@@ -1648,8 +1648,22 @@ function endPackSession(){if(!packSession)return;const session=packSession;packS
  * The generation dialog: three steps that work on phones. 1 hands the draft image to ChatGPT (the share sheet on touch devices
  * that can share files, else an image on the clipboard, else the image itself to long-press or download); 2 copies the prompt,
  * ready at once because it needs no rendering; 3 brings the photo back. Floating and out-of-scale stems are listed first with
- * one Fix all. The mode switch rewrites the prompt; the zip, the layout guide and the layered project sit under More exports.
+ * one Fix all. The complete zip is a direct action; only the separate guide and layered project sit under More exports.
  */
+let preferredPackFormat=null,preferredPackProvider='chatgpt';
+/** Both download entrances produce the same complete archive from one captured arrangement. */
+async function generationPackArchive(snapshot,{format,provider,variation=Date.now(),draft,guide}={}){
+ const [image,layout]=await Promise.all([draft||draftCanvas(snapshot).then(canvasBlob),guide||compositionGuideCanvas(snapshot)]),mode=snapshot.generation;
+ return zipFiles([['draft.png',image],['composition-guide.png',await canvasBlob(layout)],['prompt.txt',new Blob([promptFor({...snapshot,generationVariation:variation},{guide:true,format})],{type:'text/plain;charset=utf-8'})],['composition.json',new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'})],['readme.txt',new Blob([packReadme(mode,lang,format,provider)],{type:'text/plain;charset=utf-8'})],['recipe.png',await recipeCardBlob(snapshot)],['recipe.txt',new Blob([recipeTextFor(snapshot)],{type:'text/plain;charset=utf-8'})]]);
+}
+async function downloadPackFromCanvas(button){
+ if(button.disabled)return;
+ if(!state.items.length){toast(L('先添入一枝花，再下载生图包。','Add a material before downloading the image pack.','花材を加えてからパックを保存してください。'));return;}
+ const snapshot=clone(state),format=preferredPackFormat||(mediaMatches('(pointer:coarse)')?'phone':'macbook'),provider=preferredPackProvider;
+ button.disabled=true;button.setAttribute('aria-busy','true');
+ try{const zip=await generationPackArchive(snapshot,{format,provider});download(zip,`${fileTitle(snapshot)}-${say(PACK_NAMES[snapshot.generation]||PACK_NAMES.natural)}-${format}.zip`);toast(L('生图包已下载','Image pack downloaded','生成パックを保存しました'));}
+ catch(err){toast(err.message)}finally{button.disabled=false;button.removeAttribute('aria-busy')}
+}
 async function generatePackageV3(){
  if(!state.items.length){toast(L('先添入一枝花，再让灵感开花。','Add at least one material before creating a generation pack.'));return}
  const snapshot=clone(state),variation=Date.now(),materialCount=new Set(snapshot.items.map(i=>i.originId||i.id)).size;
@@ -1671,15 +1685,15 @@ ${checks.length?`<div class="pack-check" id="pack-check"><p><strong>${L('生成�
 <div class="pack-mode"><span class="slider-label" id="pack-mode-label">${L('整理程度','Refinement','仕上げ')}</span><div class="pack-modes" role="group" aria-labelledby="pack-mode-label">${PACK_MODES.map(mode=>`<button type="button" data-pack-mode="${mode}" aria-pressed="false" title="${esc(say(MODE_NAMES[mode]))}">${esc(say(MODE_SHORT[mode]))}</button>`).join('')}</div><p class="file-note" id="pack-mode-help"></p></div>
 <div class="pack-format"><span class="slider-label" id="pack-format-label">${L('成品画幅','Final image size','仕上がりサイズ')}</span><div class="pack-formats" role="group" aria-labelledby="pack-format-label">${OUTPUT_FORMAT_ORDER.map(format=>{const f=OUTPUT_FORMATS[format];return `<button type="button" data-pack-format="${format}" aria-pressed="false"><span>${esc(say(f.names))}</span><small>${f.ratio} · ${f.width}×${f.height}</small></button>`}).join('')}</div><p class="file-note" id="pack-format-help"></p></div>
 <div class="pack-provider"><span class="slider-label" id="pack-provider-label">${L('选择生图工具','Image generator','画像生成ツール')}</span><div class="pack-providers" role="group" aria-labelledby="pack-provider-label">${Object.entries(GENERATOR_PROVIDERS).map(([id,provider])=>`<button type="button" data-pack-provider="${id}" aria-pressed="false">${esc(say(provider.names))}</button>`).join('')}</div><p class="file-note" id="pack-provider-help"></p></div>
-<ol class="pack-steps">
+<div class="pack-direct-download"><button type="button" class="button outline" id="download-package"><span data-icon="download"></span>${L('下载生图包 .zip','Download image pack .zip','生成用パックを保存 .zip')}</button></div><ol class="pack-steps">
 <li class="pack-step"><div class="pack-step-text"><h3>${L('把草稿图交给生图工具','Give the image tool your draft','下書きを画像生成ツールへ')}</h3>${wechat?`<p class="pack-hint pack-hint-strong">${L('微信里无法复制或下载图片：点右上角 ··· 用浏览器打开。','Tap ··· and open in your browser to copy or download the image.','··· からブラウザで開くと、画像をコピー・保存できます。')}</p>`:''}<p class="pack-hint">${imageHint}</p></div><div class="pack-step-actions">${handoff==='show'?'':`<button type="button" class="button accent" id="pack-image"${handoff==='share'?' disabled':''}><span data-icon="${handoff==='share'?'share':'copy'}"></span>${handoff==='share'?L('发送草稿图','Send draft image','下書き画像を送る'):L('复制草稿图','Copy draft image','下書き画像をコピー')}</button>`}<a class="text-button pack-download" id="pack-draft-download" download="draft.png" hidden>${L('下载 draft.png','Download draft.png','draft.png を保存')}</a></div><figure class="pack-fallback" id="pack-fallback" hidden><img id="pack-fallback-image" alt="${esc(L('草稿图','Draft image','下書き画像'))}"><figcaption>${coarse?L('长按保存','Long-press to save','長押しで保存'):L('右键可复制或保存','Right-click to copy or save','右クリックでコピー・保存')}</figcaption></figure></li>
 <li class="pack-step"><div class="pack-step-text"><h3>${L('复制 Prompt','Copy the prompt','プロンプトをコピー')}</h3><p class="pack-hint">${L('贴在草稿图后面，一起发送。','Paste it after the image and send both.','画像のあとに貼り付けて、一緒に送信します。')}</p></div><div class="pack-step-actions"><button type="button" class="button outline" id="copy-prompt"><span data-icon="copy"></span>${L('复制 Prompt','Copy prompt','プロンプトをコピー')}</button><a class="button outline" id="open-generator" href="https://chatgpt.com/" target="_blank" rel="noopener">${L('打开 ChatGPT ↗','Open ChatGPT ↗','ChatGPTを開く ↗')}</a></div></li>
 <li class="pack-step"><div class="pack-step-text"><h3>${L('把生成的照片带回来','Bring the photo back','できた写真を取り込む')}</h3><p class="pack-hint">${L('也可以直接粘贴或拖进这个窗口。','You can also paste or drop it into this window.','このウィンドウに貼り付けたり、ドロップしたりもできます。')}</p></div><div class="pack-step-actions"><button type="button" class="button outline" id="import-result"><span data-icon="upload"></span>${L('导入照片','Import the photo','写真を読み込む')}</button></div></li>
 </ol>
 <details class="pack-more"><summary>${L('查看 Prompt','View prompt','プロンプトを見る')}</summary><label for="prompt-text" class="sr-only">${L('为你的作品准备的 Prompt','Generation prompt','作品のためのプロンプト')}</label><textarea id="prompt-text" class="prompt-area" readonly></textarea></details>
-<details class="pack-more" id="pack-exports"><summary>${L('更多导出','More exports','その他の書き出し')}</summary><figure class="pack-guide"><img id="guide-preview" alt="${esc(L('大致轮廓与前后关系参考','Broad silhouette and depth reference','輪郭と前後関係の参考'))}"><figcaption>${L('轮廓参考图：只说明哪些花枝在瓶口前面。','Layout guide: it only shows which stems pass in front of the rim.','輪郭ガイド：花器の口の前を通る枝だけを示します。')}</figcaption></figure><div class="modal-actions"><button type="button" class="button outline" id="download-package"><span data-icon="download"></span>${L('下载生图包 .zip','Download image pack .zip','生成用パックを保存 .zip')}</button><button type="button" class="button outline" id="download-guide"><span data-icon="download"></span>${L('轮廓参考图 .png','Layout guide .png','輪郭ガイド .png')}</button><button type="button" class="button outline" id="download-compositor"><span data-icon="download"></span>${L('下载分层工程 .comp','Download layered .comp project','レイヤー付き .comp を保存')}</button></div><p class="file-note">${L('生图包里有 draft.png、prompt.txt、轮廓参考图、配方卡（recipe.png / recipe.txt）、可编辑的 composition.json 和三语说明。分层工程解压后可在 macOS 的 Compositor 中逐枝编辑，格式来自 ','The pack holds draft.png, prompt.txt, the layout guide, the recipe (recipe.png / recipe.txt), the editable composition.json and a readme in three languages. Unzip the layered project to edit each stem in Compositor on macOS. Format by ','パックには draft.png、prompt.txt、輪郭ガイド、レシピ（recipe.png / recipe.txt）、編集できる composition.json と3言語の説明が入っています。レイヤー付きプロジェクトは展開すると macOS の Compositor で一枝ずつ編集できます。形式の提供元：')}<a href="https://github.com/robbietilton/Compositor" target="_blank" rel="noopener noreferrer">Compositor ↗</a></p></details>`;
+<details class="pack-more" id="pack-exports"><summary>${L('更多导出','More exports','その他の書き出し')}</summary><figure class="pack-guide"><img id="guide-preview" alt="${esc(L('大致轮廓与前后关系参考','Broad silhouette and depth reference','輪郭と前後関係の参考'))}"><figcaption>${L('轮廓参考图：只说明哪些花枝在瓶口前面。','Layout guide: it only shows which stems pass in front of the rim.','輪郭ガイド：花器の口の前を通る枝だけを示します。')}</figcaption></figure><div class="modal-actions"><button type="button" class="button outline" id="download-guide"><span data-icon="download"></span>${L('轮廓参考图 .png','Layout guide .png','輪郭ガイド .png')}</button><button type="button" class="button outline" id="download-compositor"><span data-icon="download"></span>${L('下载分层工程 .comp','Download layered .comp project','レイヤー付き .comp を保存')}</button></div><p class="file-note">${L('生图包里有 draft.png、prompt.txt、轮廓参考图、配方卡（recipe.png / recipe.txt）、可编辑的 composition.json 和三语说明。分层工程解压后可在 macOS 的 Compositor 中逐枝编辑，格式来自 ','The pack holds draft.png, prompt.txt, the layout guide, the recipe (recipe.png / recipe.txt), the editable composition.json and a readme in three languages. Unzip the layered project to edit each stem in Compositor on macOS. Format by ','パックには draft.png、prompt.txt、輪郭ガイド、レシピ（recipe.png / recipe.txt）、編集できる composition.json と3言語の説明が入っています。レイヤー付きプロジェクトは展開すると macOS の Compositor で一枝ずつ編集できます。形式の提供元：')}<a href="https://github.com/robbietilton/Compositor" target="_blank" rel="noopener noreferrer">Compositor ↗</a></p></details>`;
  openModal(html,PACK_KICKER);
- const content=$('#modal-content'),session=packSession={snapshot,promptText:'',format:coarse?'phone':'macbook',provider:'chatgpt',urls:[],closed:false},inPack=sel=>session.closed?null:$(sel,content);
+ const content=$('#modal-content'),session=packSession={snapshot,promptText:'',format:preferredPackFormat||(coarse?'phone':'macbook'),provider:preferredPackProvider,urls:[],closed:false},inPack=sel=>session.closed?null:$(sel,content);
  const refreshPrompt=()=>{session.promptText=promptFor({...snapshot,generationVariation:variation},{format:session.format});inPack('#prompt-text').value=session.promptText};
  const setMode=mode=>{
   snapshot.generation=mode;refreshPrompt();inPack('#pack-mode-help').textContent=generationDescriptions[lang][mode];
@@ -1687,7 +1701,7 @@ ${checks.length?`<div class="pack-check" id="pack-check"><p><strong>${L('生成�
  };
  const setFormat=format=>{
   if(!Object.hasOwn(OUTPUT_FORMATS,format))return;
-  session.format=format;refreshPrompt();
+  session.format=format;preferredPackFormat=format;refreshPrompt();
   const f=OUTPUT_FORMATS[format];inPack('#pack-format-help').textContent=`${f.ratio} · ${f.width} × ${f.height} · ${say(FORMAT_HELP[format])} ${L('草稿图仍是方形参考；实际像素取决于所选生图工具。','The square draft stays a reference; actual pixels depend on the image tool.','正方形の下書きは参考画像です。実際のサイズは使用するツールにより異なります。')}`;
   $$('[data-pack-format]',content).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.packFormat===format)));
  };
@@ -1695,7 +1709,7 @@ ${checks.length?`<div class="pack-check" id="pack-check"><p><strong>${L('生成�
  $$('[data-pack-format]',content).forEach(b=>b.onclick=()=>setFormat(b.dataset.packFormat));
  const setProvider=id=>{
   const provider=GENERATOR_PROVIDERS[id];if(!provider)return;
-  session.provider=id;const link=inPack('#open-generator');link.href=provider.url;link.textContent=L(`打开 ${id==='gemini'?'Gemini':'ChatGPT'} ↗`,`Open ${id==='gemini'?'Gemini':'ChatGPT'} ↗`,`${id==='gemini'?'Gemini':'ChatGPT'}を開く ↗`);
+  session.provider=id;preferredPackProvider=id;const link=inPack('#open-generator');link.href=provider.url;link.textContent=L(`打开 ${id==='gemini'?'Gemini':'ChatGPT'} ↗`,`Open ${id==='gemini'?'Gemini':'ChatGPT'} ↗`,`${id==='gemini'?'Gemini':'ChatGPT'}を開く ↗`);
   inPack('#pack-provider-help').textContent=say(PROVIDER_HELP[id]);
   $$('[data-pack-provider]',content).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.packProvider===id)));
  };
@@ -1749,10 +1763,7 @@ ${checks.length?`<div class="pack-check" id="pack-check"><p><strong>${L('生成�
  inPack('#download-package').onclick=async e=>{
   const b=e.currentTarget;b.disabled=true;
   try{
-   const [image,layout]=await Promise.all([draft,guideCanvas()]),mode=snapshot.generation;
-   const zip=await zipFiles([['draft.png',image.blob],['composition-guide.png',await canvasBlob(layout)],['prompt.txt',new Blob([promptFor({...snapshot,generationVariation:variation},{guide:true,format:session.format})],{type:'text/plain;charset=utf-8'})],['composition.json',new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'})],['readme.txt',new Blob([packReadme(mode,lang,session.format,session.provider)],{type:'text/plain;charset=utf-8'})],
-    // The recipe (A18): what to buy and how to cut, for making it for real.
-    ['recipe.png',await recipeCardBlob(snapshot)],['recipe.txt',new Blob([recipeTextFor(snapshot)],{type:'text/plain;charset=utf-8'})]]);
+   const mode=snapshot.generation,zip=await generationPackArchive(snapshot,{format:session.format,provider:session.provider,variation,draft:draft.then(image=>image.blob),guide:guideCanvas()});
    download(zip,`${fileTitle(snapshot)}-${say(PACK_NAMES[mode]||PACK_NAMES.natural)}-${session.format}.zip`);handedOff();
    toast(L('创作包已下载，上传草稿图并粘贴 Prompt 即可。','Pack downloaded. Upload the draft to your chosen tool and paste the prompt.'));
   }catch(err){toast(err.message)}finally{b.disabled=false}
@@ -2184,7 +2195,7 @@ function gameRaster(key,paint,size=768){
 function gameFrame(knownTextures=new Map()){
  const eraseBudget=state.items.reduce((sum,item)=>sum+item.cuts.reduce((n,cut)=>n+cut.points.length,0),0)<=7488;
  const transfer=(id,key,paint,size)=>knownTextures.get(id)===key?'':gameRaster(key,paint,size);
- const sceneKey=`organic-room-xia1|${organicRoomsReady}|${sceneLayerKey}|${state.light||''}`;
+ const sceneKey=`organic-room-quiet2|${organicRoomsReady}|${sceneLayerKey}|${state.light||''}`;
  const full=(id,key,texture,order)=>({id,key,texture,x:50,y:50,width:100,height:100,px:.5,py:.5,angle:0,flip:false,interactive:false,order});
  const background=transfer('room',sceneKey,(ctx,S)=>{paintOrganicRoom(ctx,S,state);paintOrganicGround(ctx,S,assetById[state.vessel],isNightScene(state.scene));});
  const nodes=[full('room',sceneKey,background,0)];
@@ -2225,7 +2236,8 @@ function gameEvent(e){
   stroke={kind:e.mode,points,radius:clamp(radius,.002,.3),pointer:-777};finishPrune({pointerId:-777,pointerType:'mouse'});
  }
 }
-gameBridge=mountUnityGame({getFrame:gameFrame,onEvent:gameEvent,getEraserDiameter:()=>{const h=current()?.h,w=Math.max(1,stageWidth()),d=Number($('#brush-size').value)||16;return h>0?clamp(d/w*50/h,.002,.3)*h/100*w*2:d;},locale:()=>lang,onAction:action=>{
+gameBridge=mountUnityGame({getFrame:gameFrame,onEvent:gameEvent,getEraserDiameter:()=>{const h=current()?.h,w=Math.max(1,stageWidth()),d=Number($('#brush-size').value)||16;return h>0?clamp(d/w*50/h,.002,.3)*h/100*w*2:d;},locale:()=>lang,onAction:(action,button)=>{
+ if(action==='download-pack'){downloadPackFromCanvas(button);return;}
  if(action==='move'){setEditMode('move');return;}
  if(action==='duplicate'){duplicateSelected();return;}
  if(action==='straighten'&&current()){checkpoint();delete current().flex;renderStage();persist();return;}

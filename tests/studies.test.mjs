@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import {assetById,studies,studyState,initial,specimenOrder,vesselOrder,specimenFor,assetFile,dist} from './helpers/catalog.mjs';
 import {atelierSpecimens,atelierVessels} from '../dist/editorial-catalog.js?v=1';
 import {atelierSpecimens as legacyAtelierSpecimens,atelierVessels as legacyAtelierVessels} from '../dist/atelier-catalog.js?v=1';
-import {legacyFlowers,legacyVessels,scenes,saturationTune} from '../dist/legacy-catalog.js?v=xia1';
+import {legacyFlowers,legacyVessels,scenes,saturationTune} from '../dist/legacy-catalog.js?v=quiet2';
 import {createItem,buildStudyItems,buildDemoItems,placeSpecs,demoSpecs,demoVessel} from '../dist/study-state.js?v=scale4';
 import {sizeBounds,mouthBase,tipPoint,crownPoint,drawsStem,stemCm,isKenzan,autoFront,seatState,baseOffset,angleCap,slotState,PHOTO_LENGTH} from '../dist/scale.js?v=scale4';
 import {vesselGeometry,sourceToStage} from '../dist/geometry.js?v=soft2';
@@ -19,7 +19,7 @@ test('app.js builds its asset map from the moved modules in the same order the d
  const spread=name=>appSource.match(new RegExp(`const ${name}=\\[([^\\]]*)\\];`))?.[1].split(',').map(part=>part.replace('...','').trim());
  assert.deepEqual(spread('specimens'),specimenOrder);
  assert.deepEqual(spread('vessels'),vesselOrder);
- assert.match(appSource,/from '\.\/legacy-catalog\.js\?v=xia1'/);
+ assert.match(appSource,/from '\.\/legacy-catalog\.js\?v=quiet2'/);
  assert.match(appSource,/from '\.\/study-state\.js\?v=scale4'/);
  assert.doesNotMatch(appSource,/const (legacyFlowers|scenes|saturation)=/,'legacy literals must live only in legacy-catalog.js');
 });

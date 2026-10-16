@@ -17,15 +17,15 @@ export const legacyVessels=[
 ];
 /** Scene palettes: [wall, floor, zh description, en description]. validate() accepts exactly these keys. */
 export const scenes={
- paper:['#e9d7d0','#ddd4cd','暖霞：珍珠杏粉的摄影背景，柔和侧光与真实哑光台面','warm afterglow: pearl and apricot photographic backdrop, soft lateral light and a real matte support surface'],
- stone:['#d7dfe3','#d4dddf','青霞：青灰与淡丁香交融的摄影背景，轻盈漫射天光','cool afterglow: blue-gray and pale lilac photographic backdrop with airy diffused skylight'],
- night:['#888596','#8b9da7','暮霞：暮紫与蓝灰的摄影背景，低对比的傍晚柔光','dusk afterglow: muted lavender and slate photographic backdrop with soft low-contrast evening light'],
- 'atelier-milk':['#f2f0e6','#dddcd0','奶油色日式花房','cream Japanese atelier'],
- 'atelier-sage':['#e5e9e4','#d3dcd6','鼠尾草色日式花房','sage Japanese atelier'],
- 'atelier-moon':['#303b37','#202c29','月夜日式花房','moonlit Japanese atelier'],
- 'classic-paper':['#f5f4ef','#dedfd7','温暖的米灰色石灰墙与浅色石台','warm greige limewash wall and pale stone surface'],
- 'classic-stone':['#e2e6e2','#aeb9b2','青灰色墙面与自然石台','blue-gray wall and natural stone surface'],
- 'classic-night':['#566259','#27312b','深墨绿色背景与沉静的暗调光影','deep ink-green backdrop with subdued dark tones']
+ "paper":["#e1dfe7", "#f6f5f8", "微紫：素净摄影背景，自然光线过渡", "Pale lilac: plain photographic background with soft natural tonal transitions"],
+ "stone":["#888780", "#d7d6ce", "烟灰：素净摄影背景，自然光线过渡", "Smoke grey: plain photographic background with soft natural tonal transitions"],
+ "night":["#555552", "#70716c", "墨灰：素净摄影背景，自然光线过渡", "Charcoal: plain photographic background with soft natural tonal transitions"],
+ "atelier-milk":["#c7c0b1", "#ded9cf", "米墙：素净摄影背景，自然光线过渡", "Warm plaster: plain photographic background with soft natural tonal transitions"],
+ "atelier-sage":["#bfc3c2", "#d9dcda", "雨青：素净摄影背景，自然光线过渡", "Rain grey: plain photographic background with soft natural tonal transitions"],
+ "atelier-moon":["#888071", "#aba494", "褐影：素净摄影背景，自然光线过渡", "Earth taupe: plain photographic background with soft natural tonal transitions"],
+ "classic-paper":["#ddd9d0", "#eeeae3", "画影：素净摄影背景，自然光线过渡，边缘有简洁墙面装饰", "Quiet print: plain photographic background with soft natural tonal transitions, with a small understated decoration at the wall edge"],
+ "classic-stone":["#dedfe1", "#efeff0", "纸饰：素净摄影背景，自然光线过渡，边缘有简洁墙面装饰", "Paper relief: plain photographic background with soft natural tonal transitions, with a small understated decoration at the wall edge"],
+ "classic-night":["#a7a9a7", "#c9cbc8", "银灰：素净摄影背景，自然光线过渡", "Silver grey: plain photographic background with soft natural tonal transitions"]
 };
 /** Modest color correction is shared by the canvas and exported artwork; original files remain intact. */
 export const saturationTune={ 'photo-poppy':.78,'photo-ranunculus':.82,'photo-anemone':.88,'photo-cosmos':.88,'photo-dahlia':.86,'photo-zinnia':.86,'photo-celosia':.86,'photo-sunflower':.9,'photo-aster':.9,'photo-peony':.89,'photo-cornflower':.9,'photo-chrysanthemum':.9 };

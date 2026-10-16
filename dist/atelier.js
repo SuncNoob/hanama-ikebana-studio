@@ -35,7 +35,10 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
  $('.atelier-add-slot',panel).append($('#quick-material-open'));
  $('.atelier-vessel-slot',panel).append($('#quick-vessel-open'));
  $('.atelier-tool-slot',panel).append($('.stage-tools'));
- $('.atelier-title-slot',panel).append($('.workspace-heading'));
+ const workbar=document.createElement('div');workbar.id='atelier-workbar';
+ const quickPack=document.createElement('button');quickPack.type='button';quickPack.id='quick-download-package';
+ quickPack.innerHTML=strokeIcon('M12 3v12M7 10l5 5 5-5M4 16v5h16v-5')+'<span></span>';
+ workbar.append($('.workspace-heading'),quickPack);$('.stage-frame').prepend(workbar);
  $('.atelier-save-slot',panel).append($('#save-button'));
  $('.atelier-fallback-export',panel).append($('#export-draft'));
  $('.atelier-scene-slot',panel).append($('.scene-picker'));
@@ -161,6 +164,8 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
   $('.atelier-fine-label').textContent=words('光照调整','Light settings','光の調整');$('.atelier-studies-label').textContent=words('从一幅花景开始','Begin from a study','花景の作例から');
   $('.atelier-length-label').textContent=words('枝长','Length','茎の長さ');lengthButton.title=words('拉伸枝干','Stretch the stem','茎を伸ばす');lengthButton.setAttribute('aria-label',lengthButton.title);lengthClose.setAttribute('aria-label',words('收起枝长','Close stem length','茎の長さを閉じる'));
   $('.atelier-more-label').textContent=words('更多','More','その他');$('#atelier-image-pack').textContent=words('AI 生图','AI image','AI 画像');$('#atelier-image-pack').title=words('准备 AI 生图包','Prepare an AI image pack','AI生成用パックを準備');
+  $('#quick-download-package>span').textContent=words('下载生图包','Image pack','生成パック');
+  $('#quick-download-package').title=words('直接下载草稿图、Prompt 和可编辑作品','Download the draft, prompt and editable arrangement','下書き・プロンプト・編集可能な作品を保存');
   $('.light-direction-label').textContent=words('光从哪里来','Light direction','光の向き');$('.light-power-label').textContent=words('光的浓淡','Light presence','光の濃さ');
   $('[data-atelier-action="straighten"]').textContent=words('还原枝形','Unbend','曲げを戻す');$('#atelier-adjust').textContent=words('调整','Adjust','調整');
   closeInspector.setAttribute('aria-label',words('收起调整','Close adjustments','調整を閉じる'));fallbackAdjust.textContent=words('调整花材','Adjust stem','花材を調整');
@@ -232,6 +237,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
  fallbackAdjust.onclick=()=>setInspector(!document.body.classList.contains('atelier-inspector-open'));
  closeInspector.onclick=()=>{setInspector(false);$('#atelier-work>summary').focus({preventScroll:true});};
  $('#atelier-image-pack').onclick=()=>{cancel();photo(false);setInspector(true,'create');};
+ quickPack.onclick=()=>{cancel();photo(false);closeMenus();onAction?.('download-pack',quickPack);};
  lengthButton.onclick=()=>setLength(lengthPanel.hidden);lengthClose.onclick=()=>{setLength(false);lengthButton.focus({preventScroll:true});};
  $('#atelier-gallery').onclick=()=>{closeMenus();$('.main-nav [data-view="gallery"]').click();};
  $('#atelier-book').onclick=()=>{closeMenus();$('.main-nav [data-view="inspiration"]').click();};

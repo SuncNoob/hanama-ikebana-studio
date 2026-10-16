@@ -161,7 +161,7 @@ test('app.js builds the prompt once, with the preset cue and the zip-only guide 
  const source=readFileSync(`${dist}app.js`,'utf8');
  assert.match(source.match(/^import .* from '\.\/prompt\.js[^']*';$/m)?.[0]||'',/^import \{buildPrompt,[^}]*\} from '\.\/prompt\.js\?v=sep27-1';$/,'app.js imports prompt.js with the shared specifier');
  assert.ok(source.includes('presetNote:intentionPresets.includes(s.intention)?intentionPresets[1]:false'),'an untouched preset note goes in as its English text');
- assert.ok(source.includes('{guide:true,format:session.format}'),'the zip prompt uses the selected format and mentions the guide');
+ assert.ok(source.includes('{guide:true,format}'),'the shared zip builder uses the selected format and mentions the guide');
  assert.equal(source.match(/buildPrompt\(/g).length,1,'one call site (promptFor)');
 });
 
@@ -203,7 +203,8 @@ test('wallpaper canvases expand the setting without changing the material count'
  assert.match(prompt(s,{format:'unknown'}),/1:1, target 2048 × 2048 px/);
  const source=readFileSync(`${dist}app.js`,'utf8');
  assert.match(source,/\{format:session\.format\}/);
- assert.match(source,/packReadme\(mode,lang,session\.format,session\.provider\)/);
+ assert.match(source,/packReadme\(mode,lang,format,provider\)/);
+ assert.match(source,/generationPackArchive\(snapshot,\{format:session\.format,provider:session\.provider/);
  assert.match(source,/data-pack-format/);
  assert.match(source,/data-pack-provider/);
  assert.match(packReadme('natural','en','phone','gemini'),/https:\/\/gemini\.google\.com\//);

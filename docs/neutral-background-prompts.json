@@ -1,0 +1,120 @@
+{
+  "generator": "Built-in image_gen",
+  "direction": "Natural, quiet, restrained. Match the user's pale grey-lilac-to-white photographic gradient; two optional backgrounds add small wall decorations at the edges.",
+  "backgrounds": [
+    {
+      "id": "paper",
+      "file": "iris-light",
+      "zh": "微紫",
+      "en": "Pale lilac",
+      "ja": "薄紫",
+      "palette": [
+        "#e1dfe7",
+        "#f6f5f8"
+      ],
+      "prompt": "Use case: background-extraction. Edit the attached ikebana photograph into an EMPTY background plate. Remove the entire iris plant, every leaf, both flowers, stems, brown bowl and its cast shadow. Reconstruct just the background behind them. Preserve the reference's exact quiet near-white / pale cool grey / very faint lilac light: softly grey-lilac on the left, softly luminous white to the right, with the same unforced broad tonal transitions and a white horizontal support surface at the bottom. Do not add another color, spotlight, bright orb, mist, painted texture, objects, decorative effects, or dark vignette. Keep the reference's natural unshowy photographic light and empty space. The target is the SAME background without the arrangement, not a new studio look. Clean full-bleed square high resolution 1536x1536."
+    },
+    {
+      "id": "stone",
+      "file": "smoke-grey",
+      "zh": "烟灰",
+      "en": "Smoke grey",
+      "ja": "灰",
+      "palette": [
+        "#888780",
+        "#d7d6ce"
+      ],
+      "detail": "A plain medium warm-grey painted wall with an extremely fine matte surface. A pale grey horizontal table surface begins at exactly 76 percent image height, with a simple level wall/table junction. No table front edge. Soft left daylight, grey shadows. Similar quiet background to the attached cherry-branch photograph.",
+      "prompt": "Use case: photorealistic-natural. Photograph an empty backdrop for ikebana, using the attached ikebana photographs ONLY as references for the plain background, natural light, and restrained tonality. No flowers, vase, plants, people, furniture, text or decoration. Straight-on square photograph, camera looking slightly down at a horizontal surface in the lowest quarter, eye-level wall occupying the upper three quarters. Broad natural daylight from outside the frame on the left. Real physical light falloff, gentle midtones, low saturation. The wall stays quiet behind a flower arrangement added later. No spotlight, no glowing center, no pastel rainbow, no fog, no sunrays, no vignette, no stylized rendering, no artful swirling color. A plain medium warm-grey painted wall with an extremely fine matte surface. A pale grey horizontal table surface begins at exactly 76 percent image height, with a simple level wall/table junction. No table front edge. Soft left daylight, grey shadows. Similar quiet background to the attached cherry-branch photograph. Full bleed, square, 1536 x 1536."
+    },
+    {
+      "id": "night",
+      "file": "charcoal",
+      "zh": "墨灰",
+      "en": "Charcoal",
+      "ja": "墨",
+      "palette": [
+        "#555552",
+        "#70716c"
+      ],
+      "detail": "Plain charcoal-grey matte studio paper curving gently onto a grey horizontal support surface, with broad diffused daylight and visible detail in the shadows. Neutral grey, not black, not green, not purple. A still, simple photographic background with no dramatic lighting.",
+      "prompt": "Use case: photorealistic-natural. Photograph an empty backdrop for ikebana, using the attached ikebana photographs ONLY as references for the plain background, natural light, and restrained tonality. No flowers, vase, plants, people, furniture, text or decoration. Straight-on square photograph, camera looking slightly down at a horizontal surface in the lowest quarter, eye-level wall occupying the upper three quarters. Broad natural daylight from outside the frame on the left. Real physical light falloff, gentle midtones, low saturation. The wall stays quiet behind a flower arrangement added later. No spotlight, no glowing center, no pastel rainbow, no fog, no sunrays, no vignette, no stylized rendering, no artful swirling color. Plain charcoal-grey matte studio paper curving gently onto a grey horizontal support surface, with broad diffused daylight and visible detail in the shadows. Neutral grey, not black, not green, not purple. A still, simple photographic background with no dramatic lighting. Full bleed, square, 1536 x 1536."
+    },
+    {
+      "id": "atelier-milk",
+      "file": "warm-plaster",
+      "zh": "米墙",
+      "en": "Warm plaster",
+      "ja": "白壁",
+      "palette": [
+        "#c7c0b1",
+        "#ded9cf"
+      ],
+      "detail": "A real fine smooth warm greige plaster wall, barely visible hand-applied irregularity, with a pale warm-grey matte tabletop occupying the lowest quarter. Fine texture only, no scratches, no coarse stone, no cracks. Plain daylight, a gentle clean horizontal junction at 76 percent image height.",
+      "prompt": "Use case: photorealistic-natural. Photograph an empty backdrop for ikebana, using the attached ikebana photographs ONLY as references for the plain background, natural light, and restrained tonality. No flowers, vase, plants, people, furniture, text or decoration. Straight-on square photograph, camera looking slightly down at a horizontal surface in the lowest quarter, eye-level wall occupying the upper three quarters. Broad natural daylight from outside the frame on the left. Real physical light falloff, gentle midtones, low saturation. The wall stays quiet behind a flower arrangement added later. No spotlight, no glowing center, no pastel rainbow, no fog, no sunrays, no vignette, no stylized rendering, no artful swirling color. A real fine smooth warm greige plaster wall, barely visible hand-applied irregularity, with a pale warm-grey matte tabletop occupying the lowest quarter. Fine texture only, no scratches, no coarse stone, no cracks. Plain daylight, a gentle clean horizontal junction at 76 percent image height. Full bleed, square, 1536 x 1536."
+    },
+    {
+      "id": "atelier-sage",
+      "file": "rain-grey",
+      "zh": "雨青",
+      "en": "Rain grey",
+      "ja": "雨灰",
+      "palette": [
+        "#bfc3c2",
+        "#d9dcda"
+      ],
+      "detail": "An almost neutral cool light-grey painted wall and a matching matte grey support surface. A subtle cool cast like light on an overcast day, extremely low saturation, absolutely no aqua or lavender. An unobtrusive horizontal junction at 76 percent image height. Flat quiet air and delicate natural light.",
+      "prompt": "Use case: photorealistic-natural. Photograph an empty backdrop for ikebana, using the attached ikebana photographs ONLY as references for the plain background, natural light, and restrained tonality. No flowers, vase, plants, people, furniture, text or decoration. Straight-on square photograph, camera looking slightly down at a horizontal surface in the lowest quarter, eye-level wall occupying the upper three quarters. Broad natural daylight from outside the frame on the left. Real physical light falloff, gentle midtones, low saturation. The wall stays quiet behind a flower arrangement added later. No spotlight, no glowing center, no pastel rainbow, no fog, no sunrays, no vignette, no stylized rendering, no artful swirling color. An almost neutral cool light-grey painted wall and a matching matte grey support surface. A subtle cool cast like light on an overcast day, extremely low saturation, absolutely no aqua or lavender. An unobtrusive horizontal junction at 76 percent image height. Flat quiet air and delicate natural light. Full bleed, square, 1536 x 1536."
+    },
+    {
+      "id": "atelier-moon",
+      "file": "earth-taupe",
+      "zh": "褐影",
+      "en": "Earth taupe",
+      "ja": "土影",
+      "palette": [
+        "#888071",
+        "#aba494"
+      ],
+      "detail": "An unadorned middle taupe-grey photographic paper backdrop, a natural earth-neutral tone like the first attached photograph, with broad gently shaded daylight on the left and slightly darker right. Soft transition to the horizontal surface in the lowest quarter. Low contrast, no circular pools of light.",
+      "prompt": "Use case: photorealistic-natural. Photograph an empty backdrop for ikebana, using the attached ikebana photographs ONLY as references for the plain background, natural light, and restrained tonality. No flowers, vase, plants, people, furniture, text or decoration. Straight-on square photograph, camera looking slightly down at a horizontal surface in the lowest quarter, eye-level wall occupying the upper three quarters. Broad natural daylight from outside the frame on the left. Real physical light falloff, gentle midtones, low saturation. The wall stays quiet behind a flower arrangement added later. No spotlight, no glowing center, no pastel rainbow, no fog, no sunrays, no vignette, no stylized rendering, no artful swirling color. An unadorned middle taupe-grey photographic paper backdrop, a natural earth-neutral tone like the first attached photograph, with broad gently shaded daylight on the left and slightly darker right. Soft transition to the horizontal surface in the lowest quarter. Low contrast, no circular pools of light. Full bleed, square, 1536 x 1536."
+    },
+    {
+      "id": "classic-paper",
+      "file": "quiet-print",
+      "zh": "画影",
+      "en": "Quiet print",
+      "ja": "一枚の絵",
+      "palette": [
+        "#ddd9d0",
+        "#eeeae3"
+      ],
+      "prompt": "Use case: photorealistic-natural. Empty background for ikebana. Use the attached photograph as reference for the quiet airy light and very pale photographic gradient. A near-white matte wall with a faint warm-grey shadow on its far left, becoming plain soft white on its right. In the FAR LEFT margin, a small simple light-wood frame containing a single subtle grey ink brushstroke on ivory paper. Frame width 10% of image, height 15%, centered at x=9%, y=26%; absolutely keep the middle 75% of image empty for flower arrangement compositing. Frame softly casts a tiny natural shadow against the wall. Plain off-white horizontal table surface starts at 77% image height, no table front edge. Soft side daylight. Restrained realistic photograph. No vase, plant, flowers, furniture, text, wall patterns, colorful glow or vignette. Square 1536x1536."
+    },
+    {
+      "id": "classic-stone",
+      "file": "paper-relief",
+      "zh": "纸饰",
+      "en": "Paper relief",
+      "ja": "紙飾り",
+      "palette": [
+        "#dedfe1",
+        "#efeff0"
+      ],
+      "prompt": "Use case: photorealistic-natural. Empty background for ikebana, inspired by the attached photograph's faint cool grey to white natural light gradient. Near-white softly shaded plaster wall, a trace of grey-lilac on the left fading to white on the right. Add ONE small round handmade ivory-paper wall relief at the extreme upper-right edge, diameter 9% of picture, center x=92%, y=18%. Tiny soft grey shadow beneath this tactile paper disc. Keep the central 80% of wall completely plain and empty. Pale horizontal support surface softly merges with the wall in the lowest quarter. Quiet diffuse daylight, refined unshowy natural material. No plant, flower, vase, other ornaments, furniture, text, saturated color, glowing orb or dark vignette. Square 1536x1536."
+    },
+    {
+      "id": "classic-night",
+      "file": "silver-grey",
+      "zh": "银灰",
+      "en": "Silver grey",
+      "ja": "銀灰",
+      "palette": [
+        "#a7a9a7",
+        "#c9cbc8"
+      ],
+      "detail": "A plain neutral silver-grey studio paper sweep, very soft daylight from the left, gently curving to a horizontal surface. Medium-light photographic greys with almost no color cast. No metallic shine. Calm broad smooth shadows, no bright center or dark corners.",
+      "prompt": "Use case: photorealistic-natural. Photograph an empty backdrop for ikebana, using the attached ikebana photographs ONLY as references for the plain background, natural light, and restrained tonality. No flowers, vase, plants, people, furniture, text or decoration. Straight-on square photograph, camera looking slightly down at a horizontal surface in the lowest quarter, eye-level wall occupying the upper three quarters. Broad natural daylight from outside the frame on the left. Real physical light falloff, gentle midtones, low saturation. The wall stays quiet behind a flower arrangement added later. No spotlight, no glowing center, no pastel rainbow, no fog, no sunrays, no vignette, no stylized rendering, no artful swirling color. A plain neutral silver-grey studio paper sweep, very soft daylight from the left, gently curving to a horizontal surface. Medium-light photographic greys with almost no color cast. No metallic shine. Calm broad smooth shadows, no bright center or dark corners. Full bleed, square, 1536 x 1536."
+    }
+  ]
+}
