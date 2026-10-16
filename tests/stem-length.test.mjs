@@ -7,9 +7,14 @@ import {atelierSpecimens} from '../dist/editorial-catalog.js';
 import {initial,assetById} from './helpers/catalog.mjs';
 import {warpY} from '../dist/geometry.js';
 
-test('a new editorial draft reads 100% without changing old saved geometry',()=>{
+test('new editorial drafts expose solved stem length; old drafts still read 100% without changing saved geometry',()=>{
  const draft=initial(),snapshot=JSON.stringify(draft);
- for(const item of draft.items){assert.equal(stemLengthRatio(item,assetById[item.type]),1);assert.equal(Object.hasOwn(item,'stemSplit'),false)}
+ for(const item of draft.items){
+  assert.equal(stemLengthRatio(item,assetById[item.type]),item.length);
+  assert.ok(normalizeStemSplit(item.stemSplit,item,assetById[item.type])!==null);
+  const old={...item,length:.9};delete old.stemSplit;const oldSnapshot=JSON.stringify(old);
+  assert.equal(stemLengthRatio(old,assetById[old.type]),1);assert.equal(JSON.stringify(old),oldSnapshot);
+ }
  assert.equal(JSON.stringify(draft),snapshot);
 });
 test('every new photograph has a lower stem band with the flower focus protected',()=>{

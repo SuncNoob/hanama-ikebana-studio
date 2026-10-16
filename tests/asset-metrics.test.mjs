@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {specimenMetrics,vesselMetrics,assetMetrics} from '../dist/asset-metrics.js';
 import {specimens,browseSpecimens,vessels,dist} from './helpers/catalog.mjs';
-import {drawsStem} from '../dist/scale.js?v=hn3';
+import {drawsStem} from '../dist/scale.js?v=scale4';
 import {vesselGeometry} from '../dist/geometry.js?v=soft2';
 
 const stale='re-run: CANVAS_MODULE=… node qa/measure-assets.mjs';

@@ -81,7 +81,7 @@ test('app.js: one non-passive wheel listener that acts only when it can, pinch a
  assert.match(body,/if\(!act\)return;/,'no action, no preventDefault');
  assert.match(body,/if\(zoomPanX!==x\|\|zoomPanY!==y\)e\.preventDefault\(\)/,'a pan at the edge lets the page scroll');
  assert.match(body,/keyStep\('wheel-turn',[\s\S]*?,500\)/);assert.match(body,/keyStep\('wheel-size',[\s\S]*?,500\)/);
- assert.match(body,/sizeBounds\(a\)/,'Alt+wheel stays within the true-size bounds');
+ assert.match(body,/editSizeBounds\(a,item\.h\)/,'Alt+wheel uses the editable range and preserves saved sizes');
  for(const type of ['gesturestart','gesturechange','gestureend'])assert.ok(app.includes(`['${type}'`),type);
  assert.match(app,/isDoubleTap\(lastPaperTap,now\)/);
  assert.match(app,/function pinchPaper\(\)/);

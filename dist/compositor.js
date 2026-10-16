@@ -4,10 +4,10 @@ import {dimensions,vesselGeometry,warpY,flexExtent} from './geometry.js?v=soft2'
 import {hasFlex,createFlexChain,flexGrid} from './flex.js?v=2';
 import {applyLocalCut} from './local-cut.js?v=31';
 import {naturalStemRoutesV1,naturalStemRoutes,stemRoots,stemPath} from './natural-stems.js?v=hn2';
-import {seatClip,vesselFoot,seatState,stemWidthCm,isKenzan,isDetachedPiece,KENZAN,kenzanHolders,kenzanPins,onHolder} from './scale.js?v=hn3';
+import {seatClip,vesselFoot,seatState,stemWidthCm,isKenzan,isDetachedPiece,KENZAN,kenzanHolders,kenzanPins,onHolder} from './scale.js?v=scale4';
 import {stemMmOf} from './botany.js?v=hn2';
 import {lightOf,paintLight} from './ambience.js?v=hn3';
-import {paintOrganicRoom,paintOrganicGround,isNightScene} from './organic-room.js?v=restore1';
+import {paintOrganicRoom,paintOrganicGround,isNightScene,isPhotographicScene} from './organic-room.js?v=xia1';
 const browserCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 /** Thrown when the browser refuses a 2D context (for example iOS's per-canvas memory cap). */
 export class CanvasUnavailableError extends Error{constructor(width,height){super(`2D canvas ${width}×${height} is unavailable`);this.name='CanvasUnavailableError';this.width=width;this.height=height}}
@@ -729,6 +729,7 @@ export function paintInsertedPass(ctx,size,s,assets,images,getSprite,{clips=null
  return n;
 }
 export function paintSceneFinish(ctx,size,s){
+ if(isPhotographicScene(s.scene))return;
  const night=isNightScene(s.scene);
  const vignette=ctx.createRadialGradient(size*.5,size*.45,size*.42,size*.5,size*.48,size*.78);vignette.addColorStop(.55,'#00000000');vignette.addColorStop(1,night?'#05090628':'#26302410');ctx.fillStyle=vignette;ctx.fillRect(0,0,size,size);
 }
@@ -744,6 +745,7 @@ export function paintLightSilhouette(ctx,size,s,assets,getSprite,images){
  the arrangement's shadow cut out of it. `{ambient, patch}` pick the parts: the draft paints the room tone under the ground
  shadows and the patch over them, as the stage does. Returns whether a light was painted. */
 export function paintLightPass(ctx,size,s,assets,getSprite,images,createCanvas=browserCanvas,{ambient=true,patch=true}={}){
+ if(isPhotographicScene(s.scene))return false;
  if(['generated-atelier','generated-editorial'].includes(assets[s.vessel]?.source))return false;
  if(!lightOf(s.light))return false;
  return paintLight(ctx,size,s,{createCanvas,horizon:HORIZON,ambient,patch,paintSilhouette:(c,S)=>paintLightSilhouette(c,S,s,assets,getSprite,images)});

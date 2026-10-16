@@ -27,6 +27,8 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
   <div class="game-loading" role="status"><progress max="1" value="0"></progress><span></span><button type="button" id="game-retry" hidden></button></div>`;
  const touchTools=document.createElement('div');touchTools.id='atelier-touch-tools';touchTools.className='atelier-touch-tools';
  touchTools.innerHTML='<div class="atelier-touch-modes" role="group" aria-describedby="atelier-touch-hint"><button type="button" data-touch-tool="translate" aria-pressed="true"></button><button type="button" data-touch-tool="bend" aria-pressed="false"></button><button type="button" data-touch-tool="rotate" aria-pressed="false"></button></div><p id="atelier-touch-hint" aria-live="polite"></p>';
+ const sizeControl=$('#size').closest('.range-control');sizeControl.id='atelier-size-control';
+ sizeControl.append($('#size-value'),$('#scale-reset'));touchTools.insertBefore(sizeControl,$('#atelier-touch-hint',touchTools));
  panel.prepend(touchTools);
  $('.stage-frame').append(panel);
  // Flowers and vessels have their own direct entrances to the shared picker.
@@ -106,6 +108,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
   const labels={translate:words('移动','Move','移動'),bend:words('弯枝','Bend','曲げる'),rotate:words('旋转','Rotate','回転')};
   touchTools.querySelectorAll('[data-touch-tool]').forEach(b=>{b.textContent=labels[b.dataset.touchTool];b.disabled=!active;b.setAttribute('aria-pressed',String(!pruning&&b.dataset.touchTool===touchTool));});
   const hints={translate:words('按住花材任意位置移动','Drag anywhere on a stem to move','花材をつかんで移動'),bend:words('按住花头，轻柔弯枝','Hold the flower head to bend','花先をつかんで曲げる'),rotate:words('按住花材，左右滑动旋转','Hold a stem and slide sideways to rotate','花材をつかんで左右に動かすと回転')};
+  $('#atelier-touch-hint').hidden=!pruning;
   $('#atelier-touch-hint').textContent=mode==='brush'?words('涂抹即擦除 · 可撤销','Brush to erase · Undo anytime','なぞって消す・元に戻せます'):!active?words('拖动花材 · 在调整面板中造型','Drag stems · open Adjust to shape','花材をドラッグ・調整で形を整える'):pruning?words('剪刀使用中 · 点移动退出','Cutting · tap Move to finish','切断中・移動で終了'):hints[touchTool];
  }
 

@@ -342,3 +342,63 @@ body.atelier-simple.atelier-direct :is(button,summary,select,input,textarea):foc
 @media (prefers-reduced-motion:reduce) {
   body.atelier-simple.atelier-direct :is(button,summary,select) { transition: none; }
 }
+
+/* One size control, directly between gesture modes and the editing tools. */
+body.atelier-simple.atelier-direct #atelier-size-control {
+  display: grid;
+  grid-template-columns: auto minmax(64px,1fr) 42px 44px;
+  align-items: center;
+  gap: 8px;
+  width: min(100%,400px);
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  color: var(--control-ink);
+}
+body.atelier-simple.atelier-direct #atelier-size-control .slider-label {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  padding: 0;
+  font-size: 11px;
+  white-space: nowrap;
+}
+body.atelier-simple.atelier-direct #atelier-size-control input {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+  accent-color: var(--control-ink);
+  touch-action: pan-y;
+}
+body.atelier-simple.atelier-direct #atelier-size-control output {
+  grid-column: 3;
+  grid-row: 1;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+body.atelier-simple.atelier-direct #atelier-size-control button {
+  grid-column: 4;
+  grid-row: 1;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: var(--control-radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  touch-action: manipulation;
+}
+body.atelier-simple.atelier-direct #atelier-size-control :disabled { opacity: .38; }
+/* The new row replaces the old instruction line; reserve its extra 30 px. */
+@media (min-width:621px) and (min-height:501px) {
+  .atelier-direct { --atelier-size: min(1040px,max(150px,calc(100dvh - 300px))); }
+}
+@media (max-width:620px) and (min-height:501px) {
+  .atelier-direct { --atelier-size: min(1040px,max(150px,calc(100dvh - 338px))); }
+}

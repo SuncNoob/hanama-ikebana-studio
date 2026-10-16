@@ -17,9 +17,9 @@ export const legacyVessels=[
 ];
 /** Scene palettes: [wall, floor, zh description, en description]. validate() accepts exactly these keys. */
 export const scenes={
- paper:['#eacbb8','#ba9b88','杏粉艺术花房与柔和侧光','apricot editorial room with soft side light'],
- stone:['#eeeadf','#d7d2c4','象牙白花房与自然漫射光','ivory editorial room with diffuse daylight'],
- night:['#584251','#2f242f','梅紫花房与深色光影','plum editorial room with deep soft shadows'],
+ paper:['#e9d7d0','#ddd4cd','暖霞：珍珠杏粉的摄影背景，柔和侧光与真实哑光台面','warm afterglow: pearl and apricot photographic backdrop, soft lateral light and a real matte support surface'],
+ stone:['#d7dfe3','#d4dddf','青霞：青灰与淡丁香交融的摄影背景，轻盈漫射天光','cool afterglow: blue-gray and pale lilac photographic backdrop with airy diffused skylight'],
+ night:['#888596','#8b9da7','暮霞：暮紫与蓝灰的摄影背景，低对比的傍晚柔光','dusk afterglow: muted lavender and slate photographic backdrop with soft low-contrast evening light'],
  'atelier-milk':['#f2f0e6','#dddcd0','奶油色日式花房','cream Japanese atelier'],
  'atelier-sage':['#e5e9e4','#d3dcd6','鼠尾草色日式花房','sage Japanese atelier'],
  'atelier-moon':['#303b37','#202c29','月夜日式花房','moonlit Japanese atelier'],

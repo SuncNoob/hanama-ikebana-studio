@@ -3,10 +3,10 @@
 /**
  * The generation prompt (A16): English text for ChatGPT built from a draft. Pure and DOM-free (tests/prompt.test.mjs covers
  * all 50 studies). One materials list counted by origin (a stem cut in two is one material), true-scale facts measured from
- * the draft, a camera line, the vessel's real support and a paragraph that depends on the refinement mode. Also the pack's
- * mode names, file names and readme (A17).
+ * the draft and the vessel's real support. Photographic direction is restored from 2026-09-27 (108095d); see
+ * docs/prompt-2026-09-27-restoration.md. Also the pack's mode names, file names and readme (A17).
  */
-import {arrangementMetrics,isKenzan} from './scale.js?v=hn3';
+import {arrangementMetrics,isKenzan} from './scale.js?v=scale4';
 import {vesselGeometry} from './geometry.js?v=soft2';
 import {profileOf,rolesOf,unitNoun} from './botany.js?v=hn2';
 
@@ -21,16 +21,6 @@ const en=value=>termEN[value]||value;
 /** Mood as a photographic direction rather than a bare word. Spring at night keeps the evening light (night scene + 春意). */
 const moodEN={'静寂':'calm, soft diffuse side light, muted palette, generous empty space','侘寂':'low-key light, tactile surfaces, gentle imperfection','春意':'fresh morning light, airy and bright','野趣':'loose, just-gathered garden feeling'};
 const moodAtNight={'春意':'fresh, delicate spring colour under quiet evening light'};
-/** The same moods without their light words, for a draft with a window light (B10), whose Light sentence sets the light. */
-const moodUnlit={'静寂':'calm, muted palette, generous empty space','侘寂':'tactile surfaces, gentle imperfection, quiet shadows','春意':'fresh, airy spring colour','野趣':'loose, just-gathered garden feeling'};
-/** One soft Light sentence per window light (ambience.js LIGHTS keys); it replaces "Keep the draft's overall lighting". The
- directions follow the draft: the shadow falls away from the light. */
-export const LIGHT_PROMPT=Object.freeze({
- morning:'Light: soft early-morning sun from the upper left through a mullioned window; a pale warm patch of window light on the wall, with the arrangement\'s soft shadow falling inside it a little to the right.',
- noon:'Light: bright, high midday daylight through a window; a neutral patch of window light high on the wall, with short soft shadows just below the stems.',
- dusk:'Light: low, warm evening sun from the left through a window; a long amber patch of window light across the wall, with the arrangement\'s long soft shadow stretched to the right inside it.',
- moon:'Light: cool moonlight from the upper right through a window in a dim, quiet room; a pale blue patch of window light on the wall, with the arrangement\'s soft shadow falling to the left; low-key, gentle exposure.'
-});
 const lowerName=name=>/^(Japanese|Icelandic|Peruvian|English|French|Chinese|Dutch)\b/.test(name)?name:name.charAt(0).toLowerCase()+name.slice(1);
 /** Simple English plural of a plant name. Latin -s/-x/-i names and mass nouns stay unchanged; "lily of the valley" pluralises its head. */
 export function pluralName(name){
@@ -81,11 +71,11 @@ const PETAL_FREE=new Set(['pine','maple','willow','pussy-willow','pampas','briza
 const hasPetals=a=>!PETAL_FREE.has(a.family)&&!rolesOf(a).every(role=>role==='foliage');
 const round5=cm=>Math.max(5,Math.round(cm/5)*5);
 
-/** The paragraph that sets how freely the model may depart from the draft (state.generation). */
+/** The 2026-09-27 refinement phrases (state.generation). */
 const MODES={
- faithful:'Stay as close to the draft as physics allows: keep each flower\'s position, facing and stem angle; fix only floating, crossing or disconnected stems.',
- creative:'Keep the same materials, count and silhouette; refine facing, stem rhythm and depth more freely, as a skilled florist would.',
- natural:'Treat the draft as design intent, not a tracing. Allow small shifts in flower facing, stem curves and depth for natural growth and gravity.'
+ faithful:'Make only the small corrections needed for physical realism.',
+ creative:'Gently refine the stem rhythm and depth within the same design.',
+ natural:'Make a gentle florist refinement.'
 };
 /** The vessel's curated support (vesselGeometry normalises one centre or several), or null. */
 const fixtureOf=vessel=>{try{return vesselGeometry(vessel).fixture}catch{return null}};
@@ -122,7 +112,7 @@ const formatDirection=id=>{
  const f=outputFormat(id),target=`${f.ratio}, target ${f.width} × ${f.height} px`;
  if(id==='phone')return `Output: portrait phone wallpaper (${target}). Expand the scene vertically around the arrangement; keep every flower and the full vase visible, with quiet, uncluttered space toward the upper third for a lock-screen clock.`;
  if(id==='macbook')return `Output: landscape MacBook wallpaper (${target}). Expand the room naturally to both sides; keep the arrangement's proportions, with calm negative space that works behind desktop icons.`;
- return `Output: square editorial photograph (${target}). Keep the whole arrangement and its breathing room in frame.`;
+ return `Output: square photograph (${target}). Keep the whole arrangement and its breathing room in frame.`;
 };
 
 /**
@@ -142,7 +132,7 @@ export function buildPrompt(s,assetById,scenes,extras={}){
  const stems=!items.length?'':kenzan?`Every stem rises continuously from ${holders?`one of the ${holder}${holder==='kenzan'?'':'s'}`:`the ${holder}`}.`:`Every stem rises continuously from ${several?'one of the vessel openings':'the vessel opening'}${hides?`; ${hides}`:''}.`;
  const mode=MODES[s.generation]||MODES.natural;
  const n=hashText(`${s.id||''}-${s.generationVariation||0}`),petals=items.some(i=>hasPetals(assetById[i.type]));
- const detail=petals?pick(['uneven petal overlap and subtle pigment drift','relaxed petal folds and gently varied opening stages','slightly eccentric petals and soft colour variation','small differences in petal curl and maturity'],n)
+ const detail=petals?pick(['uneven petal overlap and subtle pigment drift','relaxed petal folds and gently varied opening stages','slightly eccentric petals and soft color variation','small differences in petal curl and maturity'],n)
   :pick(['natural leaf texture, needle density and bark grain','slightly uneven leaf edges and natural bark detail','varied leaf angles, needle clusters and fine bark texture','gentle differences in leaf colour, needle and bark texture'],n);
  const materials=groups.map(g=>{
   const cut=g.pieces>1?`, ${g.n>1?'each ':''}cut into ${numberWord(g.pieces)} pieces`:'';
@@ -154,24 +144,25 @@ export function buildPrompt(s,assetById,scenes,extras={}){
  const vesselName=vessel.en||vessel.name;
  const scale=extras?.outOfScale?`Vessel: ${vesselName}.\nKeep flower sizes as drawn relative to the vessel.`
   :scaleSentence(assetById,vessel,metrics)||`Vessel: ${vesselName}, about ${Math.round(vessel.height)} cm tall.\nThe draft is drawn at true botanical scale; keep every flower head, leaf and branch at its real size relative to the vessel.`;
- const night=s.scene==='night',light=typeof s.light==='string'&&Object.hasOwn(LIGHT_PROMPT,s.light)?LIGHT_PROMPT[s.light]:'',moodWords=light?moodUnlit[s.mood]:(night&&moodAtNight[s.mood])||moodEN[s.mood];
+ const night=s.scene==='night',moodWords=(night&&moodAtNight[s.mood])||moodEN[s.mood];
  const mood=moodWords?`${en(s.mood)} — ${moodWords}`:en(s.mood),note=String(s.intention||'').trim(),title=String(s.title||'').trim(),subtitle=String(s.subtitle||'').trim();
  const preset=!!note&&!!extras?.presetNote,cue=typeof extras?.presetNote==='string'&&extras.presetNote.trim()?extras.presetNote.trim():note;
  const namedTitle=['未命名作品','Untitled Arrangement','タイトルなしの作品'].includes(title)?'':title;
  const theme=[namedTitle,subtitle].filter(Boolean).join(' — ').replace(/\s+/g,' ').slice(0,140);
  const scene=scenes[s.scene]||scenes.paper||[];
  const ownNote=note&&!preset;
- return `Create an image from the attached draft: an exceptional wallpaper-worthy editorial photograph of a real floral arrangement. Keep the flower types and count, vessel and main rhythm; make the stems physically believable.
+ const shape=extras?.format==='phone'?'portrait':extras?.format==='macbook'?'landscape':'square';
+ return `Create an image from the attached draft image: a ${shape} professional photograph of a real floral arrangement. Keep the draft's recognizable composition, selected flowers and count, vessel and main negative spaces. ${mode}
 
-${formatDirection(extras?.format)} The draft is a collage, not a frame to trace. Extend the setting without stretching or repeating the flowers. Show the whole vessel and its base. Capture natural colour, tactile botanical and ceramic detail, gentle depth and coherent light; never a pasted collage.${extras?.guide?' A faded layout image, if attached, only shows which stems pass in front of the rim; don\'t copy its colours or lines.':''}
+${['Treat the draft as design intent, not a tracing. Allow small shifts in flower facing, stem curves and depth for natural growth and gravity.',stems,supportSentence(vessel)].filter(Boolean).join(' ')}
 
-${[mode,stems,supportSentence(vessel)].filter(Boolean).join(' ')}
-
-${light?`${light} Preserve that light direction${ownNote?' unless the creative note describes another light':''}; let shadows and reflections follow the real forms.`:`Preserve the draft's overall light${ownNote?' unless the creative note describes another light':''}; let shadows and reflections follow the real forms.`} Give each ${petals?'bloom':'branch and leaf'} species-true individuality: ${detail}, without exaggerated damage.
+Keep the overall lighting and atmosphere; let local shadows and reflections follow the real forms. Give each ${petals?'bloom':'branch and leaf'} species-appropriate individuality through ${detail}, without exaggerated damage.
 
 Materials: ${materials||'as shown in the draft'}.
 ${scale}
-Setting: ${scene[3]||scene[2]||'as in the draft'}. Mood: ${mood}.${theme?`\nTheme (an atmosphere cue, not text to print): ${theme}.`:''}${preset?`\nMood cue: ${cue}`:ownNote?`\nCreative note: ${note}\nIf the creative note explicitly describes a different setting or light, follow it.`:''}
+Setting: ${scene[3]||scene[2]||'as in the draft'}. Mood: ${mood}.${theme?`\nPoetic theme (an atmosphere cue, not text to print): ${theme}.`:''}${preset?`\nMood cue: ${cue}`:ownNote?`\nCreative note: ${note}\nIf the creative note names a place, season or light, follow the note over the setting and the draft's lighting.`:''}
+
+${formatDirection(extras?.format)}${extras?.guide?' A faded layout image, if attached, only shows which stems pass in front of the rim; don\'t copy its colours or lines.':''}
 No added text or watermark.`;
 }
 

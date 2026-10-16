@@ -7,7 +7,7 @@ import {assetById,vessels,makeItem,dist} from './helpers/catalog.mjs';
 import {
  guideRays,guideReading,fitToSlot,insertIndex,slotReach,slotTarget,slotLean,slotState,planSlot,shinCm,SLOTS,SLANTING,GUIDE_SLOTS,
  tipPoint,crownPoint,seatState,headroom,autoFront,isKenzan,stemCm,drawsStem,hashId
-} from '../dist/scale.js?v=hn3';
+} from '../dist/scale.js?v=scale4';
 import {stemMaxCm,roleOf} from '../dist/botany.js?v=hn2';
 import {vesselGeometry} from '../dist/geometry.js?v=soft2';
 

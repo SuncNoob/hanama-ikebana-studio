@@ -32,9 +32,9 @@
 <link rel="stylesheet" href="/ui-polish.css?v=light1">
 <link rel="stylesheet" href="/game-atmosphere.css?v=9">
 <link rel="stylesheet" href="/background-choices.css?v=1">
-<link rel="stylesheet" href="/atelier-controls.css?v=2">
+<link rel="stylesheet" href="/atelier-controls.css?v=3">
 <link rel="stylesheet" href="/eraser-cursor.css?v=1">
-<script type="module" src="/app.js?v=layers11">
+<script type="module" src="/app.js?v=xia12">
 </script>
 </head>
 <body>
@@ -321,9 +321,9 @@
 <div class="stage-bottom">
 <div class="scene-picker" role="group" aria-label="背景" data-aria-zh="背景" data-aria-en="Background">
 <span data-zh="背景 · 9 款" data-en="Backgrounds · 9" data-ja="背景 · 9種">背景 · 9 款</span>
-<button type="button" data-scene="paper" class="scene-choice" aria-pressed="true" title="杏粉花房" data-title-zh="杏粉花房" data-title-en="Apricot" data-title-ja="杏色の部屋"><img src="/assets/editorial/room-blush.webp" alt="" loading="lazy" decoding="async"><span data-zh="杏粉花房" data-en="Apricot" data-ja="杏色の部屋">杏粉花房</span></button>
-<button type="button" data-scene="stone" class="scene-choice" aria-pressed="false" title="象牙花房" data-title-zh="象牙花房" data-title-en="Ivory" data-title-ja="象牙の部屋"><img src="/assets/editorial/room-ivory.webp" alt="" loading="lazy" decoding="async"><span data-zh="象牙花房" data-en="Ivory" data-ja="象牙の部屋">象牙花房</span></button>
-<button type="button" data-scene="night" class="scene-choice" aria-pressed="false" title="梅紫花房" data-title-zh="梅紫花房" data-title-en="Plum" data-title-ja="梅紫の部屋"><img src="/assets/editorial/room-plum.webp" alt="" loading="lazy" decoding="async"><span data-zh="梅紫花房" data-en="Plum" data-ja="梅紫の部屋">梅紫花房</span></button>
+<button type="button" data-scene="paper" class="scene-choice" aria-pressed="true" title="暖霞" data-title-zh="暖霞" data-title-en="Warm glow" data-title-ja="暖かな霞"><img src="/assets/xia/room-warm.webp" alt="" loading="lazy" decoding="async"><span data-zh="暖霞" data-en="Warm glow" data-ja="暖かな霞">暖霞</span></button>
+<button type="button" data-scene="stone" class="scene-choice" aria-pressed="false" title="青霞" data-title-zh="青霞" data-title-en="Cool glow" data-title-ja="青い霞"><img src="/assets/xia/room-cool.webp" alt="" loading="lazy" decoding="async"><span data-zh="青霞" data-en="Cool glow" data-ja="青い霞">青霞</span></button>
+<button type="button" data-scene="night" class="scene-choice" aria-pressed="false" title="暮霞" data-title-zh="暮霞" data-title-en="Dusk glow" data-title-ja="夕霞"><img src="/assets/xia/room-dusk.webp" alt="" loading="lazy" decoding="async"><span data-zh="暮霞" data-en="Dusk glow" data-ja="夕霞">暮霞</span></button>
 <button type="button" data-scene="atelier-milk" class="scene-choice" aria-pressed="false" title="奶油和室" data-title-zh="奶油和室" data-title-en="Cream" data-title-ja="乳白の和室"><img src="/assets/atelier/room-milk.webp" alt="" loading="lazy" decoding="async"><span data-zh="奶油和室" data-en="Cream" data-ja="乳白の和室">奶油和室</span></button>
 <button type="button" data-scene="atelier-sage" class="scene-choice" aria-pressed="false" title="青绿和室" data-title-zh="青绿和室" data-title-en="Sage" data-title-ja="若草の和室"><img src="/assets/atelier/room-sage.webp" alt="" loading="lazy" decoding="async"><span data-zh="青绿和室" data-en="Sage" data-ja="若草の和室">青绿和室</span></button>
 <button type="button" data-scene="atelier-moon" class="scene-choice" aria-pressed="false" title="月夜和室" data-title-zh="月夜和室" data-title-en="Moonlit" data-title-ja="月夜の和室"><img src="/assets/atelier/room-moon.webp" alt="" loading="lazy" decoding="async"><span data-zh="月夜和室" data-en="Moonlit" data-ja="月夜の和室">月夜和室</span></button>
@@ -431,7 +431,7 @@
 </div>
 <div class="range-control">
 <label class="slider-label" for="size">
-<span data-zh="花材大小 · 真实比例" data-en="Size · true to life">花材大小 · 真实比例</span> <output id="size-value">100%</output>
+<span data-zh="花材大小" data-en="Size" data-ja="大きさ">花材大小</span> <output id="size-value">100%</output>
 </label>
 <input id="size" type="range" min="10" max="95" step="1">
 </div>
@@ -449,7 +449,7 @@
 </div>
 <p id="scale-warning" class="scale-warning" hidden>
 <span data-zh="这枝超出了真实比例。" data-en="This stem is outside its true-to-life size.">这枝超出了真实比例。</span>
-<button id="scale-reset" type="button" data-zh="恢复真实比例" data-en="Restore real size">恢复真实比例</button>
+<button id="scale-reset" type="button" data-zh="还原" data-en="Reset" data-ja="戻す" title="恢复参考大小" data-title-zh="恢复参考大小" data-title-en="Restore reference size" data-title-ja="基準の大きさに戻す">还原</button>
 </p>
 <p id="stem-cap-warning" class="scale-warning stem-cap-warning" hidden>
 <span id="stem-cap-text"></span>

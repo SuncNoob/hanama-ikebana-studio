@@ -8,7 +8,7 @@ import {assetById,vessels,studies,studyState,initial,makeItem,dist} from './help
 import {
  mouthBase,mouthSpan,slideBase,besideBase,seatState,seatPoint,cutEnd,cutEndSource,anchorAt,pieceHead,reseatPiece,companionFit,companionClear,
  tipPoint,isKenzan,isDetachedPiece
-} from '../dist/scale.js?v=hn3';
+} from '../dist/scale.js?v=scale4';
 import {vesselGeometry,dimensions,sourceToStage,warpY} from '../dist/geometry.js?v=soft2';
 
 const near=(p,q,eps=1e-6)=>Math.hypot(p[0]-q[0],p[1]-q[1])<=eps;
@@ -177,11 +177,11 @@ test('app.js: steer, manual reseating, vessel switch and duplicate are wired; pl
  assert.equal(app.match(/state\.vessel=type/g)?.length,1);
  assert.match(app,/function switchVessel\(type\)\{[\s\S]*?remapSeated\(state\.items,from,to,assetById\)/);
  for(const text of [
-  "L('拖动花头转向，拖根部圆点移动','Drag the flower to swing it; drag the base dot to move','花を引いて向きを変え、根元の点で移動')",
-  "L('已在花器中','Already in the vessel','すでに花器に入っています')",
   "L('够不到原来的位置，已插回并保持方向','Too short to reach that spot — inserted, direction kept','届かないため、向きを保って挿し直しました')",
   "L(' · 成组花材底部较宽，窄口瓶里可能露在瓶外',' · Grouped stems spread wider than this neck',' · 束の根元が口より広がります')"
  ])assert.ok(app.includes(text),text);
+ assert.match(app,/function stemHint\(\)\{\}/,'no one-time gesture popup');
+ assert.doesNotMatch(app,/toast\(L\('已在花器中'/,'no routine placement popup');
  assert.doesNotMatch(app,/枝梗离开了花器口|The stem left the vessel|茎が花器から外れました/,'moving a stem away must not trigger an automatic warning');
  assert.doesNotMatch(app,/枝没有插进花器|not in the vessel`,|本が花器に入っていません/,'an unseated-count warning is no longer part of the editor');
  assert.match(app,/\$\('#reseat-button'\)\.onclick=reseatSelected/,'the explicit reseat control is still wired');

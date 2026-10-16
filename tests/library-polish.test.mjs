@@ -9,7 +9,7 @@ import {
  seasonChip,sortByRole,roleGroups
 } from '../dist/library.js';
 import {SEASONS,ROLES,seasonsOf,roleOf} from '../dist/botany.js';
-import {drawsStem} from '../dist/scale.js?v=hn3';
+import {drawsStem} from '../dist/scale.js?v=scale4';
 import {assetById,browseSpecimens,familyOrder,dist} from './helpers/catalog.mjs';
 
 const LANGS=['zh','en','ja'];

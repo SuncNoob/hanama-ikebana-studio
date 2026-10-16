@@ -6,7 +6,7 @@ import {assetById,vessels,studies,studyState,makeItem,browseSpecimens} from './h
 import {
  mouthBase,mouthSpan,reach,aim,solveTo,seatState,autoFront,isKenzan,tipPoint,crownPoint,headroom,planSlot,slotState,slotTarget,shinCm,SLOTS,hashId,
  defaultCm,arrangementMetrics,remapSeated,drawsStem,stemCm,lengthBounds,lengthForStem,itemCm,PHOTO_LENGTH,angleCap,sizeBounds,isDetachedPiece
-} from '../dist/scale.js?v=hn3';
+} from '../dist/scale.js?v=scale4';
 import {stemMaxCm} from '../dist/botany.js';
 import {vesselGeometry} from '../dist/geometry.js?v=soft2';
 

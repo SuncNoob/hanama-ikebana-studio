@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** DOM-free core of the editable studies and the first-run draft, shared by app.js, node tests and dev scripts.
  Callers pass their asset map and item factory, so ids and language stay with the caller. */
-import {mouthBase,solveTo,drawsStem,isKenzan,autoFront,angleCap,baseOffset,sizeRatioBounds} from './scale.js?v=hn3';
+import {mouthBase,solveTo,drawsStem,isKenzan,autoFront,angleCap,baseOffset,sizeRatioBounds,defaultStemGeometry} from './scale.js?v=scale4';
 import {vesselGeometry} from './geometry.js?v=soft2';
 
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
@@ -26,6 +26,7 @@ export function placeSpecs(vessel,specs,{assetById,makeItem}){
  const insertion=vesselGeometry(vessel).insertion,kenzan=isKenzan(vessel);
  return specs.map(({type,to=[0,20],s=1,flip=false,front,base})=>{
   const a=assetById[type],above=front??kenzan,item=makeItem(type,{h:Math.round(a.height*clamp(s,...sizeRatioBounds(a))*10)/10,flip,aboveVessel:above});
+  Object.assign(item,defaultStemGeometry(a,item));
   const stemBase=mouthBase(vessel,insertion[0]+(base??baseOffset(to[0],to[1])),.8,{front:above});
   const {miss,...fit}=solveTo(item,a,stemBase,[insertion[0]+to[0],insertion[1]-to[1]]);
   if(drawsStem(a))fit.angle=clamp(fit.angle,-angleCap(a),angleCap(a));

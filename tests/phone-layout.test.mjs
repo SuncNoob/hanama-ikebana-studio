@@ -88,7 +88,7 @@ test('app.js: stems re-rasterise after a resize, zoom marks the viewport, and th
 test('app.js: a touch long-press on paper is not a layer request; the layer tip names the touch gesture; drafts import from My Works',()=>{
  assert.match(app,/if\(!id&&lastStagePointerType==='touch'\)return;if\(id\)selectItem\(id\);openLayerMenu/);
  assert.match(app,/\$\('#stage'\)\.addEventListener\('pointerdown',e=>\{lastStagePointerType=e\.pointerType\|\|'mouse'\},true\);/);
- assert.match(app,/\['用 ↑ ↓ 调整前后；虚化只辅助查看，不影响作品。','Use ↑ ↓ to reorder\. Blur is only an editing aid\.','↑ ↓ で並べ替え。ぼかしは編集中だけ表示します。'\]/);
+ assert.match(app,/\['用 ↑ ↓ 微调前后；随便放入只改变图层。','Use ↑ ↓ to reorder\. Random placement only changes layers\.','↑ ↓ で順序を調整。ランダム配置はレイヤーのみ変更します。'\]/);
  const gallery=app.slice(app.indexOf('async function renderGallery()'),app.indexOf('async function artPoster('));
  assert.equal((gallery.match(/data-draft-import/g)||[]).length,3,'heading and empty state buttons, plus their wiring');
  assert.equal((gallery.match(/L\('导入草稿','Import draft','下書きを読み込む'\)/g)||[]).length,2);

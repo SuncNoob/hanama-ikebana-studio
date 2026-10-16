@@ -5,11 +5,11 @@
  * percent is one centimetre). Pure and DOM-free (tests/recipe.test.mjs covers all 50 studies); app.js renders the dialog and
  * share-cards.js paints the card. Every figure is an estimate and every text says so (约 / ≈ / 約).
  */
-import {itemCm,stemCm,drawsStem,crownPoint,seatState,seatPoint,isKenzan,isDetachedPiece} from './scale.js?v=hn3';
+import {itemCm,stemCm,drawsStem,crownPoint,seatState,seatPoint,isKenzan,isDetachedPiece} from './scale.js?v=scale4';
 import {vesselGeometry} from './geometry.js?v=soft2';
 import {stemMaxCm,rolesOf,profileOf} from './botany.js?v=hn2';
 import {nameOf,colorOf,supportName,vesselFacts} from './library.js?v=hn3';
-import {materialNoun} from './prompt.js?v=hn4';
+import {materialNoun} from './prompt.js?v=sep27-1';
 
 const LANG_INDEX={zh:0,en:1,ja:2};
 /** The [zh, en, ja] entry for a language (anything unknown reads zh, as app.js does). */

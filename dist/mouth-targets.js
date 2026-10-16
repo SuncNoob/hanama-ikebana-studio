@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 import {vesselGeometry} from './geometry.js?v=soft2';
-import {isKenzan,mouthSpan} from './scale.js?v=hn3';
+import {isKenzan,mouthSpan} from './scale.js?v=scale4';
 
 /** Legal stem support spans in square-stage percent coordinates (Y points down).
  * Each opening keeps its own span; visible kenzan vessels use each actual holder.

@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** True-to-life sizing. The square stage is 100 cm tall, so one stage percent equals one centimetre. */
-import {realScale,stemFix} from './real-scale.js?v=hn2';
+import {realScale,stemFix} from './real-scale.js?v=scale4';
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage} from './geometry.js?v=soft2';
 import {stemMaxCm, rolesOf, roleOf, stemMmOf} from './botany.js?v=hn2';
-import {specimenMetrics,vesselMetrics} from './asset-metrics.js?v=hn2';
+import {specimenMetrics,vesselMetrics} from './asset-metrics.js?v=scale4';
+import {normalizeStemSplit,stemStretchSplit,supportsStemStretch} from './stem-length.js';
 
 export const SIZE_RANGE=[.8,1.25];
 export const MAX_STEM_CM=60;
@@ -15,11 +16,17 @@ export function applyRealScale(assets){
  for(const a of assets){
   if(stemFix[a.id])a.stemFix=stemFix[a.id];
   const r=realScale[a.id];if(!r)continue;
-  a.designHeight=a.height;a.height=r.cm;a.tip=r.tip;
+  a.designHeight??=a.height;a.height=r.cm;a.tip=r.tip;
   if(r.stems){a.stems=r.stems;a.stemLength=1}
  }
 }
 export const sizeBounds=a=>[Math.round(a.height*SIZE_RANGE[0]*10)/10,Math.round(a.height*SIZE_RANGE[1]*10)/10];
+/** Editing freedom is separate from the natural reference range. Including the current height preserves old drafts on a
+ * move/rotate commit (scale 1), even when a material's reference size has since been corrected. */
+export function editSizeBounds(a,h=a.height){
+ const current=clamp(Number.isFinite(h)&&h>0?h:a.height,2,95);
+ return [Math.min(current,clamp(Math.round(a.height*.4*10)/10,2,95)),Math.max(current,clamp(Math.round(a.height*2.5*10)/10,2,95))];
+}
 /** The same natural range as ratios of true size, for scaling a size factor (studies, pose swaps). */
 export const sizeRatioBounds=a=>{const [min,max]=sizeBounds(a);return [min/a.height,max/a.height]};
 export const sizeRatio=(item,a)=>item.h/a.height;
@@ -37,6 +44,24 @@ export const stemCm=(item,a)=>Math.max(0,((item.length??1)-1)*stemUnit(item,a));
 export const lengthForStem=(item,a,cm)=>{const unit=stemUnit(item,a);return unit?1+Math.max(0,cm)/unit:(item.length??1)};
 /** Drawn-stem flowers whose base was trimmed by an older version (the trim control is hidden for them now). */
 export const stemTrimmed=(item,a)=>drawsStem(a)&&(item.trim||0)>0;
+
+/** Opt in only newly placed editorial materials to lower-stem stretching. Restored drafts keep their saved split. */
+export function defaultStemGeometry(a,item){
+ if(!supportsStemStretch(a)||item.cuts?.length||item.segments?.length||item.localCuts?.length)return {};
+ const split=stemStretchSplit(item,a);return split===null?{}:{stemSplit:split};
+}
+/** Explicit reference-size reset: preserve the photographed lower stem's physical length where possible, without moving
+ * its base. A pruned piece keeps its source geometry so existing cut masks cannot move onto a different part of the flower. */
+export function restoreReferenceSize(item,a){
+ const drawn=drawsStem(a)?stemCm(item,a):null,oldH=item.h;
+ const split=supportsStemStretch(a)&&!(item.cuts?.length||item.segments?.length||item.localCuts?.length)?stemStretchSplit(item,a):null;
+ const g=split!==null?dimensions(item,a):null;
+ const physical=g?Math.max(0,warpY(g.end,g.split,g.length)-warpY(split,g.split,g.length))*oldH:0;
+ const patch={h:a.height};
+ if(drawn!==null)patch.length=lengthForStem({...item,h:a.height},a,drawn);
+ else if(g&&g.end-split>.015){patch.stemSplit=split;patch.length=clamp(physical/(a.height*(g.end-split)),...lengthBounds(a,a.height,item.trim));}
+ return patch;
+}
 
 /**
  * Sprite resolution budget: the source-image scale `k` for composeSpecimen.
@@ -193,8 +218,14 @@ export const angleCap=a=>['amaranthus','snowberry','fritillary','jasmine'].inclu
  */
 export function solveTo(item,a,base,target){
  const want=distance(base,target),start=Math.max(0,item.trim||0);
+ const stretch=normalizeStemSplit(item.stemSplit,item,a);
  let length,trim=start;
- if(drawsStem(a)){
+ if(stretch!==null){
+  const [lo,hi]=lengthBounds(a,item.h,trim),reachOf=L=>Math.hypot(...focusVector(item,a,L,trim));
+  if(reachOf(lo)>=want)length=lo;
+  else if(reachOf(hi)<=want)length=hi;
+  else{let low=lo,high=hi;for(let k=0;k<40;k++){const mid=(low+high)/2;if(reachOf(mid)<want)low=mid;else high=mid}length=(low+high)/2}
+ }else if(drawsStem(a)){
   const capL=lengthForStem({...item,trim},a,stemMaxCm(a)),{length:wanted}=reach({...item,trim},a,base,target);
   length=stemUnit({...item,trim},a)?clamp(wanted,1,Math.max(1,Math.min(capL,lengthBounds(a,item.h,trim)[1]))):(item.length??1);
  }else{
@@ -217,7 +248,7 @@ export function solveTo(item,a,base,target){
  }
  length=Math.round(length*1000)/1000;
  const angle=angleTo(focusVector(item,a,length,trim),base,target);
- const fit={x:base[0],y:base[1],length,angle,trim,cropAnchorY:1,cropAnchorSourceY:null};
+ const fit={x:base[0],y:base[1],length,angle,trim,cropAnchorY:1,cropAnchorSourceY:null,...(stretch!==null?{stemSplit:stretch}:{})};
  return {...fit,miss:Math.round(distance(tipPoint({...item,...fit},a),target)*10)/10};
 }
 
@@ -413,7 +444,8 @@ export function planSlot(state,a,assetById={},template={},guide={}){
  const s=slotByKey[key],front=autoFront(v)||(roles.some(r=>r==='focal'||r==='secondary')&&lowSlot(key));
  const slotPoint=slotTarget(v,key,side,style),rise=ins[1]-slotPoint[1];
  const base=mouthBase(v,ins[0]+baseOffset(slotPoint[0]-ins[0],rise),.8,{front});
- const item={type:a.id,x:base[0],y:base[1],h:a.height,angle:0,trim:0,flip:false,length:a.stemLength||1,cropAnchorY:1,cropAnchorSourceY:null,...template};
+ const item={type:a.id,x:base[0],y:base[1],h:a.height,angle:0,trim:supportsStemStretch(a)?6:0,flip:false,length:a.stemLength||1,cropAnchorY:1,cropAnchorSourceY:null,...template};
+ Object.assign(item,defaultStemGeometry(a,item));
  const leanSign=Math.sign(slotPoint[0]-base[0])||side*Math.sign(s.lean)||side;
  const solve=(h,target,flip=item.flip)=>{const fit=solveTo({...item,h,flip},a,base,target);return {h,flip,target,fit,top:headroom({...item,h,flip,...fit},a)}};
  let best=solve(item.h,slotPoint);

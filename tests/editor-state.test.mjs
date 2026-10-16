@@ -93,15 +93,13 @@ test('the displaced-draft stash is a capped list of raw strings and survives jun
 
 const app=readFileSync(`${dist}app.js`,'utf8'),html=readFileSync(`${dist}index.html`,'utf8').replaceAll('\r\n','\n');
 
-test('app.js: undo toasts compare undo entries, not the stack length',()=>{
- const body=app.match(/function undoToast\(msg\)\{[^\n]*\}/)?.[0]||'';
- assert.match(body,/const mark=undoStack\.at\(-1\)/);
- assert.match(body,/undoStack\.at\(-1\)===mark/);
- assert.doesNotMatch(body,/undoStack\.length/);
+test('app.js: routine edits stay quiet and keep persistent Undo/Redo history',()=>{
+ assert.match(app,/function undoToast\(\)\{\}/);
+ assert.match(app,/function checkpoint\(\)\{undoStack\.push/);
  // A site's statement: its first line and the indented lines under it (top-level statements start at column 0).
  const statement=site=>{const lines=app.slice(app.indexOf(site)).split('\n'),end=lines.findIndex((line,k)=>k>0&&/^\S/.test(line)&&line!=='}');return lines.slice(0,end<0?lines.length:end).join('\n')};
  for(const site of ['function removeSelected','function duplicateSelected',"$('#reset-button').onclick",'function reseatItem','function seatAll','function switchVessel','function addSpecimen'])
-  assert.ok(app.includes(site)&&statement(site).includes('undoToast('),`${site} offers Undo`);
+  assert.ok(app.includes(site)&&statement(site).includes('checkpoint('),`${site} keeps an undo checkpoint`);
 });
 
 test('app.js: leaving the page flushes the debounced save',()=>{

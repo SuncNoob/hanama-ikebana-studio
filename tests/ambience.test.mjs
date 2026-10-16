@@ -4,9 +4,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {LIGHTS,LIGHT_KEYS,lightOf,lightWorkSize,paintLightAmbient,lightPatch,screenLightPatch,paintLight} from '../dist/ambience.js?v=hn3';
-import {HORIZON,LIGHT} from '../dist/compositor.js?v=soft2';
+import {HORIZON,LIGHT} from '../dist/compositor.js?v=xia1';
 import {compositorLayerPlan} from '../dist/compositor-project.js?v=hn3';
-import {buildPrompt,LIGHT_PROMPT} from '../dist/prompt.js?v=hn4';
+import {buildPrompt} from '../dist/prompt.js?v=sep27-1';
 import {assetById,studies,studyState,initial,scenes,dist} from './helpers/catalog.mjs';
 
 /** A 2D context stand-in that records what is drawn (tests never load a real canvas). */
@@ -114,24 +114,20 @@ test('compositor: the light layer sits right above the plain scene and its groun
  assert.ok(LIGHT.dir[0]>0,'the key light still comes from the upper left');
 });
 
-test('prompt: a window light replaces "keep the draft\'s lighting" and the mood keeps no light words of its own',()=>{
+test('prompt: every canvas light uses September 27 natural shadow reconstruction, without invented window patches',()=>{
  const s=studyState(studies.find(st=>st.id==='cherry'),'en'),plain=buildPrompt(s,assetById,scenes);
- assert.match(plain,/Preserve the draft's overall light/);assert.doesNotMatch(plain,/^Light:/m);
+ const naturalLight='Keep the overall lighting and atmosphere; let local shadows and reflections follow the real forms.';
+ assert.ok(plain.includes(naturalLight));assert.doesNotMatch(plain,/^Light:/m);
  for(const key of LIGHT_KEYS){
   const text=buildPrompt({...s,light:key},assetById,scenes);
-  assert.ok(text.includes(LIGHT_PROMPT[key]),key);
-  assert.equal((text.match(/^Light: /mg)||[]).length,1,key);
-  assert.doesNotMatch(text,/Preserve the draft's overall light/,key);
-  for(const mood of ['静寂','侘寂','春意','野趣'])for(const scene of ['paper','night']){
-   const m=buildPrompt({...s,light:key,mood,scene},assetById,scenes).match(/Mood: ([^\n]*)/)[1];
-   assert.doesNotMatch(m,/\blight\b|morning|evening/,`${key} ${mood} ${scene}: ${m}`);
-  }
+  assert.ok(text.includes(naturalLight),key);
+  assert.equal(text,plain,`${key}: the draft's light is read from the image, not a hardcoded window layout`);
+  assert.doesNotMatch(text,/^Light:|mullioned window|patch of window light|Preserve that light direction/m,key);
  }
- assert.match(LIGHT_PROMPT.dusk,/from the left/);assert.match(LIGHT_PROMPT.moon,/from the upper right/);
  const own=buildPrompt({...s,light:'moon',intention:'Under paper lanterns.'},assetById,scenes);
- assert.match(own,/Preserve that light direction unless the creative note describes another light/);
+ assert.match(own,/If the creative note names a place, season or light, follow the note over the setting and the draft's lighting/);
  assert.doesNotMatch(buildPrompt({...s,light:'unknown'},assetById,scenes),/^Light:/m,'an unknown key adds nothing');
- assert.match(buildPrompt(initial(),assetById,scenes),/^Light:/m,'the first-run draft includes morning light');
+ assert.ok(buildPrompt(initial(),assetById,scenes).includes(naturalLight),'the first-run draft also uses photographic reconstruction');
 });
 
 test('app.js keeps s.light only as a known key, counts it as content, and the stage has the light layer and chip',()=>{

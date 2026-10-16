@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
-import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow,paintLightPass,paintLightSilhouette} from './compositor.js?v=soft2';
+import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow,paintLightPass,paintLightSilhouette} from './compositor.js?v=xia1';
 import {LIGHTS,lightOf,lightPatch,lightWorkSize,paintLightAmbient} from './ambience.js?v=hn3';
 import {zipFiles,backupFiles,backupName,readBackup,keepIncoming,withTimeout,failedIds,BackupError,MAX_BACKUP_FILE} from './my-works.js?v=hn3';
 import {compositorLayerPlan,compositorManifest} from './compositor-project.js?v=hn3';
-import {buildPrompt,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER,GENERATOR_PROVIDERS} from './prompt.js?v=hn4';
+import {buildPrompt,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER,GENERATOR_PROVIDERS} from './prompt.js?v=sep27-1';
 import {newSpecimens} from './catalog.js?v=hn2';
 import {atelierSpecimens,atelierVessels} from './editorial-catalog.js?v=1';
 import {atelierSpecimens as legacyAtelierSpecimens,atelierVessels as legacyAtelierVessels} from './atelier-catalog.js?v=1';
@@ -19,24 +19,24 @@ import {bookVessels} from './book-vessels.js?v=hn3';
 import {newVessels} from './vessels.js?v=hn3';
 import {botanicalNotes} from './floristry.js?v=25';
 import {studies,studySeasons} from './studies.js?v=hn3';
-import {applyRealScale,sizeBounds,sizeRatioBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,besideBase,tipPoint,reach,stemUnit,stemTrimmed,spriteScale,stageCanvasSize,isKenzan,seatState,seatPoint,solveTo,slideBase,remapSeated,isDetachedPiece,cutEndSource,anchorAt,pieceHead,reseatPiece,companionClear,planSlot,slotState,guideRays,guideReading,fitToSlot,insertIndex} from './scale.js?v=hn3';
+import {applyRealScale,editSizeBounds,restoreReferenceSize,sizeRatioBounds,outOfScale,drawsStem,lengthBounds,stemCm,lengthForStem,itemCm,mouthBase,besideBase,tipPoint,reach,stemUnit,stemTrimmed,spriteScale,stageCanvasSize,isKenzan,seatState,seatPoint,solveTo,slideBase,remapSeated,isDetachedPiece,cutEndSource,anchorAt,pieceHead,reseatPiece,companionClear,planSlot,slotState,guideRays,guideReading,fitToSlot,insertIndex} from './scale.js?v=scale4';
 import {stemMaxCm,roleOf,rolesOf,roleTip,roleLabel} from './botany.js?v=hn2';
 import {nameOf,colorOf,poseOf,displayPose,provenance,cardName,supportName,coverFor,matchesRole,sortByRole,roleGroups,sizeOf,sizeText,cardMeta,buildSearchIndex,emptyText,clearFiltersLabel,currentSeason,shiftSeason,seasonShiftOf,matchesSeason,seasonMark,seasonChip} from './library.js?v=hn3';
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints,flexExtent} from './geometry.js?v=soft2';
 import {mouthTargets} from './mouth-targets.js?v=1';
 import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=31';
-import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=restore1';
+import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=xia1';
 import {lightScenes} from './light-scenes.js';
 import {atelierCase} from './atelier-cases.js';
-import {createItem,stemVersion,buildStudyState,buildDemoItems} from './study-state.js?v=hn3';
+import {createItem,stemVersion,buildStudyState,buildDemoItems} from './study-state.js?v=scale4';
 import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-pick.js?v=hn2';
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=10';
+import {mountUnityGame} from './atelier.js?v=11';
 import {normalizeFlex} from './flex.js?v=2';
 import {stemLengthRatio,setStemLength,normalizeStemSplit,supportsStemStretch,stemStretchSplit} from './stem-length.js';
-import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene} from './organic-room.js?v=restore1';
+import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene,isPhotographicScene} from './organic-room.js?v=xia1';
 let gameBridge=null;
 const $ = (s,root=document) => root.querySelector(s);
 const $$ = (s,root=document) => [...root.querySelectorAll(s)];
@@ -268,9 +268,8 @@ function flushPersist(){if(persistTimer)persist()}
 addEventListener('pagehide',flushPersist);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushPersist()});
 function persist(){clearTimeout(persistTimer);persistTimer=0;try{localStorage.setItem(STORE,JSON.stringify(state));$('#save-state').textContent=L('已自动保存到本机','Auto-saved on this device')}catch{$('#save-state').textContent=L('本机保存不可用，请导出草稿','Local saving is unavailable; please export your draft')}}
 function checkpoint(){undoStack.push({state:clone(state),selected});if(undoStack.length>60)undoStack.shift();redoStack=[];renderHistory()}
-/** A toast with an Undo button for the step just checkpointed: call it right after checkpoint(). The button undoes only while
- that entry is still the newest one (entries are compared, not counts: the stack stays at 60 once full). */
-function undoToast(msg){const mark=undoStack.at(-1);toast(msg,{action:()=>{if(mark&&undoStack.at(-1)===mark)$('#undo-button').click()}})}
+// Canvas edits stay quiet; the persistent Undo / Redo controls retain every checkpoint.
+function undoToast(){}
 /** Name of a stem as the layer list shows it (with its piece label). */
 const itemName=item=>assetName(assetById[item.type])+(item.pieceLabel?` ${item.pieceLabel}`:'');
 function renderHistory(){$('#undo-button').disabled=!undoStack.length;$('#redo-button').disabled=!redoStack.length}
@@ -380,7 +379,7 @@ function renderVesselLayers(){
  if(!vessel)return;
  if(!vesselReady)ensureAsset(state.vessel).then(scheduleVesselLayers).catch(()=>{});
  const scene=$('#scene-layer'),sceneSize=Math.min(SCENE_MAX,size),sceneKey=`${sceneSize}|${state.vessel}|${state.scene}|${vesselReady}|${lightOf(state.light)||''}`;
- if(scene&&sceneKey!==sceneLayerKey){const ctx=layerContext(scene,sceneSize);if(ctx){paintSceneBackground(ctx,sceneSize,state,scenes);paintLightAmbient(ctx,sceneSize,state.light,{night:isNightScene(state.scene)});paintGroundPass(ctx,sceneSize,state,assetById,images);paintSceneFinish(ctx,sceneSize,state);sceneLayerKey=sceneKey;stageEl.classList.add('scene-painted')}else{sceneLayerKey='';stageEl.classList.remove('scene-painted')}}
+ if(scene&&sceneKey!==sceneLayerKey){const ctx=layerContext(scene,sceneSize);if(ctx){paintSceneBackground(ctx,sceneSize,state,scenes);if(!isPhotographicScene(state.scene))paintLightAmbient(ctx,sceneSize,state.light,{night:isNightScene(state.scene)});paintGroundPass(ctx,sceneSize,state,assetById,images);paintSceneFinish(ctx,sceneSize,state);sceneLayerKey=sceneKey;stageEl.classList.add('scene-painted')}else{sceneLayerKey='';stageEl.classList.remove('scene-painted')}}
  const fixture=$('#fixture-layer'),fixtureKey=`${size}|${state.vessel}|${state.scene}`;
  if(fixture&&fixtureKey!==fixtureLayerKey){const ctx=layerContext(fixture,size);if(ctx){paintFixture(ctx,size,vessel,{night});fixtureLayerKey=fixtureKey}}
  // On a kenzan the holder lies under the stems standing on it (CSS lifts #fixture-layer under #interior-layer); the pins
@@ -407,7 +406,7 @@ const lightCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.h
 function renderLightLayer(){
  clearTimeout(lightTimer);lightTimer=0;lightDirty=false;
  const canvas=$('#light-layer'),stageEl=$('#stage');if(!canvas||!stageEl)return;
- const key=['generated-atelier','generated-editorial'].includes(assetById[state.vessel]?.source)?null:lightOf(state.light);stageEl.classList.toggle('has-light',!!key);
+ const key=isPhotographicScene(state.scene)||['generated-atelier','generated-editorial'].includes(assetById[state.vessel]?.source)?null:lightOf(state.light);stageEl.classList.toggle('has-light',!!key);
  if(!key){layerContext(canvas,0);return}
  lightPaintedAt=performance.now();
  const density=Math.min(2,window.devicePixelRatio||1),S=lightWorkSize(Math.min(LAYER_MAX,Math.round((stageEl.offsetWidth||stageWidth())*density)));
@@ -475,7 +474,7 @@ function renderEmptySelection(){const el=$('#selected-empty');if(!el)return;cons
 function renderSelection(){
  $('#delete-button').disabled=!current();
  $('#flip-button').disabled=!state.items.length;$('#duplicate-button').disabled=!state.items.length||state.items.length>=24;
- let i=current();$('#selected-empty').hidden=!!i;$('#selection-controls').hidden=!i;renderEditingChip();if(!i){renderEmptySelection();setEditMode('move');return;}
+ let i=current();$('#size').disabled=!i;$('#scale-reset').disabled=!i;if(!i){$('#size-value').value='—';$('#size').removeAttribute('aria-valuetext')}$('#selected-empty').hidden=!!i;$('#selection-controls').hidden=!i;renderEditingChip();if(!i){renderEmptySelection();setEditMode('move');return;}
  renderModePill();
  const a=assetById[i.type];$('#selected-thumb').src=assetPath(i.type);$('#selected-thumb').style.filter=a.saturation?`saturate(${a.saturation})`:'';$('#selected-thumb').alt=assetName(a);$('#selected-name').textContent=assetName(a);$('#variant-label').textContent=`${assetColor(a)} · ${displayPose(a,lang)}`;$('#botanical-note').textContent=botanicalDescription(a.family,a);
  const stemDrawn=drawsStem(a),label=$('#stem-details-label');$('#trim').closest('.range-control').hidden=stemDrawn;
@@ -489,7 +488,7 @@ function syncSelectionReadouts(i,a=assetById[i.type]){
 }
 /** Size stays within natural variation of the real plant; drawn stems are shown in centimetres. */
 function renderSizeControls(i,a=assetById[i.type]){
- const [min,max]=sizeBounds(a),size=$('#size'),length=$('#length');
+ const [min,max]=editSizeBounds(a,i.h),size=$('#size'),length=$('#length');
  size.min=min;size.max=max;size.step=.1;size.value=clamp(i.h,min,max);$('#size-value').value=Math.round(i.h/a.height*100)+'%';
  let pastCap=false;
  if(drawsStem(a)){
@@ -573,7 +572,7 @@ function aboutCutEnd(item,change){
  */
 function reseatItem(item,{quiet=false}={}){
  const a=assetById[item.type],vessel=assetById[state.vessel];if(!a||!vessel)return null;
- if(seatState(item,a,vessel).seated){if(!quiet)toast(L('已在花器中','Already in the vessel','すでに花器に入っています'));return {already:true,miss:0}}
+ if(seatState(item,a,vessel).seated){return {already:true,miss:0}}
  if(!quiet)checkpoint();
  let miss=0;
  if(cutEndSource(item,a)){const fit=reseatPiece(item,a,vessel,pieceHead(item,a,specimenCanvas(item)?.mask));item.x=fit.x;item.y=fit.y;item.angle=fit.angle;miss=fit.miss}
@@ -715,7 +714,7 @@ $$('[data-guide-hand]').forEach(b=>b.onclick=()=>{guidePrefs.hand={id:state.id,s
 $('#guide-thirds').onclick=()=>{guidePrefs.thirds=!guidePrefs.thirds;saveGuidePrefs();renderGuide()};
 $('#guide-fit').onclick=putOnGuideLine;
 /** A stem back at its material's real size; a drawn stem keeps its length in cm. */
-function restoreRealSize(item){const a=assetById[item.type];if(!a)return;const cm=drawsStem(a)?stemCm(item,a):null;item.h=a.height;if(cm!==null)item.length=lengthForStem(item,a,cm)}
+function restoreRealSize(item){const a=assetById[item.type];if(!a)return;aboutCutEnd(item,i=>Object.assign(i,restoreReferenceSize(i,a)))}
 function resetRealSize(){
  const item=current();if(!item)return;checkpoint();restoreRealSize(item);
  renderStage();persist();undoToast(L('已恢复真实比例。','Restored to true-to-life size.','実寸に戻しました。'));
@@ -994,7 +993,7 @@ function renderCutChoice(){
 }
 $('#cut-delete').onclick=()=>{if(cutSession?.ids.includes(selected))removeSelected()};
 $$('[data-cut-piece]').forEach(button=>button.onclick=()=>{const id=cutSession?.ids[Number(button.dataset.cutPiece)];if(id)selectItem(id)});
-$('#cut-keep').onclick=()=>{cutSession=null;renderCutChoice();toast(L('两段已保留，可分别移动。','Both pieces kept; each can be moved separately.','両方の部分を残しました。それぞれ動かせます。'))};
+$('#cut-keep').onclick=()=>{cutSession=null;renderCutChoice();};
 function renderLayerList(){
  const list=$('#layer-list');if(!list)return;
  renderLayerQuickActions();
@@ -1053,10 +1052,10 @@ function shiftLayer(id,direction){
  if(next>=0&&next<group.length)[group[index],group[next]]=[group[next],group[index]];
  else if(direction==='front'&&!item.aboveVessel){item.aboveVessel=true;back.splice(back.indexOf(item),1);front.unshift(item)}
  else if(direction==='back'&&item.aboveVessel&&index===0){item.aboveVessel=false;front.splice(front.indexOf(item),1);back.push(item)}
- state.items=[...back,...front];selected=id;renderStage();persist();toast(direction==='front'?L('已向前移动一层','Moved forward one layer'):L('已向后移动一层','Moved back one layer'));
+ state.items=[...back,...front];selected=id;renderStage();persist();;
 }
 function applyLayerDrop(id,targetId,after){
- if(!id||id===targetId)return;const dragged=state.items.find(i=>i.id===id),target=state.items.find(i=>i.id===targetId);if(!dragged||!target)return;const side=target.aboveVessel?'aboveVessel':'behindVessel',group=state.items.filter(i=>i.aboveVessel===target.aboveVessel).reverse().filter(i=>i.id!==id),targetIndex=group.findIndex(i=>i.id===targetId);if(targetIndex<0)return;checkpoint();dragged.aboveVessel=target.aboveVessel;group.splice(targetIndex+(after?1:0),0,dragged);const back=dragged.aboveVessel?state.items.filter(i=>!i.aboveVessel):group.slice().reverse(),front=dragged.aboveVessel?group.slice().reverse():state.items.filter(i=>i.aboveVessel);state.items=[...back,...front];selected=id;renderStage();persist();toast(L('花材层次已调整','Material layers updated'));
+ if(!id||id===targetId)return;const dragged=state.items.find(i=>i.id===id),target=state.items.find(i=>i.id===targetId);if(!dragged||!target)return;const side=target.aboveVessel?'aboveVessel':'behindVessel',group=state.items.filter(i=>i.aboveVessel===target.aboveVessel).reverse().filter(i=>i.id!==id),targetIndex=group.findIndex(i=>i.id===targetId);if(targetIndex<0)return;checkpoint();dragged.aboveVessel=target.aboveVessel;group.splice(targetIndex+(after?1:0),0,dragged);const back=dragged.aboveVessel?state.items.filter(i=>!i.aboveVessel):group.slice().reverse(),front=dragged.aboveVessel?group.slice().reverse():state.items.filter(i=>i.aboveVessel);state.items=[...back,...front];selected=id;renderStage();persist();;
 }
 $('#layer-list').addEventListener('click',e=>{const row=e.target.closest('[data-layer-id]');if(!row)return;const shift=e.target.closest('[data-layer-shift]');if(shift){shiftLayer(row.dataset.layerId,shift.dataset.layerShift);return}if(e.target.closest('[data-layer-select]')){selectItem(row.dataset.layerId);renderLayerList()}});
 $('#layer-list').addEventListener('dragstart',e=>{const row=e.target.closest('[data-layer-id]');if(!row)return;layerDragId=row.dataset.layerId;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',layerDragId)});
@@ -1076,7 +1075,7 @@ $('#layer-quick-organize').onclick=()=>{
  const groupPieces=items=>{const groups=new Map();for(const item of items){const key=item.originId||item.id;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item)}return [...groups.values()].flat()};
  const next=[...groupPieces(state.items.filter(i=>!i.aboveVessel)),...groupPieces(state.items.filter(i=>i.aboveVessel))];
  if(next.some((item,index)=>item!==state.items[index])){checkpoint();state.items=next;renderStage();persist()}
- compactLayers=true;renderLayerList();toast(L('同枝花材已归在一起，图层列表更紧凑。','Pieces of the same stem are together; layers are more compact.','同じ枝の部分をまとめ、レイヤーをコンパクトにしました。'));
+ compactLayers=true;renderLayerList();;
 };
 
 const stage=$('#stage');
@@ -1129,7 +1128,7 @@ $('#canvas-viewport').addEventListener('wheel',e=>{
  if(act.type==='pan'){const x=zoomPanX,y=zoomPanY;zoomPanX+=act.dx;zoomPanY+=act.dy;applyCanvasZoom();if(zoomPanX!==x||zoomPanY!==y)e.preventDefault();return}
  e.preventDefault();const a=assetById[item.type];
  if(act.type==='turn')keyStep('wheel-turn',item,i=>aboutCutEnd(i,j=>{j.angle=clamp(Math.round((j.angle+act.deg)*10)/10,-180,180)}),500);
- else{const [min,max]=sizeBounds(a);keyStep('wheel-size',item,i=>aboutCutEnd(i,j=>{const cm=drawsStem(a)?stemCm(j,a):null;j.h=clamp(Math.round(j.h*act.ratio*100)/100,min,max);if(cm!==null)j.length=Math.min(lengthForStem(j,a,cm),lengthBounds(a,j.h,j.trim)[1])}),500)}
+ else{const [min,max]=editSizeBounds(a,item.h);keyStep('wheel-size',item,i=>aboutCutEnd(i,j=>{const cm=drawsStem(a)?stemCm(j,a):null;j.h=clamp(Math.round(j.h*act.ratio*100)/100,min,max);if(cm!==null)j.length=Math.min(lengthForStem(j,a,cm),lengthBounds(a,j.h,j.trim)[1])}),500)}
  wheelBubble(e,item);
 },{passive:false});
 /** Safari (macOS) reports a trackpad pinch as gesture events, not Ctrl+wheel: the canvas zooms instead of the page. Touch
@@ -1168,7 +1167,7 @@ function pinchTo(p,q){
  if(!g.scaling&&Math.abs(ratio-1)>=.03)g.scaling=true;
  let angle=g.baseAngle,h=g.baseH,snapAngle=false,snapSize=false;
  if(g.rotating){angle=clamp(g.baseAngle+turn,-180,180);const step=Math.round(angle/15)*15;snapAngle=Math.abs(angle-step)<=2;angle=snapAngle?step:Math.round(angle)}
- if(g.scaling){h=clamp(g.baseH*ratio,...sizeBounds(asset));snapSize=Math.abs(h/asset.height-1)<=.03;h=snapSize?asset.height:Math.round(h*10)/10}
+ if(g.scaling){h=clamp(g.baseH*ratio,...editSizeBounds(asset,g.baseH));snapSize=Math.abs(h/asset.height-1)<=.03;h=snapSize?asset.height:Math.round(h*10)/10}
  if((snapAngle&&!g.snapAngle)||(snapSize&&!g.snapSize))buzz();g.snapAngle=snapAngle;g.snapSize=snapSize;
  if(!g.gestureStarted){if(!g.rotating&&!g.scaling){updateGestureFeedback(p,q,item);return}g.gestureStarted=true;if(!g.checkpointed){checkpoint();g.checkpointed=true}}
  if(angle===item.angle&&h===item.h){updateGestureFeedback(p,q,item);return}
@@ -1238,7 +1237,7 @@ function settleDrag(d){
  }
 }
 /** The first drag of a visit says how stems are held now (two fingers too, on touch). */
-function stemHint(pointerType){if(touchHintShown)return;touchHintShown=true;toast(L('拖动花头转向，拖根部圆点移动','Drag the flower to swing it; drag the base dot to move','花を引いて向きを変え、根元の点で移動')+(pointerType==='touch'?L(' · 双指旋转缩放',' · two fingers rotate and scale',' · 2本指で回転・拡大縮小'):''))}
+function stemHint(){}
 function finishMoveInteraction(suppressTouchContext=false){
  if(!drag&&!gesture&&!canvasPan&&!paperPinch&&!movePointers.size)return false;
  if(drag)clearTimeout(drag.lengthTimer);
@@ -1424,7 +1423,7 @@ function arrowStep(item,action){
  const a=assetById[item.type];
  if(action.alt||!isSeated(item)){keyStep('nudge',item,i=>{i.x=clamp(i.x+action.dx,5,95);i.y=clamp(i.y+action.dy,15,95)});return}
  if(action.dx){const deg=Math.sign(action.dx)*(action.shift?5:1);keyStep('turn',item,i=>aboutCutEnd(i,j=>{j.angle=clamp(Math.round((j.angle+deg)*10)/10,-180,180)}));return}
- if(keptStemCm(item)===null){if(!photoArrowHint){photoArrowHint=true;toast(L('这枝的长度就是照片里的长度，↑/↓ 不改变它；←/→ 转向，Alt+方向键移动。','This stem keeps its photograph’s length, so ↑/↓ leave it; ←/→ turn it, Alt+arrows move it.','この茎は写真の長さのままです。↑/↓では変わりません。←/→で向きを変え、Alt+矢印で移動します。'))}return}
+ if(keptStemCm(item)===null)return;
  const step=(action.dy<0?1:-1)*(action.shift?5:1);
  // Within one burst (one undo step) the top stays where the burst began, as the slider's does while it is held.
  const burst=!needsCheckpoint(lastKeyStep,{kind:'stem',id:item.id,mark:undoStack.at(-1),now:performance.now()})&&lastKeyStep.ceil,ceil=Math.max(stemCeil(item,a),burst||0);
@@ -1480,8 +1479,8 @@ function duplicateSelected(){
  selected=duplicate.id;renderStage();persist();
  undoToast(!seated?L('已复制花材，剪口与长度也已保留。','Duplicated the material with its cuts and stem length.','花材を複製しました。剪定と茎の長さもそのままです。'):uv?L('已复制这一段，插在旁边并稍稍转开。','Duplicated the piece beside it, turned slightly away.','この部分を隣に複製し、少し向きを変えました。'):L('已复制为一枝稍低的陪衬，插在旁边。','Duplicated as a slightly lower companion beside it.','少し低い添えとして隣に複製しました。'));
 }
-function moveSelectedToFront(){const item=current();if(!item||(item.aboveVessel&&state.items.filter(i=>i.aboveVessel).at(-1)===item))return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=true;state.items.push(item);selected=item.id;renderStage();persist();toast(L('已移到最前层','Moved to the front layer'))}
-function moveSelectedToBack(){const item=current();if(!item||(!item.aboveVessel&&state.items.filter(i=>!i.aboveVessel)[0]===item))return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=false;state.items.unshift(item);selected=item.id;renderStage();persist();toast(L('已移到最后层','Moved to the back layer'))}
+function moveSelectedToFront(){const item=current();if(!item||(item.aboveVessel&&state.items.filter(i=>i.aboveVessel).at(-1)===item))return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=true;state.items.push(item);selected=item.id;renderStage();persist();}
+function moveSelectedToBack(){const item=current();if(!item||(!item.aboveVessel&&state.items.filter(i=>!i.aboveVessel)[0]===item))return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=false;state.items.unshift(item);selected=item.id;renderStage();persist();}
 function moveSelectedToRandomMiddle(){
  const item=current();if(!item)return;
  const back=state.items.filter(i=>!i.aboveVessel&&i!==item),front=state.items.filter(i=>i.aboveVessel&&i!==item);
@@ -1500,7 +1499,7 @@ function toolbarItem(){
 }
 $('#delete-button').onclick=removeSelected;$('#reseat-button').onclick=reseatSelected;$('#scale-reset').onclick=resetRealSize;$('#stem-cap-reset').onclick=naturalLength;$('#flip-button').onclick=()=>{const item=toolbarItem();if(!item)return;const seated=isSeated(item);checkpoint();aboutCutEnd(item,i=>{i.flip=!i.flip;if(seated)i.angle=-i.angle||0});renderStage();persist()};$('#seat-all').onclick=seatAll;$('#seat-banner-close').onclick=()=>{seatBannerClosed=floatingItems().map(i=>i.id).sort().join(',');renderSeatCues()};$('#duplicate-button').onclick=()=>{if(toolbarItem())duplicateSelected()};$('#layer-button').onclick=moveSelectedToFront;$('#layer-back-button').onclick=moveSelectedToBack;
 $('#undo-button').onclick=()=>{finishMoveInteraction(true);if(!undoStack.length)return;redoStack.push({state:clone(state),selected});const previous=undoStack.pop();state=previous.state;selected=previous.selected;cutSession=null;setEditMode('move');renderAll()};$('#redo-button').onclick=()=>{finishMoveInteraction(true);if(!redoStack.length)return;undoStack.push({state:clone(state),selected});const next=redoStack.pop();state=next.state;selected=next.selected;cutSession=null;setEditMode('move');renderAll()};
-$('#guide-button').onclick=()=>setGuide($('#guide').hidden);$('#reset-button').onclick=()=>{if(!state.items.length)return toast(L('花器里还没有花材。','There are no materials to clear.','まだ花材がありません。'));checkpoint();state.items=[];selected=null;cutSession=null;setEditMode('move');renderStage();persist();undoToast(L('已清空花材','All materials cleared','花材をすべて外しました'))};
+$('#guide-button').onclick=()=>setGuide($('#guide').hidden);$('#reset-button').onclick=()=>{if(!state.items.length)return;checkpoint();state.items=[];selected=null;cutSession=null;setEditMode('move');renderStage();persist();undoToast(L('已清空花材','All materials cleared','花材をすべて外しました'))};
 $$('button[data-scene]').forEach(b=>b.onclick=()=>{checkpoint();state.scene=b.dataset.scene;renderStage();persist()});
 $('#light-button')?.addEventListener('click',()=>setLightMenu($('#light-menu').hidden));
 $$('[data-light]').forEach(b=>b.onclick=()=>{
@@ -2185,7 +2184,7 @@ function gameRaster(key,paint,size=768){
 function gameFrame(knownTextures=new Map()){
  const eraseBudget=state.items.reduce((sum,item)=>sum+item.cuts.reduce((n,cut)=>n+cut.points.length,0),0)<=7488;
  const transfer=(id,key,paint,size)=>knownTextures.get(id)===key?'':gameRaster(key,paint,size);
- const sceneKey=`organic-room-6|${organicRoomsReady}|${sceneLayerKey}|${state.light||''}`;
+ const sceneKey=`organic-room-xia1|${organicRoomsReady}|${sceneLayerKey}|${state.light||''}`;
  const full=(id,key,texture,order)=>({id,key,texture,x:50,y:50,width:100,height:100,px:.5,py:.5,angle:0,flip:false,interactive:false,order});
  const background=transfer('room',sceneKey,(ctx,S)=>{paintOrganicRoom(ctx,S,state);paintOrganicGround(ctx,S,assetById[state.vessel],isNightScene(state.scene));});
  const nodes=[full('room',sceneKey,background,0)];
@@ -2194,7 +2193,7 @@ function gameFrame(knownTextures=new Map()){
   const g=dimensions(item,a),crop=src.crop||{x:0,y:0,width:src.width,height:src.height,fullWidth:src.width,fullHeight:src.height};
   const pivot=Number.isFinite(item.cropAnchorSourceY)?warpY(item.cropAnchorSourceY,g.split,g.length)/g.height:(item.cropAnchorY??1),key=`game-flower|${spriteCache.get(item.id)?.key}|${src.width}|${src.height}|${a.saturation||1}`;
   const texture=transfer(item.id,key,(ctx,S)=>{if(a.saturation)ctx.filter=`saturate(${a.saturation})`;ctx.drawImage(src,0,0,S,S);},Math.min(1024,Math.max(src.width,src.height)));
-  const [min,max]=sizeBounds(a),foot=seatPoint(item,a);
+  const [min,max]=editSizeBounds(a,item.h),foot=seatPoint(item,a);
   nodes.push({id:item.id,name:assetName(a),canErase:eraseBudget&&item.cuts.length<24,flex:normalizeFlex(item.flex),extent:flexExtent(item,a,g)*100,flexibility:botanicalFlexibility(a),seated:isSeated(item),seatDX:foot[0]-item.x,seatDY:foot[1]-item.y,front:!!item.aboveVessel,cutSeat:!!cutEndSource(item,a),key,texture,x:item.x,y:item.y,width:item.h*g.ratio*crop.width/crop.fullWidth,height:item.h*g.height*crop.height/crop.fullHeight,px:(g.anchor*crop.fullWidth-crop.x)/crop.width,py:(pivot*crop.fullHeight-crop.y)/crop.height,angle:item.angle,h:item.h,flip:item.flip,interactive:true,order:(item.aboveVessel?600:100)+index*2,minScale:min/item.h,maxScale:max/item.h});
  });
  const compositionKey=JSON.stringify(state.items),vesselKey=`game-vessel|${state.vessel}|${!!images[state.vessel]}`;
@@ -2214,7 +2213,7 @@ function gameEvent(e){
  if(e.type==='cancel'){if(gameGestureMark&&undoStack.at(-1)===gameGestureMark){undoStack=gameGestureUndo||[];redoStack=gameGestureRedo||[];}gameGestureUndo=gameGestureRedo=gameGestureMark=null;renderStage();renderHistory();return;}
  if(e.type==='commit'&&item){
   if(![e.x,e.y,e.angle,e.scale].every(Number.isFinite))return;
-  item.x=clamp(e.x,5,95);item.y=clamp(e.y,15,95);item.angle=clamp(e.angle,-180,180);item.h=clamp(item.h*clamp(e.scale,.25,4),...sizeBounds(assetById[item.type]));
+  item.x=clamp(e.x,5,95);item.y=clamp(e.y,15,95);item.angle=clamp(e.angle,-180,180);item.h=clamp(item.h*clamp(e.scale,.25,4),...editSizeBounds(assetById[item.type],item.h));
   if(Array.isArray(e.flex)){const flex=normalizeFlex(e.flex);if(flex.some(a=>Math.abs(a)>.00001))item.flex=flex;else delete item.flex;}
   gameGestureUndo=gameGestureRedo=gameGestureMark=null;selected=item.id;renderStage();persist();return;
  }

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {assetById,vessels} from './helpers/catalog.mjs';
 import {mouthTargets} from '../dist/mouth-targets.js';
 import {vesselGeometry} from '../dist/geometry.js?v=soft2';
-import {isKenzan,seatState} from '../dist/scale.js?v=hn3';
+import {isKenzan,seatState} from '../dist/scale.js?v=scale4';
 
 const close=(actual,expected,message)=>assert.ok(Math.abs(actual-expected)<1e-9,`${message}: ${actual} != ${expected}`);
 const project=(span,x)=>Math.max(span.left,Math.min(span.right,x));

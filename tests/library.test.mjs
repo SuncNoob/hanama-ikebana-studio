@@ -8,7 +8,7 @@ import {
  vesselFacts,capacityText,supportName,cardMeta,queryForms,buildSearchIndex,emptyText,clearFiltersLabel
 } from '../dist/library.js';
 import {ROLES,roleOf,hasRole} from '../dist/botany.js';
-import {defaultCm} from '../dist/scale.js?v=hn3';
+import {defaultCm} from '../dist/scale.js?v=scale4';
 import {matchesMaterialColor} from '../dist/material-colors.js';
 import {assetById,vessels,browseSpecimens,familyOrder,specimenFor,dist} from './helpers/catalog.mjs';
 

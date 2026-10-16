@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
-import {scenes} from '../dist/legacy-catalog.js?v=restore1';
-import {organicRoomLook,isNightScene,paintOrganicRoom} from '../dist/organic-room.js?v=restore1';
+import {scenes} from '../dist/legacy-catalog.js?v=xia1';
+import {organicRoomLook,isNightScene,paintOrganicRoom} from '../dist/organic-room.js?v=xia1';
 
 test('all nine backgrounds stay distinct under each light and survive the scene validation catalog',()=>{
  const keys=Object.keys(scenes);assert.equal(keys.length,9);
