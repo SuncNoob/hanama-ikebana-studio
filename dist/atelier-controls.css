@@ -1,0 +1,310 @@
+/* SPDX-FileCopyrightText: 2026 Marko Sun
+   SPDX-License-Identifier: LicenseRef-Hanama-Proprietary */
+/* Final control styles for the atelier. Dark marks an active operation;
+   soft green marks an open panel or a selected material. */
+body.atelier-simple.atelier-direct {
+  --control-radius: 10px;
+  --control-size: 44px;
+  --control-strong: #405b3e;
+  --control-ink: #40523f;
+  --control-surface: #fafbf6;
+  --control-border: #d4ddcc;
+  --control-hover: #edf2e8;
+  --control-selected: #e4ecdd;
+  --control-selected-border: #8fa181;
+  --control-selected-ink: #344b31;
+  --control-focus: #7c946b;
+}
+
+/* Four equal entrances remain one row at every supported viewport. */
+body.atelier-simple.atelier-direct #studio-view .atelier-bench > :is(.atelier-add-slot,.atelier-vessel-slot,.atelier-disclosure) {
+  width: 100%;
+  min-width: 0;
+  justify-self: stretch;
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-bench :is(.atelier-add-slot,.atelier-vessel-slot,.atelier-disclosure) > :is(button,summary) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-width: var(--control-size);
+  height: var(--control-size);
+  min-height: var(--control-size);
+  padding: 8px 6px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  font: 500 12px/1.25 var(--sans);
+  white-space: nowrap;
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-bench :is(.atelier-add-slot,.atelier-vessel-slot,.atelier-disclosure) > :is(button,summary) > span {
+  font: inherit;
+  color: inherit;
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-add-slot > button > [aria-hidden=true] { display: none; }
+body.atelier-simple.atelier-direct #studio-view .atelier-bench :is(.atelier-add-slot,.atelier-vessel-slot) > button[aria-expanded=true],
+body.atelier-simple.atelier-direct #studio-view .atelier-bench .atelier-disclosure[open] > summary {
+  border-color: var(--control-selected-border);
+  background: var(--control-selected);
+  color: var(--control-selected-ink);
+}
+
+/* Canvas operations stay visually quieter than their shared mode selector. */
+body.atelier-simple.atelier-direct #studio-view .atelier-tool-slot .stage-tools .icon-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: var(--control-size);
+  height: var(--control-size);
+  min-width: var(--control-size);
+  min-height: var(--control-size);
+  flex: 0 0 var(--control-size);
+  padding: 2px;
+  border: 1px solid transparent;
+  border-radius: var(--control-radius);
+  background: transparent;
+  color: var(--control-ink);
+  box-shadow: none;
+  transform: none;
+}
+/* The legacy cut/erase size rule contains two IDs; only its radius needs overriding. */
+body.atelier-simple.atelier-direct #studio-view .stage-tools :is(#prune-tool,#erase-tool) { border-radius: var(--control-radius); }
+body.atelier-simple.atelier-direct #studio-view .atelier-tool-slot .stage-tools .icon-button svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke-width: 1.7;
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-tool-slot :is(.atelier-tool-name,.atelier-length-label,.prune-tool-label) {
+  display: block;
+  max-width: 42px;
+  font: 500 10px/1.2 var(--sans);
+  white-space: nowrap;
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-length-icon { display: flex; line-height: 1; }
+body.atelier-simple.atelier-direct #studio-view .atelier-tool-slot .stage-tools .icon-button[aria-pressed=true] {
+  border-color: var(--control-strong);
+  background: var(--control-strong);
+  color: #fff;
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-tool-slot :is(#atelier-length,#layers-tool)[aria-expanded=true] {
+  border-color: var(--control-selected-border);
+  background: var(--control-selected);
+  color: var(--control-selected-ink);
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-tool-slot .stage-tools .icon-button:disabled { opacity: .34; }
+body.atelier-simple.atelier-direct #studio-view .atelier-touch-modes {
+  border-color: var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-touch-modes button {
+  min-width: var(--control-size);
+  min-height: var(--control-size);
+  height: var(--control-size);
+  border: 1px solid transparent;
+  border-radius: var(--control-radius);
+  background: transparent;
+  color: var(--control-ink);
+  font: 500 12px/1.25 var(--sans);
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-touch-modes button[aria-pressed=true] {
+  border-color: var(--control-strong);
+  background: var(--control-strong);
+  color: #fff;
+}
+body.atelier-simple.atelier-direct #atelier-touch-hint { color: #69775f; }
+
+/* Global actions have the same outline and touch size as the workbench. */
+body.atelier-simple.atelier-direct .header-actions :is(#atelier-image-pack,#language-select) {
+  min-height: var(--control-size);
+  height: var(--control-size);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  font: 500 12px/1.25 var(--sans);
+  box-shadow: none;
+  transform: none;
+}
+
+/* Preserve the same 12px labels and 44px targets on a 320px header. */
+@media (max-width:360px) {
+  body.atelier-simple.atelier-direct:has(#studio-view:not([hidden])) .masthead { gap: 8px; }
+  body.atelier-simple.atelier-direct .header-actions #language-select { width: 68px; min-width: 68px; }
+  body.atelier-simple.atelier-direct .header-actions #atelier-image-pack { padding-inline: 6px; }
+}
+
+/* Open panels share ordinary actions; Save and image preparation keep primary emphasis. */
+body.atelier-simple.atelier-direct #studio-view :is(.atelier-work-panel,.atelier-atmosphere-panel,.design-panel) button,
+body.atelier-simple.atelier-direct #modal :is(.modal-actions,.pack-step-actions,.pack-more) :is(button,.button) {
+  min-width: var(--control-size);
+  min-height: var(--control-size);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  font: 500 12px/1.25 var(--sans);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+body.atelier-simple.atelier-direct #studio-view :is(.atelier-work-panel,.atelier-atmosphere-panel,.design-panel) button:is([aria-pressed=true],.active),
+body.atelier-simple.atelier-direct #modal :is(.modal-actions,.pack-step-actions,.pack-more) :is(button,.button):is([aria-pressed=true],.active) {
+  border-color: var(--control-selected-border);
+  background: var(--control-selected);
+  color: var(--control-selected-ink);
+}
+body.atelier-simple.atelier-direct #studio-view .atelier-work-main #save-button,
+body.atelier-simple.atelier-direct #studio-view .design-panel #generate-button {
+  border-color: var(--control-strong);
+  background: var(--control-strong);
+  color: #fff;
+}
+body.atelier-simple.atelier-direct #atelier-atmosphere #light-menu button {
+  min-width: var(--control-size);
+  min-height: var(--control-size);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  font: 500 12px/1.25 var(--sans);
+}
+body.atelier-simple.atelier-direct #atelier-atmosphere #light-menu button[aria-pressed=true] {
+  border-color: var(--control-selected-border);
+  background: var(--control-selected);
+  color: var(--control-selected-ink);
+}
+
+/* Labels and close targets are independent of each panel's existing positioning. */
+body.atelier-simple.atelier-direct :is(.atelier-length-close,.atelier-work-close,.atelier-atmosphere-close,.atelier-inspector-close,#quick-material-close,#close-layers,#close-modal) {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--control-size);
+  width: var(--control-size);
+  height: var(--control-size);
+  min-width: var(--control-size);
+  min-height: var(--control-size);
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  box-shadow: none;
+  transform: none;
+}
+body.atelier-simple.atelier-direct :is(.atelier-length-close,.atelier-work-close,.atelier-atmosphere-close,.atelier-inspector-close,#quick-material-close,#close-layers,#close-modal) svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.7;
+}
+
+/* Library chips and image cards share selection feedback without changing images. */
+body.atelier-simple.atelier-direct #quick-material-drawer :is(.quick-material-filters,.quick-color-filters) button {
+  height: var(--control-size);
+  min-height: var(--control-size);
+  min-width: var(--control-size);
+  padding: 8px 10px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  font: 500 11px/1.25 var(--sans);
+  box-shadow: none;
+  transform: none;
+}
+body.atelier-simple.atelier-direct #quick-material-drawer :is(.quick-material-filters,.quick-color-filters) button[aria-pressed=true] {
+  border-color: var(--control-selected-border);
+  background: var(--control-selected);
+  color: var(--control-selected-ink);
+}
+body.atelier-simple.atelier-direct #studio-view .material-card,
+body.atelier-simple.atelier-direct #modal-content .variant-card,
+body.atelier-simple.atelier-direct #atelier-atmosphere .scene-choice {
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+body.atelier-simple.atelier-direct #studio-view .material-card:is(.active,[aria-pressed=true]),
+body.atelier-simple.atelier-direct #modal-content .variant-card:is(.active,[aria-pressed=true]),
+body.atelier-simple.atelier-direct #atelier-atmosphere .scene-choice[aria-pressed=true] {
+  border-color: var(--control-selected-border);
+  background: var(--control-selected);
+  color: var(--control-selected-ink);
+  box-shadow: inset 0 0 0 1px var(--control-selected-border);
+}
+
+/* Layer ordering keeps its existing grid while making each arrow a full target. */
+body.atelier-simple.atelier-direct #layer-menu .layer-step button {
+  flex: 0 0 var(--control-size);
+  width: var(--control-size);
+  height: var(--control-size);
+  min-width: var(--control-size);
+  min-height: var(--control-size);
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  font: 500 18px/1 var(--sans);
+  box-shadow: none;
+  transform: none;
+}
+body.atelier-simple.atelier-direct #layer-menu .layer-step button:disabled { opacity: .34; }
+body.atelier-simple.atelier-direct #layer-menu .layer-select { min-height: var(--control-size); border-radius: var(--control-radius); }
+body.atelier-simple.atelier-direct #layer-menu .layer-row {
+  border-color: transparent;
+  border-radius: var(--control-radius);
+  background: transparent;
+  color: var(--control-ink);
+}
+body.atelier-simple.atelier-direct #layer-menu .layer-row.active {
+  border-color: var(--control-selected-border);
+  background: var(--control-selected);
+  color: var(--control-selected-ink);
+}
+
+/* Hover is feedback for a mouse, never a persistent touch state. */
+@media (hover:hover) {
+  body.atelier-simple.atelier-direct #layer-menu .layer-step button:hover:not(:disabled),
+  body.atelier-simple.atelier-direct #layer-menu .layer-row:hover:not(.active) { background: var(--control-hover); }
+  body.atelier-simple.atelier-direct #studio-view .atelier-bench :is(.atelier-add-slot,.atelier-vessel-slot) > button:hover:not([aria-expanded=true]),
+  body.atelier-simple.atelier-direct #studio-view .atelier-bench .atelier-disclosure:not([open]) > summary:hover,
+  body.atelier-simple.atelier-direct .header-actions :is(#atelier-image-pack,#language-select):hover,
+  body.atelier-simple.atelier-direct :is(.atelier-length-close,.atelier-work-close,.atelier-atmosphere-close,.atelier-inspector-close,#quick-material-close,#close-layers,#close-modal):hover,
+  body.atelier-simple.atelier-direct #studio-view :is(.atelier-work-panel,.atelier-atmosphere-panel,.design-panel) button:hover:not(:disabled):not([aria-pressed=true]):not(.active):not(#save-button):not(#generate-button),
+  body.atelier-simple.atelier-direct #modal :is(.modal-actions,.pack-step-actions,.pack-more) :is(button,.button):hover:not(:disabled):not([aria-pressed=true]):not(.active),
+  body.atelier-simple.atelier-direct #quick-material-drawer :is(.quick-material-filters,.quick-color-filters) button:hover:not([aria-pressed=true]),
+  body.atelier-simple.atelier-direct #studio-view .material-card:hover:not(.active):not([aria-pressed=true]),
+  body.atelier-simple.atelier-direct #modal-content .variant-card:hover:not(.active):not([aria-pressed=true]) {
+    background: var(--control-hover);
+    border-color: var(--control-border);
+  }
+  body.atelier-simple.atelier-direct #studio-view .atelier-tool-slot .stage-tools .icon-button:hover:not(:disabled):not([aria-pressed=true]):not([aria-expanded=true]),
+  body.atelier-simple.atelier-direct #studio-view .atelier-touch-modes button:hover:not(:disabled):not([aria-pressed=true]) {
+    background: var(--control-hover);
+  }
+}
+body.atelier-simple.atelier-direct :is(button,summary,select) {
+  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease;
+}
+body.atelier-simple.atelier-direct :is(button,summary,select,input,textarea):focus-visible {
+  outline: 2px solid var(--control-focus);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion:reduce) {
+  body.atelier-simple.atelier-direct :is(button,summary,select) { transition: none; }
+}

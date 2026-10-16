@@ -5,6 +5,8 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  const stage=document.querySelector('#stage');if(!stage)return null;
  const $=(s,root=document)=>root.querySelector(s);
  const words=(zh,en,ja)=>locale()==='zh'?zh:locale()==='ja'?ja:en;
+ const strokeIcon=path=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${path}"/></svg>`;
+ const closeIcon=strokeIcon('M6 6l12 12M18 6 6 18');
  const flowerLabel=$('#quick-material-open>span:last-child'),vesselLabel=$('#quick-vessel-open>span:last-child');
  Object.assign(flowerLabel.dataset,{zh:'花材',en:'Flowers',ja:'花材'});
  Object.assign(vesselLabel.dataset,{zh:'花器',en:'Vessels',ja:'花器'});
@@ -41,7 +43,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
  secondary.prepend(fallbackAdjust);
  $('.atelier-advanced-tools',panel).append($('#guide-button'));
  const lengthButton=document.createElement('button');lengthButton.type='button';lengthButton.id='atelier-length';lengthButton.className='icon-button';lengthButton.setAttribute('aria-controls','atelier-length-panel');lengthButton.setAttribute('aria-expanded','false');
- lengthButton.innerHTML='<span aria-hidden="true" class="atelier-length-icon">↕</span><span class="atelier-length-label"></span>';
+ lengthButton.innerHTML='<span aria-hidden="true" class="atelier-length-icon">'+strokeIcon('M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4')+'</span><span class="atelier-length-label"></span>';
  $('.stage-tools').insertBefore(lengthButton,$('#undo-button'));
  for(const id of ['prune-tool','erase-tool','atelier-length','flip-button','duplicate-button','layers-tool','delete-button','undo-button','redo-button']){
   const button=$('#'+id);button.classList.add('icon-button');$('.stage-tools').append(button);
@@ -50,18 +52,19 @@ export function mountUnityGame({getFrame,onEvent,onAction,locale=()=> 'zh'}){
   const label=$('span[data-zh]',$('#'+id));label.classList.add('atelier-tool-name');Object.assign(label.dataset,labels);
  }
  const lengthPanel=document.createElement('div');lengthPanel.id='atelier-length-panel';lengthPanel.className='atelier-length-panel';lengthPanel.hidden=true;
- const lengthClose=document.createElement('button');lengthClose.type='button';lengthClose.className='atelier-length-close';lengthClose.textContent='×';
+ const lengthClose=document.createElement('button');lengthClose.type='button';lengthClose.className='atelier-length-close';lengthClose.innerHTML=closeIcon;
  lengthPanel.append($('#length').closest('.range-control'),lengthClose);panel.append(lengthPanel);
  // Background and every light stay directly available when the atmosphere panel opens.
  const fine=$('.atelier-fine'),fineContent=document.createElement('div');fineContent.className='atelier-fine';fineContent.innerHTML='<p class="atelier-fine-label"></p>';
  while(fine.children.length>1)fineContent.append(fine.children[1]);fine.replaceWith(fineContent);
  $('.atelier-atmosphere-panel').insertBefore($('.atelier-scene-slot'),$('.atelier-presets'));
- const workClose=document.createElement('button');workClose.type='button';workClose.className='atelier-work-close';workClose.textContent='×';workClose.onclick=()=>{$('#atelier-work').open=false;$('#atelier-work>summary').focus({preventScroll:true});};$('.atelier-work-panel').prepend(workClose);
+ const workClose=document.createElement('button');workClose.type='button';workClose.className='atelier-work-close';workClose.innerHTML=closeIcon;workClose.onclick=()=>{$('#atelier-work').open=false;$('#atelier-work>summary').focus({preventScroll:true});};$('.atelier-work-panel').prepend(workClose);
  $('.header-actions').append($('#atelier-image-pack'));
- const atmosphereClose=document.createElement('button');atmosphereClose.type='button';atmosphereClose.className='atelier-atmosphere-close';atmosphereClose.textContent='×';atmosphereClose.onclick=()=>{$('#atelier-atmosphere').open=false;$('#atelier-atmosphere>summary').focus()};$('.atelier-atmosphere-panel').prepend(atmosphereClose);
+ const atmosphereClose=document.createElement('button');atmosphereClose.type='button';atmosphereClose.className='atelier-atmosphere-close';atmosphereClose.innerHTML=closeIcon;atmosphereClose.onclick=()=>{$('#atelier-atmosphere').open=false;$('#atelier-atmosphere>summary').focus()};$('.atelier-atmosphere-panel').prepend(atmosphereClose);
  secondary.append($('.zoom-controls'));
  const inspector=$('.design-panel');
- const closeInspector=document.createElement('button');closeInspector.className='atelier-inspector-close';closeInspector.type='button';closeInspector.textContent='×';inspector.prepend(closeInspector);
+ const closeInspector=document.createElement('button');closeInspector.className='atelier-inspector-close';closeInspector.type='button';closeInspector.innerHTML=closeIcon;inspector.prepend(closeInspector);
+ for(const id of ['quick-material-close','close-layers','close-modal'])$('#'+id).innerHTML=closeIcon;
  const hud=document.createElement('div');hud.className='atelier-hud';hud.setAttribute('aria-live','off');
  hud.innerHTML='<span class="atelier-hud-name"></span><button type="button" data-atelier-action="straighten"></button><button type="button" id="atelier-adjust" aria-controls="selection-controls" aria-expanded="false"></button>';
  secondary.prepend(hud);
