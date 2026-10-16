@@ -11,8 +11,9 @@ using UnityEngine.InputSystem;
 // The game owns rendering and gestures. The host owns the durable composition schema.
 public sealed partial class HanamaGame : MonoBehaviour
 {
-    [Serializable] public class Node { public string id, texture, key, name; public float x,y,width,height,px,py,angle,h,minScale=.8f,maxScale=1.25f; public bool flip,interactive,seated; public float extent,flexibility=.6f; public float[] flex; public int order; }
-    [Serializable] public class Frame { public Node[] nodes; public string selected,mode,light; public float mouthX,mouthY,brush=2; }
+    [Serializable] public class Node { public string id, texture, key, name; public float x,y,width,height,px,py,angle,h,minScale=.8f,maxScale=1.25f,seatDX,seatDY; public bool flip,interactive,seated,front,cutSeat; public float extent,flexibility=.6f; public float[] flex; public int order; }
+    [Serializable] public class MouthTarget { public float left,right,y,frontY; }
+    [Serializable] public class Frame { public Node[] nodes; public MouthTarget[] mouths; public string selected,mode,light; public float mouthX,mouthY,brush=2; }
     [Serializable] public class Point { public float x,y; public Point(Vector2 p){x=p.x;y=p.y;} }
     [Serializable] public class GameEvent { public string type,id,mode,image; public bool snapped; public float x,y,angle,scale=1; public Point[] points; public float[] flex; }
     sealed class Piece { public Node data; public GameObject root; public Mesh mesh; public MeshRenderer renderer,shadow; public Material mat,shadowMaterial; public Texture2D tex; public string key; public float scale=1,bend,velocity,phase; public Vector3[] basis,vertices; public Vector2 previous; public float width,height,px,py,lastBend=float.NaN; public StemChain chain; public Mesh shadowMesh; public Texture2D shadowTex; public Vector3[] shadowBasis,shadowVertices; }
@@ -21,7 +22,7 @@ public sealed partial class HanamaGame : MonoBehaviour
     readonly List<Mote> motes=new List<Mote>();
     readonly List<Vector2> cutPoints=new List<Vector2>();
     Camera cameraRig; Material baseMaterial; Shader botanical; Sprite dot; Frame frame;
-    Piece picked; Vector2 down,offset; float startAngle,startScale,turnStart,pinchDistance,pinchAngle; bool held,started,turning,scaling,pinching,nearMouth,capturing; float scaleDistance,previewAt; string hovered=""; string selected="",tool="move";
+    Piece picked; Vector2 down,offset,pinchCenter; float startAngle,startScale,turnStart,pinchDistance,pinchAngle; bool held,started,turning,scaling,pinching,usedPinch,nearMouth,capturing,touchGesture; int dragTouchId=-1; float scaleDistance,previewAt; string hovered=""; string selected="",tool="move";
     LineRenderer ring,cutLine,snapRing,anchorLine,brushRing; GameObject handle,scaleHandle,rootHandle; int lastWidth,lastHeight; float idle;
 #if UNITY_WEBGL && !UNITY_EDITOR
     [DllImport("__Internal")] static extern void HanamaEvent(string json);
@@ -89,7 +90,14 @@ public sealed partial class HanamaGame : MonoBehaviour
     Vector2 World(Vector2 p){var v=cameraRig.ScreenToWorldPoint(new Vector3(p.x,p.y,0));return new Vector2(v.x,v.y);}
     Vector2 Pointer(){
 #if ENABLE_INPUT_SYSTEM
-        if(Touchscreen.current!=null&&Touchscreen.current.primaryTouch.press.isPressed)return Touchscreen.current.primaryTouch.position.ReadValue();return Mouse.current!=null?Mouse.current.position.ReadValue():Vector2.zero;
+        var touches=Touchscreen.current;
+        if(touches!=null)
+        {
+            // Track a real finger, not primaryTouch's stale position after that finger lifts.
+            if(held)foreach(var t in touches.touches)if(t.press.isPressed&&t.touchId.ReadValue()==dragTouchId)return t.position.ReadValue();
+            foreach(var t in touches.touches)if(t.press.isPressed){dragTouchId=t.touchId.ReadValue();return t.position.ReadValue();}
+        }
+        return Mouse.current!=null?Mouse.current.position.ReadValue():Vector2.zero;
 #else
         return Input.touchCount>0?Input.GetTouch(0).position:(Vector2)Input.mousePosition;
 #endif
@@ -130,6 +138,37 @@ public sealed partial class HanamaGame : MonoBehaviour
 #endif
     }
     Piece Pick(Vector2 at){Piece best=null;foreach(var p in pieces.Values){if(!p.data.interactive||!p.tex)continue;var v=UnbendLocal(p,p.root.transform.InverseTransformPoint(at));float u=v.x/p.data.width+p.data.px,w=v.y/p.data.height+1-p.data.py;if(u<0||u>1||w<0||w>1)continue;if(p.tex.GetPixelBilinear(u,w).a<.14f)continue;if(best==null||p.data.order>best.data.order)best=p;}return best;}
+    float CssDistance(float pixels){return pixels*100/Mathf.Max(1,settings.viewportPixels>0?settings.viewportPixels:Screen.width);}
+    bool MouthSnap(Piece p,out Vector2 root,out Vector2 seat)
+    {
+        root=p.root.transform.position;seat=root;
+        if(tool!="move"||usedPinch||turning||scaling||bending||frame.mouths==null||(!p.data.cutSeat&&Mathf.Abs(p.data.angle)>110))return false;
+        // Test the actual cut end, and preserve lateral placement across every opening or kenzan.
+        var delta=new Vector2(p.data.seatDX,-p.data.seatDY);var foot=root+delta;
+        float best=float.PositiveInfinity;Vector2 nearest=foot;
+        foreach(var mouth in frame.mouths)
+        {
+            var candidate=new Vector2(Mathf.Clamp(foot.x,mouth.left,mouth.right),100-(p.data.front?mouth.frontY:mouth.y));
+            var candidateRoot=candidate-delta;
+            if(candidateRoot.x<5||candidateRoot.x>95||candidateRoot.y<5||candidateRoot.y>85)continue;
+            float distance=(foot-candidate).sqrMagnitude;if(distance<best){best=distance;nearest=candidate;}
+        }
+        float tolerance=Mathf.Min(touchGesture?3.5f:2.2f,CssDistance(touchGesture?14:8));
+        if(best>tolerance*tolerance)return false;
+        seat=nearest;root=nearest-delta;return true;
+    }
+    Piece PickTouch(Vector2 at)
+    {
+        var exact=Pick(at);if(exact!=null)return exact;
+        // A bounded, once-per-press search makes thin leaves reachable without enlarging their artwork.
+        for(int radius=4;radius<=12;radius+=4)
+        {
+            Piece nearest=null;
+            for(int n=0;n<8;n++){float a=n*Mathf.PI/4;var candidate=Pick(at+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*CssDistance(radius));if(candidate!=null&&(nearest==null||candidate.data.order>nearest.data.order))nearest=candidate;}
+            if(nearest!=null)return nearest;
+        }
+        return null;
+    }
     void BeginEdit(){if(started)return;started=true;Emit(new GameEvent{type="begin",id=selected});}
     static float Angle(Vector2 p){return Mathf.Atan2(p.y,p.x)*Mathf.Rad2Deg;}
     void Move(Piece p,Vector2 pos){p.root.transform.position=new Vector3(Mathf.Clamp(pos.x,5,95),Mathf.Clamp(pos.y,5,85),0);}
@@ -142,12 +181,13 @@ public sealed partial class HanamaGame : MonoBehaviour
         Vector2 screen=Pointer(),at=World(screen);bool inside=screen.x>=0&&screen.y>=0&&screen.x<=Screen.width&&screen.y<=Screen.height;
         if(settings.photo){HideSelection();OnDemandRendering.renderFrameInterval=(!settings.motion||settings.reducedMotion)?4:1;return;}
         if(Keyboard.current!=null&&Keyboard.current.escapeKey.wasPressedThisFrame){CancelGesture("");return;}
-        if(Pressed()&&inside)
+        if(!held&&Pressed()&&inside)
         {
+            touchGesture=settings.coarsePointer||(Touchscreen.current!=null&&Touchscreen.current.primaryTouch.press.isPressed);
             idle=0;bool hitTurn=handle.activeSelf&&Vector2.Distance(at,handle.transform.position)<2.5f;
             bool hitScale=scaleHandle.activeSelf&&Vector2.Distance(at,scaleHandle.transform.position)<2.5f;
             bool hitRoot=rootHandle.activeSelf&&Vector2.Distance(at,rootHandle.transform.position)<2.4f;
-            picked=(hitTurn||hitScale||hitRoot)&&pieces.ContainsKey(selected)?pieces[selected]:Pick(at);
+            picked=(hitTurn||hitScale||hitRoot)&&pieces.ContainsKey(selected)?pieces[selected]:(touchGesture?PickTouch(at):Pick(at));
             if(picked==null&&tool!="move")pieces.TryGetValue(selected,out picked);
             if(picked==null){selected="";DrawSelection();Emit(new GameEvent{type="select",id=""});return;}
             RestOrganic(picked);selected=picked.data.id;down=at;offset=(Vector2)picked.root.transform.position-at;startAngle=picked.data.angle;startScale=picked.scale;
@@ -155,8 +195,9 @@ public sealed partial class HanamaGame : MonoBehaviour
             turning=tool=="move"&&(hitTurn||(!hitRoot&&(settings.tool=="rotate"||Shift())));
             scaling=tool=="move"&&(hitScale||(!hitRoot&&settings.tool=="scale"));
             var flat=UnbendLocal(picked,picked.root.transform.InverseTransformPoint(at));
-            bending=tool=="move"&&!turning&&!scaling&&!hitRoot&&picked.chain!=null&&flat.y>picked.chain.extent*.16f;
-            if(bending)BeginBend(picked,at);held=true;started=false;pinching=false;cutPoints.Clear();
+            bending=tool=="move"&&settings.tool!="translate"&&!turning&&!scaling&&!hitRoot&&picked.chain!=null&&flat.y>picked.chain.extent*.16f;
+            if(tool=="move"&&settings.tool=="bend"&&!bending){Emit(new GameEvent{type="select",id=selected});DrawSelection();picked=null;return;}
+            if(bending)BeginBend(picked,at);held=true;started=false;pinching=usedPinch=false;cutPoints.Clear();
             if(tool!="move")cutPoints.Add(at);Emit(new GameEvent{type="select",id=selected});DrawSelection();
         }
         if(held&&picked!=null)
@@ -164,14 +205,19 @@ public sealed partial class HanamaGame : MonoBehaviour
             idle=0;
             if(TwoTouches(out var a,out var b)&&tool=="move")
             {
-                BeginEdit();bending=false;float d=Vector2.Distance(a,b),angle=Angle(b-a);
-                if(!pinching){pinching=true;pinchDistance=Mathf.Max(.1f,d);pinchAngle=angle;startScale=picked.scale;startAngle=-picked.root.transform.eulerAngles.z;offset=(Vector2)picked.root.transform.position-(a+b)*.5f;}
-                ApplyScale(picked,startScale*d/pinchDistance);SetAngle(picked,startAngle-Mathf.DeltaAngle(pinchAngle,angle));Move(picked,(a+b)*.5f+offset);
+                float d=Vector2.Distance(a,b),angle=Angle(b-a);var center=(a+b)*.5f;
+                if(!pinching)
+                {
+                    if(bending&&picked.chain!=null)Array.Copy(picked.chain.angles,picked.chain.rest,Bones);
+                    bending=turning=scaling=false;pinching=usedPinch=true;nearMouth=false;snapRing.positionCount=0;pinchDistance=Mathf.Max(.1f,d);pinchAngle=angle;pinchCenter=center;startScale=picked.scale;startAngle=-picked.root.transform.eulerAngles.z;offset=(Vector2)picked.root.transform.position-center;
+                }
+                if(Vector2.Distance(center,pinchCenter)>CssDistance(6)||Mathf.Abs(d-pinchDistance)>CssDistance(6)||Mathf.Abs(Mathf.DeltaAngle(pinchAngle,angle))>3)BeginEdit();
+                if(started){ApplyScale(picked,startScale*d/pinchDistance);SetAngle(picked,startAngle-Mathf.DeltaAngle(pinchAngle,angle));Move(picked,center+offset);}
             }
-            else if(pinching){pinching=false;offset=(Vector2)picked.root.transform.position-at;turnStart=Angle(at-(Vector2)picked.root.transform.position);startAngle=-picked.root.transform.eulerAngles.z;startScale=picked.scale;}
+            else if(pinching){pinching=turning=scaling=bending=false;down=at;offset=(Vector2)picked.root.transform.position-at;turnStart=Angle(at-(Vector2)picked.root.transform.position);startAngle=-picked.root.transform.eulerAngles.z;startScale=picked.scale;scaleDistance=Mathf.Max(2,Vector2.Distance(at,picked.root.transform.position));}
             else if(IsHeld())
             {
-                if(Vector2.Distance(down,at)>.25f)BeginEdit();
+                if(Vector2.Distance(down,at)>(touchGesture?CssDistance(6):.25f))BeginEdit();
                 if(started)
                 {
                     if(tool!="move")
@@ -180,12 +226,12 @@ public sealed partial class HanamaGame : MonoBehaviour
                         cutLine.positionCount=cutPoints.Count;for(int i=0;i<cutPoints.Count;i++)cutLine.SetPosition(i,cutPoints[i]);
                     }
                     else if(scaling)ApplyScale(picked,startScale*Vector2.Distance(at,picked.root.transform.position)/scaleDistance);
-                    else if(turning)SetAngle(picked,startAngle-Mathf.DeltaAngle(turnStart,Angle(at-(Vector2)picked.root.transform.position)));
+                    else if(turning)SetAngle(picked,touchGesture?startAngle+(at.x-down.x)/CssDistance(1)*.65f:startAngle-Mathf.DeltaAngle(turnStart,Angle(at-(Vector2)picked.root.transform.position)));
                     else if(bending)SolveBend(picked,at);
                     else
                     {
-                        Move(picked,at+offset);var mouth=new Vector2(frame.mouthX,100-frame.mouthY);bool near=Vector2.Distance(picked.root.transform.position,mouth)<5;
-                        if(near&&!nearMouth)Emit(new GameEvent{type="magnet",id=selected});nearMouth=near;DrawCircle(snapRing,mouth,near?2.4f:1.1f);
+                        Move(picked,at+offset);bool near=MouthSnap(picked,out _,out var mouth);
+                        if(near&&!nearMouth)Emit(new GameEvent{type="magnet",id=selected});nearMouth=near;DrawCircle(snapRing,mouth,near?Mathf.Min(1.6f,CssDistance(6)):0);
                     }
                 }
             }
@@ -217,12 +263,12 @@ public sealed partial class HanamaGame : MonoBehaviour
             }
             else
             {
-                var mouth=new Vector2(frame.mouthX,100-frame.mouthY);bool snap=!turning&&!scaling&&!bending&&Vector2.Distance(picked.root.transform.position,mouth)<5;
+                bool snap=MouthSnap(picked,out var targetRoot,out var mouth);
                 if(bending&&picked.chain!=null)Array.Copy(picked.chain.angles,picked.chain.rest,Bones);
-                if(snap){picked.root.transform.position=mouth;Burst(mouth,4);}EmitTransform(picked,"commit",snap);
+                if(snap){picked.root.transform.position=targetRoot;Burst(mouth,4);}EmitTransform(picked,"commit",snap);
             }
         }
-        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;started=false;bending=false;picked=null;
+        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;started=turning=scaling=bending=false;picked=null;dragTouchId=-1;
     }
     public void CancelGesture(string unused)
     {
@@ -231,7 +277,7 @@ public sealed partial class HanamaGame : MonoBehaviour
             var n=picked.data;picked.root.transform.SetPositionAndRotation(new Vector3(n.x,100-n.y,0),Quaternion.Euler(0,0,-n.angle));ApplyScale(picked,1);SyncOrganic(picked);if(picked.chain!=null){Array.Copy(picked.chain.rest,picked.chain.angles,Bones);Forward(picked.chain,picked.chain.angles,picked.chain.joints);UpdateOrganicMesh(picked);}
             bool wasStarted=started;held=started=pinching=false;picked=null;if(wasStarted)Emit(new GameEvent{type="cancel"});
         }
-        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;bending=false;
+        cutLine.positionCount=snapRing.positionCount=0;nearMouth=false;bending=turning=scaling=false;dragTouchId=-1;
     }
     void SetAngle(Piece p,float angle){p.root.transform.rotation=Quaternion.Euler(0,0,-angle);}
     void ApplyScale(Piece p,float scale){p.scale=Mathf.Clamp(scale,p.data.minScale,p.data.maxScale);p.root.transform.localScale=new Vector3((p.data.flip?-1:1)*p.scale,p.scale,1);}
@@ -241,11 +287,12 @@ public sealed partial class HanamaGame : MonoBehaviour
     void DrawSelection()
     {
         if(!handle)return;
-        if(capturing||settings.photo||!pieces.TryGetValue(selected,out var p)||tool!="move"){HideSelection();return;}
+        if(capturing||settings.photo||settings.coarsePointer||!pieces.TryGetValue(selected,out var p)||tool!="move"){HideSelection();return;}
         float radius=Mathf.Clamp(Mathf.Min(p.data.width,p.data.height)*.43f,4,11)*p.scale;
         Vector2 center=p.root.transform.TransformPoint(BendLocal(p,new Vector2(p.data.width*(.5f-p.data.px),p.data.height*(p.data.py-.5f))));
         center=new Vector2(Mathf.Clamp(center.x,5,95),Mathf.Clamp(center.y,6,94));ring.positionCount=0;
-        handle.transform.position=center+new Vector2(radius*.707f,radius*.707f);scaleHandle.transform.position=center+new Vector2(radius*.707f,-radius*.707f);rootHandle.transform.position=p.root.transform.position;
+        var turn=center+new Vector2(radius*.707f,radius*.707f);var scale=center+new Vector2(radius*.707f,-radius*.707f);
+        handle.transform.position=new Vector2(Mathf.Clamp(turn.x,3,97),Mathf.Clamp(turn.y,3,97));scaleHandle.transform.position=new Vector2(Mathf.Clamp(scale.x,3,97),Mathf.Clamp(scale.y,3,97));rootHandle.transform.position=p.root.transform.position;
         handle.SetActive(true);scaleHandle.SetActive(true);rootHandle.SetActive(true);anchorLine.positionCount=0;
     }
     void Burst(Vector2 at,int count)
@@ -260,7 +307,7 @@ public sealed partial class HanamaGame : MonoBehaviour
     }
     [Serializable] public class Presentation
     {
-        public bool motion=true,photo,paused,reducedMotion;public float power=.35f,direction=125;public string tool="move";
+        public bool motion=true,photo,paused,reducedMotion,coarsePointer;public float power=.35f,direction=125,viewportPixels;public string tool="move";
     }
     Presentation settings=new Presentation();Color lightColor=Color.white;Vector2 lightVector;float lightPower;
     GameEvent pendingCapture;

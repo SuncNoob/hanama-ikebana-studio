@@ -23,6 +23,7 @@ import {applyRealScale,sizeBounds,sizeRatioBounds,outOfScale,drawsStem,lengthBou
 import {stemMaxCm,roleOf,rolesOf,roleTip,roleLabel} from './botany.js?v=hn2';
 import {nameOf,colorOf,poseOf,displayPose,provenance,cardName,supportName,coverFor,matchesRole,sortByRole,roleGroups,sizeOf,sizeText,cardMeta,buildSearchIndex,emptyText,clearFiltersLabel,currentSeason,shiftSeason,seasonShiftOf,matchesSeason,seasonMark,seasonChip} from './library.js?v=hn3';
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage, stageToSource, simplifyPoints,flexExtent} from './geometry.js?v=soft2';
+import {mouthTargets} from './mouth-targets.js?v=1';
 import {analyzeLocalCut,decodeCutMask} from './local-cut.js?v=31';
 import {legacyFlowers,legacyVessels,scenes,applyTone} from './legacy-catalog.js?v=restore1';
 import {lightScenes} from './light-scenes.js';
@@ -32,7 +33,7 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=6';
+import {mountUnityGame} from './atelier.js?v=7';
 import {normalizeFlex} from './flex.js?v=2';
 import {stemLengthRatio,setStemLength,normalizeStemSplit,supportsStemStretch,stemStretchSplit} from './stem-length.js';
 import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene} from './organic-room.js?v=restore1';
@@ -472,6 +473,7 @@ function renderStage(){
 const emptyLines={canvas:['画布还空着。先放一枝线条，定下高度与方向。','The canvas is empty. Start with a line to set the height and direction.','キャンバスはまだ空です。まず線になる枝で、高さと向きを決めましょう。'],pick:['点选一枝花材，调整它的姿态。','Select a material to adjust its pose.','花材を選んで姿を調整します。']};
 function renderEmptySelection(){const el=$('#selected-empty');if(!el)return;const [zh,en,ja]=emptyLines[state.items.length?'pick':'canvas'];el.dataset.zh=zh;el.dataset.en=en;el.dataset.ja=ja;el.textContent=L(zh,en,ja)}
 function renderSelection(){
+ $('#delete-button').disabled=!current();
  $('#flip-button').disabled=!state.items.length;$('#duplicate-button').disabled=!state.items.length||state.items.length>=24;
  let i=current();$('#selected-empty').hidden=!!i;$('#selection-controls').hidden=!i;renderEditingChip();if(!i){renderEmptySelection();setEditMode('move');return;}
  renderModePill();
@@ -1422,7 +1424,7 @@ $('#stage').addEventListener('focusin',e=>{const stem=e.target.closest?.('.stem'
 /** Slider ticks restyle only the selected stem once per frame; drawn stems keep their centimetres, and the length slider
  stops at the species' usual length (stemCeil). */
 for(const [id,key,factor] of [['angle','angle',1],['size','h',1],['trim','trim',1],['length','length',.01]]){let active=false;const el=$('#'+id);el.addEventListener('input',()=>{const item=current();if(!item)return;const a=assetById[item.type];if(key==='trim'&&drawsStem(a))return;if(!active){checkpoint();active=true;if(key==='length')lengthCeil={id:item.id,max:+el.max}}const maxLength=()=>lengthBounds(a,item.h,item.trim)[1];const apply=i=>{if(key==='length'&&drawsStem(a))i.length=Math.min(lengthForStem(i,a,+el.value),maxLength());else if(key==='h'&&drawsStem(a)){const cm=stemCm(i,a);i.h=+el.value;i.length=Math.min(lengthForStem(i,a,cm),maxLength())}else if(key==='length'){if(!setStemLength(i,a,+el.value*factor))i.length=+el.value*factor}else i[key]=+el.value*factor};if(key==='angle'||key==='h')aboutCutEnd(item,apply);else apply(item);queueStemUpdate(item);schedulePersist()});const release=()=>{active=false;if(key==='length'&&lengthCeil){lengthCeil=null;const item=current();if(item)renderSizeControls(item)}flushPersist()};el.addEventListener('change',release);el.addEventListener('blur',release)}
-function removeSelected(){const item=current();if(!item)return;const name=itemName(item);checkpoint();state.items=state.items.filter(i=>i.id!==selected);selected=state.items.at(-1)?.id||null;setEditMode('move');renderStage();persist();undoToast(L(`已移除${name}`,`Removed ${name}`,`${name}を外しました`))}
+function removeSelected(){gameBridge?.cancel?.();const item=current();if(!item)return;const name=itemName(item);checkpoint();state.items=state.items.filter(i=>i.id!==selected);selected=state.items.at(-1)?.id||null;setEditMode('move');renderStage();persist();undoToast(L(`已移除${name}`,`Removed ${name}`,`${name}を外しました`))}
 /**
  * Duplicate (A11). A copy of a stem standing in the vessel is a companion inserted just behind it: its base 1.5 cm beside the
  * original's (alternating sides), its focus turned 12° toward the side with fewer flowers and 20% lower (companionFit; a cut
@@ -1482,27 +1484,27 @@ function help(){
  const copy=lang==='en'?{
   title:'Take a moment and arrange slowly.',
   steps:[
-   ['Choose a stem, then shape it.','Use Flowers to choose plants or vessels. Pull a flower head to bend its branch, drag the base dot to move it, and use two fingers to rotate and scale. The coloured handles adjust angle and size. Tap Length below the flowers to stretch a stem without enlarging its flower head.'],
+   ['Choose a stem, then shape it.','Use Flowers to choose plants or vessels. On a phone, choose Move to drag any part of a stem, Bend to shape it, or Rotate to turn it by dragging sideways. Two fingers rotate and scale. Desktop handles adjust angle and size. Tap Length below the flowers to stretch a stem without enlarging its flower head.'],
    ['Cut or refine.','Tap the scissors to cut a twig, or the eraser to brush away details. Both pieces stay on the canvas after a cut and can be moved separately. Tap the active tool again or press Esc to return to arranging. Undo and Redo are always beside the tools.'],
-   ['Find the light, keep the moment.','Light offers all nine backgrounds, four atmosphere presets and direct light controls. Open Keep to save a draft, take a photo or immerse yourself in the arrangement. More contains the recipe, sharing and an AI image pack. Imported photos stay with your drafts in My Works.']
+   ['Find the light, keep the moment.','Light offers all nine backgrounds, four atmosphere presets and direct light controls. Open Keep to save a draft, take a photo or immerse yourself in the arrangement. AI image at the top right opens the image pack. More contains the recipe and sharing. Imported photos stay with your drafts in My Works.']
   ],
   note:'Ctrl/⌘+Z undoes, Ctrl/⌘+Shift+Z redoes, Delete removes, and Esc leaves the current tool. Drafts and artworks stay in this browser; export a file to keep a backup.',
   done:'Start arranging',import:'Import draft file'
  }:lang==='ja'?{
   title:'ゆっくり、ひと枝ずつ。',
   steps:[
-   ['花材を選び、枝を曲げる。','「花材」から花材や花器を選びます。花先を引くと枝が曲がり、根元の点で移動できます。2本指で回転・拡大縮小。色付きハンドルで角度や大きさを変え、花の下の「茎の長さ」で花先の大きさを保って茎を伸ばせます。'],
+   ['花材を選び、枝を曲げる。','「花材」から花材や花器を選びます。スマホでは「移動」で花材のどこからでも移動、「曲げる」で枝を曲げ、「回転」で左右にドラッグして回転できます。2本指で回転・拡大縮小。花の下の「茎の長さ」で花先の大きさを保って茎を伸ばせます。'],
    ['切って、細部を整える。','ハサミを選んで小枝を切り、消しゴムで細部をなぞって消します。切った両方の部分はそのまま残り、別々に動かせます。同じツールをもう一度タップするか、Escで終了します。「元に戻す」と「やり直す」はすぐ隣にあります。'],
-   ['光を選び、この瞬間を残す。','「光と景」には9つの背景、4つの光のプリセット、直接使える光の調整があります。「作品」から下書き保存、撮影、鑑賞ができます。「その他」にはレシピ、共有、AI生成用パックがあります。取り込んだ写真は下書きと一緒に「マイ作品」に残ります。']
+   ['光を選び、この瞬間を残す。','「光と景」には9つの背景、4つの光のプリセット、直接使える光の調整があります。「作品」から下書き保存、撮影、鑑賞ができます。右上の「AI 画像」から生成用パックへ進めます。「その他」にはレシピと共有があります。取り込んだ写真は下書きと一緒に「マイ作品」に残ります。']
   ],
   note:'Ctrl/⌘+Zで元に戻す、Ctrl/⌘+Shift+Zでやり直し、Deleteで削除、Escで現在のツールを終了します。下書きと作品はこのブラウザに保存されます。ファイルを書き出すとバックアップできます。',
   done:'創作を始める',import:'下書きを読み込む'
  }:{
   title:'给自己一刻，慢慢插花。',
   steps:[
-   ['挑一枝，弯出姿态。','从「花材」选择花与枝或花器。拖花头弯枝，拖根部圆点移位，双指旋转和缩放；彩色手柄可单独调角度与大小，点画布下方「枝长」直接拉伸枝干，花头大小保持不变。'],
+   ['挑一枝，弯出姿态。','从「花材」选择花与枝或花器。手机点「移动」可拖花材任意位置，点「弯枝」调整姿态，点「旋转」后左右拖动；双指可旋转和缩放。点画布下方「枝长」直接拉伸枝干，花头大小保持不变。'],
    ['剪一剪，留出呼吸。','点剪刀横划细枝，点橡皮涂抹细节。剪开的两段直接留在画布上，可以分别移动。再点一次当前工具或按 Esc 即可继续插花，撤销与重做就在工具旁。'],
-   ['选一束光，留住这一刻。','「光景」直接展示 9 款背景、四种自然氛围和光照调节。「作品」里可保存草稿、拍照或全屏赏花；「更多」里还有配方、分享和AI生图包。导入的照片会与草稿一起保存在「我的作品」。']
+   ['选一束光，留住这一刻。','「光景」直接展示 9 款背景、四种自然氛围和光照调节。「作品」里可保存草稿、拍照或全屏赏花；右上角「AI 生图」可进入生图包；「更多」里有配方和分享。导入的照片会与草稿一起保存在「我的作品」。']
   ],
   note:'Ctrl/⌘+Z撤销，Ctrl/⌘+Shift+Z重做，Delete删除，Esc退出当前工具。草稿与作品保存在当前浏览器，可导出文件备份。',
   done:'开始这一枝',import:'导入草稿文件'
@@ -2155,8 +2157,8 @@ function gameFrame(knownTextures=new Map()){
   const g=dimensions(item,a),crop=src.crop||{x:0,y:0,width:src.width,height:src.height,fullWidth:src.width,fullHeight:src.height};
   const pivot=Number.isFinite(item.cropAnchorSourceY)?warpY(item.cropAnchorSourceY,g.split,g.length)/g.height:(item.cropAnchorY??1),key=`game-flower|${spriteCache.get(item.id)?.key}|${src.width}|${src.height}|${a.saturation||1}`;
   const texture=transfer(item.id,key,(ctx,S)=>{if(a.saturation)ctx.filter=`saturate(${a.saturation})`;ctx.drawImage(src,0,0,S,S);},Math.min(1024,Math.max(src.width,src.height)));
-  const [min,max]=sizeBounds(a);
-  nodes.push({id:item.id,name:assetName(a),flex:normalizeFlex(item.flex),extent:flexExtent(item,a,g)*100,flexibility:botanicalFlexibility(a),seated:isSeated(item),key,texture,x:item.x,y:item.y,width:item.h*g.ratio*crop.width/crop.fullWidth,height:item.h*g.height*crop.height/crop.fullHeight,px:(g.anchor*crop.fullWidth-crop.x)/crop.width,py:(pivot*crop.fullHeight-crop.y)/crop.height,angle:item.angle,h:item.h,flip:item.flip,interactive:true,order:(item.aboveVessel?600:100)+index*2,minScale:min/item.h,maxScale:max/item.h});
+  const [min,max]=sizeBounds(a),foot=seatPoint(item,a);
+  nodes.push({id:item.id,name:assetName(a),flex:normalizeFlex(item.flex),extent:flexExtent(item,a,g)*100,flexibility:botanicalFlexibility(a),seated:isSeated(item),seatDX:foot[0]-item.x,seatDY:foot[1]-item.y,front:!!item.aboveVessel,cutSeat:!!cutEndSource(item,a),key,texture,x:item.x,y:item.y,width:item.h*g.ratio*crop.width/crop.fullWidth,height:item.h*g.height*crop.height/crop.fullHeight,px:(g.anchor*crop.fullWidth-crop.x)/crop.width,py:(pivot*crop.fullHeight-crop.y)/crop.height,angle:item.angle,h:item.h,flip:item.flip,interactive:true,order:(item.aboveVessel?600:100)+index*2,minScale:min/item.h,maxScale:max/item.h});
  });
  const compositionKey=JSON.stringify(state.items),vesselKey=`game-vessel|${state.vessel}|${!!images[state.vessel]}`;
  nodes.push(full('vessel',vesselKey,transfer('vessel',vesselKey,(ctx,S)=>paintVesselLayer(ctx,S,state,assetById,images,{ground:false,fixture:false})),500));
@@ -2164,7 +2166,7 @@ function gameFrame(knownTextures=new Map()){
   const c=$(`#${name}-layer`);if(!c?.width)continue;const key=`game-${name}|${state.vessel}|${state.scene}|${compositionKey}`;
   nodes.push(full(name,key,transfer(name,key,(ctx,S)=>ctx.drawImage(c,0,0,S,S)),order));
  }
- const v=vesselGeometry(assetById[state.vessel]);return {nodes,selected:selected||'',mode:editMode,brush:Number($('#brush-size').value)/Math.max(1,stageWidth())*50,light:state.light||'',mouthX:v.insertion[0],mouthY:v.insertion[1]};
+ const vessel=assetById[state.vessel],v=vesselGeometry(vessel);return {nodes,selected:selected||'',mode:editMode,brush:Number($('#brush-size').value)/Math.max(1,stageWidth())*50,light:state.light||'',mouths:mouthTargets(vessel),mouthX:v.insertion[0],mouthY:v.insertion[1]};
 }
 let gameGestureMark=null,gameGestureRedo=null,gameGestureUndo=null;
 function gameEvent(e){
