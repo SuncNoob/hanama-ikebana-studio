@@ -30,11 +30,11 @@
 <link rel="stylesheet" href="/style.css?v=hn3">
 <link rel="stylesheet" href="/material-drawer.css?v=hn3">
 <link rel="stylesheet" href="/ui-polish.css?v=light1">
-<link rel="stylesheet" href="/game-atmosphere.css?v=8">
+<link rel="stylesheet" href="/game-atmosphere.css?v=9">
 <link rel="stylesheet" href="/background-choices.css?v=1">
-<link rel="stylesheet" href="/atelier-controls.css?v=1">
+<link rel="stylesheet" href="/atelier-controls.css?v=2">
 <link rel="stylesheet" href="/eraser-cursor.css?v=1">
-<script type="module" src="/app.js?v=erase10">
+<script type="module" src="/app.js?v=layers11">
 </script>
 </head>
 <body>
@@ -214,15 +214,15 @@
 </button>
 </div>
 <div class="layer-quick-actions" role="group" aria-label="选中花材的快捷操作" data-aria-zh="选中花材的快捷操作" data-aria-en="Quick actions for selected material" data-aria-ja="選択した花材の操作">
-<button id="layer-quick-front" type="button" data-zh="放在花器前" data-en="Vessel front" data-ja="花器の前へ" disabled>放在花器前</button>
-<button id="layer-quick-back" type="button" data-zh="放在最后" data-en="Send to back" data-ja="最後面へ" disabled>放在最后</button>
-<button id="layer-quick-middle" type="button" data-zh="花器后随机" data-en="Random behind vase" data-ja="花器の後ろでランダム" disabled>花器后随机</button>
+<button id="layer-quick-front" type="button" data-zh="移到最前" data-en="To front" data-ja="最前面へ" disabled>移到最前</button>
+<button id="layer-quick-back" type="button" data-zh="移到最后" data-en="To back" data-ja="最後面へ" disabled>移到最后</button>
+<button id="layer-quick-middle" type="button" data-zh="随便放入" data-en="Place anywhere" data-ja="ランダム配置" title="随机放到花器后的图层，保持花材位置" data-title-zh="随机放到花器后的图层，保持花材位置" data-title-en="Randomize the layer behind the vase; keep the stem in place" data-title-ja="花材の位置を保ち、花器の後ろで順序を変える" disabled>随便放入</button>
 <button id="layer-quick-focus" type="button" data-zh="虚化其他图层" data-en="Blur others" data-ja="他をぼかす" aria-pressed="false" disabled>虚化其他图层</button>
 <button id="layer-quick-organize" type="button" data-zh="一键整理图层" data-en="Tidy layers" data-ja="レイヤーを整理" aria-pressed="false">一键整理图层</button>
 </div>
 <div id="layer-list" class="layer-list">
 </div>
-<p class="layer-menu-tip" data-zh="拖动调整顺序；虚化只辅助查看，不影响作品。" data-en="Drag to reorder. Blur is only an editing aid." data-ja="ドラッグで順序を変更。ぼかしは編集中だけ表示します。">拖动调整顺序；虚化只辅助查看，不影响作品。</p>
+<p class="layer-menu-tip" data-zh="拖动调整前后；随便放入只改变图层。" data-en="Drag to reorder. Random placement only changes layers." data-ja="ドラッグで順序を調整。ランダム配置はレイヤーのみ変更します。">拖动调整前后；随便放入只改变图层。</p>
 </section>
 </div>
 <div id="mode-pill" class="mode-pill" hidden>

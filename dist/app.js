@@ -1046,7 +1046,7 @@ mountLayerDock();
 window.addEventListener('resize',mountLayerDock);
 $('#layer-menu').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeLayerMenu();$('#layers-tool').focus()}});
 /** The layer tip names the reorder gesture the pointer has: dragging rows with a mouse, the ↑ ↓ buttons by touch. */
-function syncLayerTip(){const tip=$('.layer-menu-tip');if(!tip)return;const [zh,en,ja]=mediaMatches('(pointer:coarse)')?['用 ↑ ↓ 调整前后；虚化只辅助查看，不影响作品。','Use ↑ ↓ to reorder. Blur is only an editing aid.','↑ ↓ で並べ替え。ぼかしは編集中だけ表示します。']:['拖动调整顺序；虚化只辅助查看，不影响作品。','Drag to reorder. Blur is only an editing aid.','ドラッグで順序を変更。ぼかしは編集中だけ表示します。'];tip.dataset.zh=zh;tip.dataset.en=en;tip.dataset.ja=ja;tip.textContent=L(zh,en,ja)}
+function syncLayerTip(){const tip=$('.layer-menu-tip');if(!tip)return;const [zh,en,ja]=mediaMatches('(pointer:coarse)')?['用 ↑ ↓ 微调前后；随便放入只改变图层。','Use ↑ ↓ to reorder. Random placement only changes layers.','↑ ↓ で順序を調整。ランダム配置はレイヤーのみ変更します。']:['拖动调整前后；随便放入只改变图层。','Drag to reorder. Random placement only changes layers.','ドラッグで順序を調整。ランダム配置はレイヤーのみ変更します。'];tip.dataset.zh=zh;tip.dataset.en=en;tip.dataset.ja=ja;tip.textContent=L(zh,en,ja)}
 syncLayerTip();try{window.matchMedia?.('(pointer:coarse)').addEventListener?.('change',syncLayerTip)}catch{}
 function shiftLayer(id,direction){
  const item=state.items.find(i=>i.id===id);if(!item)return;const back=state.items.filter(i=>!i.aboveVessel),front=state.items.filter(i=>i.aboveVessel),group=item.aboveVessel?front:back,index=group.findIndex(i=>i.id===id),step=direction==='front'?1:-1,next=index+step;checkpoint();
@@ -1480,14 +1480,16 @@ function duplicateSelected(){
  selected=duplicate.id;renderStage();persist();
  undoToast(!seated?L('已复制花材，剪口与长度也已保留。','Duplicated the material with its cuts and stem length.','花材を複製しました。剪定と茎の長さもそのままです。'):uv?L('已复制这一段，插在旁边并稍稍转开。','Duplicated the piece beside it, turned slightly away.','この部分を隣に複製し、少し向きを変えました。'):L('已复制为一枝稍低的陪衬，插在旁边。','Duplicated as a slightly lower companion beside it.','少し低い添えとして隣に複製しました。'));
 }
-function moveSelectedToFront(){const item=current();if(!item)return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=true;state.items.push(item);selected=item.id;renderStage();persist();toast(L('已移到最前层','Moved to the front layer'))}
-function moveSelectedToBack(){const item=current();if(!item)return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=false;state.items.unshift(item);selected=item.id;renderStage();persist();toast(L('已移到最后层','Moved to the back layer'))}
+function moveSelectedToFront(){const item=current();if(!item||(item.aboveVessel&&state.items.filter(i=>i.aboveVessel).at(-1)===item))return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=true;state.items.push(item);selected=item.id;renderStage();persist();toast(L('已移到最前层','Moved to the front layer'))}
+function moveSelectedToBack(){const item=current();if(!item||(!item.aboveVessel&&state.items.filter(i=>!i.aboveVessel)[0]===item))return;checkpoint();state.items=state.items.filter(i=>i.id!==item.id);item.aboveVessel=false;state.items.unshift(item);selected=item.id;renderStage();persist();toast(L('已移到最后层','Moved to the back layer'))}
 function moveSelectedToRandomMiddle(){
  const item=current();if(!item)return;
  const back=state.items.filter(i=>!i.aboveVessel&&i!==item),front=state.items.filter(i=>i.aboveVessel&&i!==item);
  const original=state.items.filter(i=>!i.aboveVessel).indexOf(item),positions=Array.from({length:back.length+1},(_,index)=>index);
  const middle=positions.filter(index=>index>0&&index<back.length),pool=middle.length?middle:positions;
- const choices=pool.filter(index=>item.aboveVessel||index!==original);if(!choices.length)return;
+ let choices=pool.filter(index=>item.aboveVessel||index!==original);
+ if(!choices.length)choices=positions.filter(index=>item.aboveVessel||index!==original);
+ if(!choices.length)return;
  checkpoint();item.aboveVessel=false;back.splice(choices[Math.floor(Math.random()*choices.length)],0,item);state.items=[...back,...front];selected=item.id;renderStage();persist();undoToast(L('已随机放在花器后方','Placed behind the vase','花器の後ろに配置しました'));
 }
 /** First-screen actions follow the selected stem, or the frontmost stem when none is selected. */

@@ -247,6 +247,39 @@ body.atelier-simple.atelier-direct #atelier-atmosphere .scene-choice[aria-presse
   box-shadow: inset 0 0 0 1px var(--control-selected-border);
 }
 
+/* Keep layer actions in view while the material list scrolls. */
+body.atelier-simple.atelier-direct .workspace > #layer-menu:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+}
+body.atelier-simple.atelier-direct #layer-menu > :is(.layer-menu-heading,.layer-quick-actions,.layer-menu-tip) { flex: 0 0 auto; }
+body.atelier-simple.atelier-direct #layer-menu .layer-list {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: none!important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+body.atelier-simple.atelier-direct #layer-menu .layer-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 8px;
+  padding: 12px;
+}
+body.atelier-simple.atelier-direct #layer-menu .layer-quick-actions button {
+  min-width: 0;
+  min-height: var(--control-size);
+  padding: 8px 4px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  font: 500 12px/1.25 var(--sans);
+  white-space: normal;
+  box-shadow: none;
+}
+body.atelier-simple.atelier-direct #layer-menu :is(#layer-quick-focus,#layer-quick-organize) { display: none; }
+body.atelier-simple.atelier-direct #layer-menu .layer-quick-actions button:disabled { opacity: .34; }
 /* Layer ordering keeps its existing grid while making each arrow a full target. */
 body.atelier-simple.atelier-direct #layer-menu .layer-step button {
   flex: 0 0 var(--control-size);
@@ -279,6 +312,7 @@ body.atelier-simple.atelier-direct #layer-menu .layer-row.active {
 
 /* Hover is feedback for a mouse, never a persistent touch state. */
 @media (hover:hover) {
+  body.atelier-simple.atelier-direct #layer-menu .layer-quick-actions button:hover:not(:disabled),
   body.atelier-simple.atelier-direct #layer-menu .layer-step button:hover:not(:disabled),
   body.atelier-simple.atelier-direct #layer-menu .layer-row:hover:not(.active) { background: var(--control-hover); }
   body.atelier-simple.atelier-direct #studio-view .atelier-bench :is(.atelier-add-slot,.atelier-vessel-slot) > button:hover:not([aria-expanded=true]),
