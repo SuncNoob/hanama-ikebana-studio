@@ -33,7 +33,7 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=12';
+import {mountUnityGame} from './atelier.js?v=13';
 import {normalizeFlex} from './flex.js?v=2';
 import {stemLengthRatio,setStemLength,normalizeStemSplit,supportsStemStretch,stemStretchSplit} from './stem-length.js';
 import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene,isPhotographicScene} from './organic-room.js?v=quiet2';
@@ -1082,15 +1082,15 @@ const stage=$('#stage');
 function applyCanvasZoom(){
  const viewport=$('#canvas-viewport'),limit=Math.max(0,viewport.clientWidth*(zoomLevel-1)/2);zoomPanX=clamp(zoomPanX,-limit,limit);zoomPanY=clamp(zoomPanY,-limit,limit);
  stage.style.transform=`translate(${zoomPanX}px,${zoomPanY}px) scale(${zoomLevel})`;viewport.classList.toggle('is-zoomed',zoomLevel>1);stage.style.setProperty('--mark-scale',String(Math.round(100/zoomLevel)/100));
- const percent=`${Math.round(zoomLevel*100)}%`;$('#zoom-reset').textContent=percent;$('#zoom-reset').setAttribute('aria-label',`${lang==='ja'?'倍率をリセット':lang==='en'?'Reset zoom':'重置画布缩放'} · ${percent}`);$('#zoom-in').disabled=zoomLevel>=3;$('#zoom-out').disabled=zoomLevel<=1;
+ const percent=`${Math.round(zoomLevel*100)}%`;$('#zoom-reset').textContent=percent;$('#zoom-reset').setAttribute('aria-label',`${lang==='ja'?'画面に合わせる':lang==='en'?'Fit canvas':'适合窗口'} · ${percent}`);$('#zoom-in').disabled=zoomLevel>=3;$('#zoom-out').disabled=zoomLevel<=.5;
 }
 /** Client point of the stage's unzoomed centre (the stage is drawn as translate(pan) scale(zoom) about its centre). */
 function stageCentre(){const r=stage.getBoundingClientRect();return [r.left+r.width/2-zoomPanX,r.top+r.height/2-zoomPanY]}
 /** Zoom to `next` (1–3×). With a client point `at` (B7: the wheel's pointer, a pinch's centre, a double-tap, the selected
  stem's tip) the stage point under it stays put; otherwise the view scales about the centre as before. */
 function setCanvasZoom(next,at=null){
- const old=zoomLevel;zoomLevel=clamp(Math.round(next*1000)/1000,1,3);
- if(zoomLevel===1)zoomPanX=zoomPanY=0;
+ const old=zoomLevel;zoomLevel=clamp(Math.round(next*1000)/1000,.5,3);
+ if(zoomLevel<=1)zoomPanX=zoomPanY=0;
  else if(old!==zoomLevel){
   if(at){const [cx,cy]=stageCentre();[zoomPanX,zoomPanY]=zoomAbout({from:old,to:zoomLevel,pan:[zoomPanX,zoomPanY],at:[at[0]-cx,at[1]-cy]})}
   else{zoomPanX*=zoomLevel/old;zoomPanY*=zoomLevel/old}
@@ -1108,6 +1108,20 @@ function zoomTarget(){
 }
 $('#zoom-in').onclick=()=>setCanvasZoom(zoomLevel+.25,zoomTarget());$('#zoom-out').onclick=()=>setCanvasZoom(zoomLevel-.25,zoomTarget());$('#zoom-reset').onclick=()=>setCanvasZoom(1);
 applyCanvasZoom();
+// View navigation runs before native pointer handlers, so panning never edits a flower.
+let spacePan=false,viewPan=null;
+const canvasView=$('#canvas-viewport');
+function finishViewPan(){if(viewPan){try{canvasView.releasePointerCapture(viewPan.id)}catch{}viewPan=null;}canvasView.classList.remove('is-panning');}
+document.addEventListener('keydown',e=>{
+ if(e.defaultPrevented||e.isComposing||$('#studio-view')?.hidden||document.querySelector('dialog[open]')||e.target.closest?.('input,textarea,select,[contenteditable=true]'))return;
+ if((e.ctrlKey||e.metaKey)&&['+','=','-','0'].includes(e.key)){e.preventDefault();setCanvasZoom(e.key==='0'?1:zoomLevel+(e.key==='-'?-.25:.25));return;}
+ if(e.code==='Space'&&(e.target===document.body||e.target.closest?.('#canvas-viewport'))){e.preventDefault();spacePan=true;canvasView.classList.add('hand-ready');}
+},true);
+document.addEventListener('keyup',e=>{if(e.code==='Space'){spacePan=false;canvasView.classList.remove('hand-ready');}});
+window.addEventListener('blur',()=>{spacePan=false;canvasView.classList.remove('hand-ready');finishViewPan()});
+canvasView.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||(!spacePan&&e.button!==1))return;e.preventDefault();e.stopImmediatePropagation();gameBridge?.cancel?.();viewPan={id:e.pointerId,x:e.clientX,y:e.clientY,panX:zoomPanX,panY:zoomPanY};canvasView.setPointerCapture(e.pointerId);canvasView.classList.add('is-panning');},true);
+canvasView.addEventListener('pointermove',e=>{if(viewPan?.id!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();zoomPanX=viewPan.panX+e.clientX-viewPan.x;zoomPanY=viewPan.panY+e.clientY-viewPan.y;applyCanvasZoom();},true);
+for(const type of ['pointerup','pointercancel','lostpointercapture'])canvasView.addEventListener(type,e=>{if(viewPan?.id!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();finishViewPan();},true);
 /**
  * Mouse wheel and trackpad (B7; wheelAction in editor-state.js). The listener is not passive, and it prevents the page's own
  * scroll or zoom only when it acts: Ctrl+wheel or a trackpad pinch zooms about the pointer (never the page) · a plain wheel pans
@@ -1119,18 +1133,19 @@ let wheelBubbleTimer=0,safariPinch=null;
 function wheelBubble(e,item){showStemFeedback(e.clientX,e.clientY,gestureText(item),'mouse');clearTimeout(wheelBubbleTimer);wheelBubbleTimer=setTimeout(()=>{if(!drag&&!gesture)$('#gesture-feedback')?.classList.remove('active','wide')},700)}
 $('#canvas-viewport').addEventListener('wheel',e=>{
  if(e.defaultPrevented||$('#studio-view')?.hidden||e.target.closest?.('.stage-tools,.layer-menu,.start-card,.mode-pill,.cut-choice'))return;
+ if(stage.classList.contains('game-active')&&(e.altKey||e.shiftKey)&&!e.ctrlKey)return;
  if(e.ctrlKey&&safariPinch){e.preventDefault();return}
  const free=editMode==='move'&&!drag&&!gesture&&!canvasPan&&!paperPinch&&!movePointers.size;
  let item=free?current():null;
  if(free&&!item&&!e.ctrlKey&&(e.shiftKey!==e.altKey)){const id=pickStem(e.clientX,e.clientY).id;if(id){selectItem(id);item=current()}}
  const act=wheelAction(e,{zoomed:zoomLevel>1,stem:!!item,page:window.innerHeight||800});if(!act)return;
- if(act.type==='zoom'){e.preventDefault();setCanvasZoom(zoomLevel*act.factor,[e.clientX,e.clientY]);return}
+ if(act.type==='zoom'){e.preventDefault();e.stopPropagation();setCanvasZoom(zoomLevel*act.factor,[e.clientX,e.clientY]);return}
  if(act.type==='pan'){const x=zoomPanX,y=zoomPanY;zoomPanX+=act.dx;zoomPanY+=act.dy;applyCanvasZoom();if(zoomPanX!==x||zoomPanY!==y)e.preventDefault();return}
  e.preventDefault();const a=assetById[item.type];
  if(act.type==='turn')keyStep('wheel-turn',item,i=>aboutCutEnd(i,j=>{j.angle=clamp(Math.round((j.angle+act.deg)*10)/10,-180,180)}),500);
  else{const [min,max]=editSizeBounds(a,item.h);keyStep('wheel-size',item,i=>aboutCutEnd(i,j=>{const cm=drawsStem(a)?stemCm(j,a):null;j.h=clamp(Math.round(j.h*act.ratio*100)/100,min,max);if(cm!==null)j.length=Math.min(lengthForStem(j,a,cm),lengthBounds(a,j.h,j.trim)[1])}),500)}
  wheelBubble(e,item);
-},{passive:false});
+},{passive:false,capture:true});
 /** Safari (macOS) reports a trackpad pinch as gesture events, not Ctrl+wheel: the canvas zooms instead of the page. Touch
  pinches on iPhone and iPad are left to the pointer handlers (stems) and the paper pinch below. */
 for(const [type,handler] of [

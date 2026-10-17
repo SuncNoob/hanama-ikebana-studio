@@ -76,8 +76,8 @@ test('isDoubleTap: a second tap close in time and place',()=>{
 
 test('app.js: one non-passive wheel listener that acts only when it can, pinch and double-tap zoom, zoom reset on a new canvas',()=>{
  const app=readFileSync(`${dist}app.js`,'utf8');
- assert.match(app,/\$\('#canvas-viewport'\)\.addEventListener\('wheel',e=>\{[\s\S]*?\},\{passive:false\}\);/,'non-passive wheel on the viewport');
- const body=app.slice(app.indexOf("$('#canvas-viewport').addEventListener('wheel'"),app.indexOf('},{passive:false});',app.indexOf("$('#canvas-viewport').addEventListener('wheel'")));
+ assert.match(app,/\$\('#canvas-viewport'\)\.addEventListener\('wheel',e=>\{[\s\S]*?\},\{passive:false,capture:true\}\);/,'non-passive capture reaches wheel events before Unity');
+ const body=app.slice(app.indexOf("$('#canvas-viewport').addEventListener('wheel'"),app.indexOf('},{passive:false,capture:true});',app.indexOf("$('#canvas-viewport').addEventListener('wheel'")));
  assert.match(body,/if\(!act\)return;/,'no action, no preventDefault');
  assert.match(body,/if\(zoomPanX!==x\|\|zoomPanY!==y\)e\.preventDefault\(\)/,'a pan at the edge lets the page scroll');
  assert.match(body,/keyStep\('wheel-turn',[\s\S]*?,500\)/);assert.match(body,/keyStep\('wheel-size',[\s\S]*?,500\)/);

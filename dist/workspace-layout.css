@@ -1,0 +1,61 @@
+/* View navigation is always on the workbench, independent of the works menu. */
+#atelier-desktop-tools,#atelier-desktop-properties{display:none}
+body.atelier-simple.atelier-direct #atelier-viewbar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;width:100%;margin-top:5px}
+.atelier-view-hint{font-size:11px;color:#73806e}
+body.atelier-simple.atelier-direct #atelier-viewbar .zoom-controls{position:static!important;inset:auto!important;display:flex;flex-direction:row;flex:none;align-items:center;gap:0;width:auto;max-width:none;margin:0 0 0 auto;padding:0;border:1px solid var(--control-border);border-radius:10px;background:var(--control-surface);box-shadow:none;transform:none!important;opacity:1}
+body.atelier-simple.atelier-direct #atelier-viewbar .zoom-controls button{min-height:44px;height:44px;width:44px;border-radius:8px;color:var(--control-ink);font-size:20px}
+body.atelier-simple.atelier-direct #atelier-viewbar .zoom-controls #zoom-reset{width:62px;font-size:12px;font-variant-numeric:tabular-nums}
+.canvas-viewport.hand-ready,.canvas-viewport.hand-ready *{cursor:grab!important}
+.canvas-viewport.is-panning,.canvas-viewport.is-panning *{cursor:grabbing!important}
+body.atelier-simple.game-photo-mode #atelier-viewbar{display:none!important}
+@media(max-width:1023px){.atelier-view-hint{display:none}}
+@media(max-width:620px) and (min-height:541px){.atelier-direct{--atelier-size:min(1040px,max(120px,calc(100dvh - 422px)))}}
+@media(orientation:landscape) and (max-height:540px) and (min-width:480px){
+ .atelier-direct{--atelier-size:max(100px,min(calc(100dvh - 170px),calc(100vw - 290px)))}
+ .atelier-direct #atelier-viewbar{grid-column:1;grid-row:3;margin:0;justify-content:center}
+ .atelier-direct #atelier-viewbar .zoom-controls{margin-inline:auto!important}
+ .atelier-direct .game-session{grid-row:1/4}
+}
+/* Desktop uses the sides for tools and properties, giving the canvas the full height. */
+@media(min-width:1024px) and (min-height:600px){
+ body.atelier-simple.atelier-desktop:has(#studio-view:not([hidden])){overflow:hidden}
+ body.atelier-simple.atelier-desktop #studio-view>.workspace{display:grid!important;grid-template-columns:76px minmax(0,1fr) 264px;grid-template-rows:46px minmax(0,1fr) 44px;gap:8px 16px;height:calc(100dvh - 64px);min-height:0;padding:10px 16px!important;align-items:stretch;justify-items:stretch;background:#e8ebe4}
+ body.atelier-simple.atelier-desktop #studio-view .stage-shell,body.atelier-simple.atelier-desktop #studio-view .stage-shell>.stage-frame{display:contents!important}
+ body.atelier-simple.atelier-desktop #atelier-workbar{grid-column:1/-1;grid-row:1;margin:0}
+ body.atelier-simple.atelier-desktop #studio-view #canvas-viewport{grid-column:2;grid-row:2;align-self:center;justify-self:center;width:min(100%,calc(100dvh - 190px))!important;height:auto!important;max-width:100%!important;max-height:100%!important;aspect-ratio:1;margin:0;box-shadow:0 7px 28px #26352816}
+ body.atelier-simple.atelier-desktop #atelier-viewbar{grid-column:2;grid-row:3;align-self:center;margin:0}
+ body.atelier-simple.atelier-desktop #atelier-desktop-tools{display:block;grid-column:1;grid-row:2/4;min-height:0;overflow-y:auto;padding:5px;border:1px solid var(--control-border);border-radius:10px;background:var(--control-surface);scrollbar-width:thin}
+ body.atelier-simple.atelier-desktop #atelier-desktop-tools .stage-tools{display:flex!important;flex-direction:column;align-items:stretch;position:static!important;inset:auto!important;width:100%;max-width:none;max-height:none;gap:2px;margin:0;padding:0;border:0;background:none;box-shadow:none;transform:none!important}
+ body.atelier-simple.atelier-desktop #atelier-desktop-tools .icon-button{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 44px;width:100%;height:44px;min-height:44px;gap:2px;padding:2px;border:0;border-radius:8px;background:transparent;color:var(--control-ink)}
+ #atelier-desktop-tools .icon-button svg{width:18px;height:18px}
+ #atelier-desktop-tools :is(.prune-tool-label,.atelier-tool-name,.atelier-length-label){font-size:10px;line-height:1.2}
+ #atelier-desktop-tools .icon-button:is([aria-pressed=true],[aria-expanded=true]){background:var(--control-strong)!important;color:#fff!important}
+ #atelier-desktop-tools .icon-button:disabled{opacity:.35}
+ #atelier-desktop-tools .icon-button:hover:not(:disabled){background:var(--control-hover)}
+ body.atelier-simple.atelier-desktop #atelier-desktop-properties{display:flex;flex-direction:column;grid-column:3;grid-row:2/4;align-self:stretch;min-height:0;gap:12px;padding:12px;border:1px solid var(--control-border);border-radius:10px;background:var(--control-surface)}
+ #atelier-desktop-properties .atelier-touch-tools{width:100%;margin:0;gap:7px}
+ #atelier-desktop-properties .atelier-touch-modes{width:100%;max-width:100%}
+ body.atelier-simple.atelier-desktop #atelier-size-control{width:100%;grid-template-columns:1fr 42px 44px;gap:4px}
+ body.atelier-simple.atelier-desktop #atelier-size-control .slider-label{grid-column:1;grid-row:1}
+ body.atelier-simple.atelier-desktop #atelier-size-control input{grid-column:1/-1;grid-row:2;height:28px;min-height:28px}
+ body.atelier-simple.atelier-desktop #atelier-size-control output{grid-column:2;grid-row:1}
+ body.atelier-simple.atelier-desktop #atelier-size-control button{grid-column:3;grid-row:1;min-height:32px}
+ #atelier-desktop-properties .atelier-bench{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+ #atelier-desktop-properties .atelier-tool-slot{display:none}
+ #atelier-desktop-properties :is(.atelier-add-slot,.atelier-vessel-slot,#atelier-atmosphere,#atelier-work){grid-column:auto;grid-row:auto;justify-self:stretch}
+ #atelier-desktop-properties .atelier-bench :is(button,summary){width:100%}
+ #atelier-desktop-properties .atelier-popover{position:fixed;top:122px;right:294px;bottom:auto;left:auto;width:350px;max-height:calc(100dvh - 145px);z-index:900}
+ body.atelier-simple.atelier-desktop #studio-view .workspace>:is(.design-panel,.layer-menu):not([hidden]){display:block!important;grid-column:3;grid-row:2/4;position:relative!important;inset:auto!important;align-self:stretch;width:100%;max-width:none;height:calc(100% - 240px);min-height:0;max-height:none;margin:240px 0 0;padding:12px!important;border:0;border-top:1px solid var(--control-border);border-radius:0;background:transparent;box-shadow:none;overflow-y:auto;transform:none!important;z-index:820;scrollbar-width:thin}
+ body.atelier-simple.atelier-desktop .design-panel .atelier-inspector-close{display:none!important}
+ body.atelier-simple.atelier-desktop .design-panel>.panel-heading{padding:0;margin-bottom:12px}
+ body.atelier-simple.atelier-desktop .design-panel>.panel-heading h2{font-size:17px}
+ body.atelier-simple.atelier-desktop .design-panel .editor-tabs{width:100%}
+ body.atelier-simple.atelier-desktop .design-panel #selection-controls{display:block!important}
+ body.atelier-simple.atelier-desktop .design-panel #selection-controls[hidden]{display:none!important}
+ body.atelier-simple.atelier-desktop .design-panel .selected-material{margin-bottom:10px}
+ body.atelier-simple.atelier-desktop .design-panel .selected-material img{width:36px;height:46px}
+ body.atelier-simple.atelier-desktop #layer-menu .layer-list{max-height:none!important}
+ body.atelier-simple.atelier-desktop .game-session{display:contents!important}
+ body.atelier-simple.atelier-desktop .atelier-length-panel{position:fixed;top:260px;left:104px;right:auto;bottom:auto;width:300px;max-width:calc(100vw - 130px);transform:none;z-index:900}
+ body.atelier-simple.atelier-desktop .workspace>.quick-material-drawer:not([hidden]){inset:64px 0 0 auto;width:450px;height:calc(100dvh - 64px);max-width:50vw;border-radius:12px 0 0 12px}
+}

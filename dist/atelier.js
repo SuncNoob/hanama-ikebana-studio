@@ -67,7 +67,19 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
  const workClose=document.createElement('button');workClose.type='button';workClose.className='atelier-work-close';workClose.innerHTML=closeIcon;workClose.onclick=()=>{$('#atelier-work').open=false;$('#atelier-work>summary').focus({preventScroll:true});};$('.atelier-work-panel').prepend(workClose);
  $('.header-actions').append($('#atelier-image-pack'));
  const atmosphereClose=document.createElement('button');atmosphereClose.type='button';atmosphereClose.className='atelier-atmosphere-close';atmosphereClose.innerHTML=closeIcon;atmosphereClose.onclick=()=>{$('#atelier-atmosphere').open=false;$('#atelier-atmosphere>summary').focus()};$('.atelier-atmosphere-panel').prepend(atmosphereClose);
- secondary.append($('.zoom-controls'));
+ const viewbar=document.createElement('div');viewbar.id='atelier-viewbar';
+ const viewHint=document.createElement('span');viewHint.className='atelier-view-hint';
+ viewbar.append(viewHint,$('.zoom-controls'));$('.stage-frame').append(viewbar);
+ const desktopRail=document.createElement('aside');desktopRail.id='atelier-desktop-tools';
+ const desktopProperties=document.createElement('aside');desktopProperties.id='atelier-desktop-properties';
+ $('.stage-frame').append(desktopRail,desktopProperties);
+ const desktopLayout=matchMedia('(min-width:1024px) and (min-height:600px)');
+ function placeWorkspace(){
+  const desktop=desktopLayout.matches&&!settings.photo;document.body.classList.toggle('atelier-desktop',desktop);
+  if(desktop){desktopRail.append($('.stage-tools'));desktopProperties.append(touchTools,$('.atelier-bench'));}
+  else{$('.atelier-tool-slot').append($('.stage-tools'));panel.prepend(touchTools);panel.insertBefore($('.atelier-bench'),$('.game-loading',panel));}
+ }
+ desktopLayout.addEventListener('change',placeWorkspace);placeWorkspace();
  const inspector=$('.design-panel');
  const closeInspector=document.createElement('button');closeInspector.className='atelier-inspector-close';closeInspector.type='button';closeInspector.innerHTML=closeIcon;inspector.prepend(closeInspector);
  for(const id of ['quick-material-close','close-layers','close-modal'])$('#'+id).innerHTML=closeIcon;
@@ -143,7 +155,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
   const powerLabel=settings.power<.3?words('轻','Light','淡い'):settings.power<.65?words('柔','Soft','柔らかい'):words('浓','Deep','濃い');
   for(const [id,value,label] of [['direction',settings.direction,directionLabel],['power',settings.power*100,powerLabel]]){const input=$('#game-light-'+id);input.disabled=!active;input.value=value;input.nextElementSibling.textContent=label;}
   $('#game-photo').textContent=settings.photo?words('返回创作','Back to arranging','創作に戻る'):words('全屏赏花','Immerse','花を鑑賞');$('#game-photo').setAttribute('aria-pressed',String(settings.photo));
-  $('#game-capture').disabled=!active||capturePending;$('#game-capture').hidden=!active;$('.atelier-fallback-export',panel).hidden=active;
+  $('#game-capture').disabled=!active||capturePending;$('#game-capture').hidden=!active;$('.atelier-fallback-export').hidden=active;
   const node=lastFrame?.nodes.find(n=>n.id===lastFrame.selected);
   hud.hidden=!node||settings.photo||!active;hud.classList.toggle('is-pruning',lastFrame?.mode!=='move');
   $('[data-atelier-action="straighten"]').hidden=!node?.flex?.some(v=>Math.abs(v)>.008);
@@ -166,6 +178,9 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
   $('.atelier-more-label').textContent=words('更多','More','その他');$('#atelier-image-pack').textContent=words('AI 生图','AI image','AI 画像');$('#atelier-image-pack').title=words('准备 AI 生图包','Prepare an AI image pack','AI生成用パックを準備');
   $('#quick-download-package>span').textContent=words('下载生图包','Image pack','生成パック');
   $('#quick-download-package').title=words('直接下载草稿图、Prompt 和可编辑作品','Download the draft, prompt and editable arrangement','下書き・プロンプト・編集可能な作品を保存');
+  viewHint.textContent=words('空格拖动画布 · Ctrl + 滚轮缩放','Space + drag to pan · Ctrl + wheel to zoom','Space＋ドラッグで移動 · Ctrl＋ホイールで拡大');
+  desktopRail.setAttribute('aria-label',words('编辑工具','Editing tools','編集ツール'));
+  desktopProperties.setAttribute('aria-label',words('花材操作与素材入口','Stem controls and materials','花材の操作と素材'));
   $('.light-direction-label').textContent=words('光从哪里来','Light direction','光の向き');$('.light-power-label').textContent=words('光的浓淡','Light presence','光の濃さ');
   $('[data-atelier-action="straighten"]').textContent=words('还原枝形','Unbend','曲げを戻す');$('#atelier-adjust').textContent=words('调整','Adjust','調整');
   closeInspector.setAttribute('aria-label',words('收起调整','Close adjustments','調整を閉じる'));fallbackAdjust.textContent=words('调整花材','Adjust stem','花材を調整');
@@ -262,7 +277,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
  $('#game-motion').onclick=()=>{settings.motion=!settings.motion;persist();present();updateControls();};
  $('#game-sound').onclick=()=>{sound=!sound;persist();updateControls();ping('place');};
  for(const id of ['direction','power'])$('#game-light-'+id).oninput=e=>{settings[id]=Number(e.target.value)/(id==='power'?100:1);updateControls();present();persist();};
- function photo(on){settings.photo=on;document.body.classList.toggle('game-photo-mode',on);closeMenus();setInspector(false);present();updateControls();}
+ function photo(on){settings.photo=on;document.body.classList.toggle('game-photo-mode',on);placeWorkspace();closeMenus();setInspector(false);present();updateControls();}
  $('#game-photo').onclick=()=>photo(!settings.photo);
  $('#game-capture').onclick=()=>{if(!active||busy||capturePending)return;capturePending=true;updateControls();closeMenus();captureTimer=setTimeout(()=>finishCapture({type:'capture-error'}),15000);instance.SendMessage('HanamaGame','Capture','');};
  document.addEventListener('keydown',e=>{
@@ -278,7 +293,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
  canvas.addEventListener('lostpointercapture',e=>{if(canvasPointers.delete(e.pointerId))cancel();});
  host.addEventListener('contextmenu',e=>e.preventDefault());
  for(const type of ['pointerdown','pointermove','pointerup','pointercancel','dblclick'])host.addEventListener(type,e=>{if(active)e.stopPropagation();});
- host.addEventListener('wheel',e=>{if(active){e.stopPropagation();if(e.altKey||e.shiftKey)e.preventDefault();}},{passive:false});
+ host.addEventListener('wheel',e=>{if(active&&(e.altKey||e.shiftKey)){e.stopPropagation();e.preventDefault();}},{passive:false});
  // Choosing a tool returns directly to the unobstructed canvas.
  inspector.querySelectorAll('[data-prune]').forEach(b=>b.addEventListener('click',()=>setInspector(false)));
  function visibility(){present();if(visible()){resizeBuffer();busy=false;schedule();}}
