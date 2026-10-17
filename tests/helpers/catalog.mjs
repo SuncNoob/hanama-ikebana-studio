@@ -1,3 +1,4 @@
+import {fullBloomSpecimens} from '../../dist/full-bloom-catalog.js';
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 /** Node mirror of app.js's asset map for the tests and the dev scripts in qa/ (never loaded by the site, no canvas dependency).
@@ -21,9 +22,9 @@ import {createItem,buildStudyState,buildDemoItems} from '../../dist/study-state.
 
 export const dist=fileURLToPath(new URL('../../dist/',import.meta.url));
 /** Names of the spreads, in app.js order. */
-export const specimenOrder=['atelierSpecimens','legacyAtelierSpecimens','photoSpecimens','bookSpecimens','legacyFlowers','newSpecimens','foliageSpecimens','studySpecimens','poseSpecimens','additionalPoseSpecimens'];
+export const specimenOrder=['atelierSpecimens','legacyAtelierSpecimens','fullBloomSpecimens','photoSpecimens','bookSpecimens','legacyFlowers','newSpecimens','foliageSpecimens','studySpecimens','poseSpecimens','additionalPoseSpecimens'];
 export const vesselOrder=['atelierVessels','legacyAtelierVessels','bookVessels','newVessels','legacyVessels'];
-const lists={atelierSpecimens,atelierVessels,legacyAtelierSpecimens,legacyAtelierVessels,photoSpecimens,bookSpecimens,legacyFlowers,newSpecimens,foliageSpecimens,studySpecimens,poseSpecimens,additionalPoseSpecimens,bookVessels,newVessels,legacyVessels};
+const lists={fullBloomSpecimens,atelierSpecimens,atelierVessels,legacyAtelierSpecimens,legacyAtelierVessels,photoSpecimens,bookSpecimens,legacyFlowers,newSpecimens,foliageSpecimens,studySpecimens,poseSpecimens,additionalPoseSpecimens,bookVessels,newVessels,legacyVessels};
 export const specimens=specimenOrder.flatMap(name=>lists[name]);
 applyRealScale(specimens);
 applyTone(specimens);
@@ -31,7 +32,7 @@ export const browseSpecimens=specimens.filter(a=>!bookSpecimens.includes(a));
 export const familyOrder=[...new Set(browseSpecimens.map(a=>a.family))];
 export const vessels=vesselOrder.flatMap(name=>lists[name]);
 export const assetById=Object.fromEntries([...specimens,...vessels].map(a=>[a.id,a]));
-export const specimenFor=family=>atelierSpecimens.find(a=>a.family===family)||photoSpecimens.find(a=>a.family===family)||bookSpecimens.find(a=>a.family===family)||newSpecimens.find(a=>a.family===family)||foliageSpecimens.find(a=>a.family===family)||legacyFlowers.find(a=>a.family===family);
+export const specimenFor=family=>fullBloomSpecimens.find(a=>a.family===family)||atelierSpecimens.find(a=>a.family===family)||photoSpecimens.find(a=>a.family===family)||bookSpecimens.find(a=>a.family===family)||newSpecimens.find(a=>a.family===family)||foliageSpecimens.find(a=>a.family===family)||legacyFlowers.find(a=>a.family===family);
 /** Absolute file path of an asset image, using app.js's assetPath() extension rule. */
 export const assetFile=id=>assetById[id]?.path?`${dist}${assetById[id].path.replace(/^\//,'')}`:`${dist}assets/${id}.${assetById[id]?.format||(assetById[id]?.source==='flower-book'?'webp':'png')}`;
 let serial=0;

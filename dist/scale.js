@@ -4,7 +4,7 @@
 import {realScale,stemFix} from './real-scale.js?v=scale4';
 import {dimensions, vesselGeometry, warpY, unwarpY, sourceToStage} from './geometry.js?v=soft2';
 import {stemMaxCm, rolesOf, roleOf, stemMmOf} from './botany.js?v=hn2';
-import {specimenMetrics,vesselMetrics} from './asset-metrics.js?v=scale4';
+import {specimenMetrics,vesselMetrics} from './asset-metrics.js?v=blooms1';
 import {normalizeStemSplit,stemStretchSplit,supportsStemStretch} from './stem-length.js';
 
 export const SIZE_RANGE=[.8,1.25];

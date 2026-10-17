@@ -16,10 +16,10 @@ const poses=rows=>rows.flatMap(row=>row.libraryPoses);
 test('the default browser exposes all distinct catalogued plant poses and vessels',()=>{
  const rows=library.libraryFlowers('all',false,'all','');
  assert.equal(rows.length,78);
- assert.equal(poses(rows).length,198);
- assert.equal(new Set(poses(rows).map(a=>a.id)).size,198);
+ assert.equal(poses(rows).length,204);
+ assert.equal(new Set(poses(rows).map(a=>a.id)).size,204);
  assert.deepEqual([...poses(rows).map(a=>a.id)].sort(),specimens.map(a=>a.id).sort());
- assert.equal(library.libraryCount(rows),'78 类 · 198 姿态');
+ assert.equal(library.libraryCount(rows),'78 类 · 204 姿态');
  assert.equal(library.libraryVessels('all','').length,35);
  for(const a of [...library.librarySpecimens,...library.libraryVesselCatalog]){
   assert.ok(existsSync(assetFile(a.id)),`missing source image: ${a.id}`);

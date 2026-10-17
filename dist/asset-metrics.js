@@ -9,6 +9,12 @@
  Vessels: cm = height measured at; foot = lower envelope within 2 cm of the lowest pixel: cx and bottom in stage cm, half-width and arc depth in cm
  (arc = the envelope's rise at the footprint's ends, or less when its middle is flatter than an ellipse). */
 export const specimenMetrics={
+"hydrangea-blue-full":{"cm":42,"crown":[0.5166,0.0436],"headCm":[22.91,17.5],"bottom":0.9583,"bottomRuns":[[0.4922,0.5156]]},
+"hydrangea-pink-full":{"cm":42,"crown":[0.3525,0.054],"headCm":[23.84,17.23],"bottom":0.9622,"bottomRuns":[[0.5039,0.5254]]},
+"hydrangea-violet-full":{"cm":42,"crown":[0.5771,0.054],"headCm":[21.82,17.06],"bottom":0.9557,"bottomRuns":[[0.4902,0.5156]]},
+"hydrangea-white-green-full":{"cm":42,"crown":[0.4736,0.0384],"headCm":[22.53,17.72],"bottom":0.9661,"bottomRuns":[[0.4844,0.5098]]},
+"lily-white-open":{"cm":50,"crown":[0.3682,0.0436],"headCm":[29.49,23.83],"bottom":0.9622,"bottomRuns":[[0.5039,0.5254]]},
+"lily-white-pink-open":{"cm":50,"crown":[0.5264,0.0501],"headCm":[29.56,23.5],"bottom":0.9701,"bottomRuns":[[0.4902,0.5078]]},
 "editorial-rose":{"cm":22,"crown":[0.8486,0.071],"headCm":[12.4,11.2],"bottom":0.957,"bottomRuns":[[0.4785,0.4941]]},
 "editorial-camellia":{"cm":21,"crown":[0.5732,0.028],"headCm":[12.38,10.97],"bottom":0.9792,"bottomRuns":[[0.4609,0.4785]]},
 "editorial-calla":{"cm":36,"crown":[0.3311,0.041],"headCm":[17.86,14.77],"bottom":0.974,"bottomRuns":[[0.5332,0.5645]]},

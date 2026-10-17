@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {assetById,vessels,studies,studyState,makeItem} from './helpers/catalog.mjs';
 import {seatClip,seatState,stemWidthCm,vesselFoot,isKenzan,INTERIOR_MIN_RX} from '../dist/scale.js?v=scale4';
 import {LIGHT,lightShadow,HORIZON,filterSupported,seatedClips} from '../dist/compositor.js?v=quiet2';
-import {vesselMetrics} from '../dist/asset-metrics.js?v=scale4';
+import {vesselMetrics} from '../dist/asset-metrics.js?v=blooms1';
 import {vesselGeometry} from '../dist/geometry.js?v=soft2';
 
 const NECK='matte-black-long-neck';

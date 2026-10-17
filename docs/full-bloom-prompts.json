@@ -1,0 +1,121 @@
+{
+  "tool": "built-in image_gen",
+  "variants": [
+    {
+      "id": "hydrangea-blue-full",
+      "family": "hydrangea",
+      "prompt": "A single fresh cut botanical stem photographed for a premium ikebana editor, isolated on a genuinely transparent alpha background. Photorealistic florist product photograph, natural delicate texture and convincing volume, large soft daylight from upper left with gentle neutral fill, subtle occlusion inside flower only. No vase, no pot, no tabletop, no ground shadow, no colored background, no collage, no text, no hand. Portrait 1024x1536 composition. Entire specimen fully visible with generous transparent margins, a continuous realistic green stem down to its cut end at x50%, y94%; lower third mostly bare stem. Natural green leaves, fine veins, imperfect living plant. One SINGLE large mature Hydrangea macrophylla mophead, an abundant densely packed rounded domed flower ball made of many overlapping four-sepal florets. Full lush globe with substantial visible front and side depth, not a flat disk, not a sparse lacecap, not multiple heads. Bloom centered around x50%, y26%, extends from x17% to x83%, y8% to y42%. Two modest dark green serrated leaves below the ball at y49–60%, one slightly behind. Stem slight organic lean, root vertical. Floral colors: soft clear powder blue, tiny pale periwinkle and icy blue variations. Preserve full outer petals and complete stem. Consistent botanical realism, no exaggerated HDR or plastic gloss.",
+      "path": "C:\\Users\\ac_marko_test\\.codex\\generated_images\\01a13d7b-0151-75c3-b2b4-b8cb634bc377\\exec-4a2b201a-43ac-4567-a346-e20731ed3b99.png"
+    },
+    {
+      "id": "hydrangea-pink-full",
+      "family": "hydrangea",
+      "prompt": "A single fresh cut botanical stem photographed for a premium ikebana editor, isolated on a genuinely transparent alpha background. Photorealistic florist product photograph, natural delicate texture and convincing volume, large soft daylight from upper left with gentle neutral fill, subtle occlusion inside flower only. No vase, no pot, no tabletop, no ground shadow, no colored background, no collage, no text, no hand. Portrait 1024x1536 composition. Entire specimen fully visible with generous transparent margins, a continuous realistic green stem down to its cut end at x50%, y94%; lower third mostly bare stem. Natural green leaves, fine veins, imperfect living plant. One SINGLE large mature Hydrangea macrophylla mophead, an abundant densely packed rounded domed flower ball made of many overlapping four-sepal florets. Full lush globe with substantial visible front and side depth, not a flat disk, not a sparse lacecap, not multiple heads. Bloom centered around x50%, y26%, extends from x17% to x83%, y8% to y42%. Two modest dark green serrated leaves below the ball at y49–60%, one slightly behind. Stem slight organic lean, root vertical. Floral colors: fresh blush pink, subtle warm rose and pale shell pink variations. Preserve full outer petals and complete stem. Consistent botanical realism, no exaggerated HDR or plastic gloss.",
+      "path": "C:\\Users\\ac_marko_test\\.codex\\generated_images\\01a13d7b-0151-75c3-b2b4-b8cb634bc377\\exec-ac4babff-c85f-4bd2-b208-4aa31b857d26.png"
+    },
+    {
+      "id": "hydrangea-violet-full",
+      "family": "hydrangea",
+      "prompt": "A single fresh cut botanical stem photographed for a premium ikebana editor, isolated on a genuinely transparent alpha background. Photorealistic florist product photograph, natural delicate texture and convincing volume, large soft daylight from upper left with gentle neutral fill, subtle occlusion inside flower only. No vase, no pot, no tabletop, no ground shadow, no colored background, no collage, no text, no hand. Portrait 1024x1536 composition. Entire specimen fully visible with generous transparent margins, a continuous realistic green stem down to its cut end at x50%, y94%; lower third mostly bare stem. Natural green leaves, fine veins, imperfect living plant. One SINGLE large mature Hydrangea macrophylla mophead, an abundant densely packed rounded domed flower ball made of many overlapping four-sepal florets. Full lush globe with substantial visible front and side depth, not a flat disk, not a sparse lacecap, not multiple heads. Bloom centered around x50%, y26%, extends from x17% to x83%, y8% to y42%. Two modest dark green serrated leaves below the ball at y49–60%, one slightly behind. Stem slight organic lean, root vertical. Floral colors: gentle lavender lilac, soft violet and pale lavender variations. Preserve full outer petals and complete stem. Consistent botanical realism, no exaggerated HDR or plastic gloss.",
+      "path": "C:\\Users\\ac_marko_test\\.codex\\generated_images\\01a13d7b-0151-75c3-b2b4-b8cb634bc377\\exec-795adfd3-492d-4d4b-9efd-08493c73c584.png"
+    },
+    {
+      "id": "hydrangea-white-green-full",
+      "family": "hydrangea",
+      "prompt": "A single fresh cut botanical stem photographed for a premium ikebana editor, isolated on a genuinely transparent alpha background. Photorealistic florist product photograph, natural delicate texture and convincing volume, large soft daylight from upper left with gentle neutral fill, subtle occlusion inside flower only. No vase, no pot, no tabletop, no ground shadow, no colored background, no collage, no text, no hand. Portrait 1024x1536 composition. Entire specimen fully visible with generous transparent margins, a continuous realistic green stem down to its cut end at x50%, y94%; lower third mostly bare stem. Natural green leaves, fine veins, imperfect living plant. One SINGLE large mature Hydrangea macrophylla mophead, an abundant densely packed rounded domed flower ball made of many overlapping four-sepal florets. Full lush globe with substantial visible front and side depth, not a flat disk, not a sparse lacecap, not multiple heads. Bloom centered around x50%, y26%, extends from x17% to x83%, y8% to y42%. Two modest dark green serrated leaves below the ball at y49–60%, one slightly behind. Stem slight organic lean, root vertical. Floral colors: creamy white florets, palest fresh lime-green heart and occasional celadon young florets. Preserve full outer petals and complete stem. Consistent botanical realism, no exaggerated HDR or plastic gloss.",
+      "path": "C:\\Users\\ac_marko_test\\.codex\\generated_images\\01a13d7b-0151-75c3-b2b4-b8cb634bc377\\exec-9f0fc51d-ce2a-4440-b787-93c309ea0285.png"
+    },
+    {
+      "id": "lily-white-open",
+      "family": "lily",
+      "prompt": "A single fresh cut botanical stem photographed for a premium ikebana editor, isolated on a genuinely transparent alpha background. Photorealistic florist product photograph, natural delicate texture and convincing volume, large soft daylight from upper left with gentle neutral fill, subtle occlusion inside flower only. No vase, no pot, no tabletop, no ground shadow, no colored background, no collage, no text, no hand. Portrait 1024x1536 composition. Entire specimen fully visible with generous transparent margins, a continuous realistic green stem down to its cut end at x50%, y94%; lower third mostly bare stem. Natural green leaves, fine veins, imperfect living plant. One elegant Oriental lily stem bearing TWO generous fully opened six-tepal blooms facing different directions, one higher left in three-quarter view, one lower right and slightly forward, plus one slim unopened bud. Flowers in upper half, bloom spans x15–85%, y9–49%. Broad gracefully recurved petals with translucent edges, believable stamens. Narrow lance-shaped green leaves on the mid stem, lower stem bare. Neither calla lily nor tiger lily. Floral colors: pure white ivory petals, delicate pale green throat, six natural ochre anthers. Preserve full outer petals and complete stem. Consistent botanical realism, no exaggerated HDR or plastic gloss.",
+      "path": "C:\\Users\\ac_marko_test\\.codex\\generated_images\\01a13d7b-0151-75c3-b2b4-b8cb634bc377\\exec-e9d9ea7c-9ab1-4b2b-9922-b8e5e657b67b.png"
+    },
+    {
+      "id": "lily-white-pink-open",
+      "family": "lily",
+      "prompt": "A single fresh cut botanical stem photographed for a premium ikebana editor, isolated on a genuinely transparent alpha background. Photorealistic florist product photograph, natural delicate texture and convincing volume, large soft daylight from upper left with gentle neutral fill, subtle occlusion inside flower only. No vase, no pot, no tabletop, no ground shadow, no colored background, no collage, no text, no hand. Portrait 1024x1536 composition. Entire specimen fully visible with generous transparent margins, a continuous realistic green stem down to its cut end at x50%, y94%; lower third mostly bare stem. Natural green leaves, fine veins, imperfect living plant. One elegant Oriental lily stem bearing TWO generous fully opened six-tepal blooms facing different directions, one higher left in three-quarter view, one lower right and slightly forward, plus one slim unopened bud. Flowers in upper half, bloom spans x15–85%, y9–49%. Broad gracefully recurved petals with translucent edges, believable stamens. Narrow lance-shaped green leaves on the mid stem, lower stem bare. Neither calla lily nor tiger lily. Floral colors: predominantly white petals with a soft blush-pink central stripe melting into broad white edges, pale green throat, restrained tiny rose speckles. Preserve full outer petals and complete stem. Consistent botanical realism, no exaggerated HDR or plastic gloss.",
+      "path": "C:\\Users\\ac_marko_test\\.codex\\generated_images\\01a13d7b-0151-75c3-b2b4-b8cb634bc377\\exec-c38daf43-1a6b-4553-8079-8462e4d0828b.png"
+    }
+  ],
+  "measurements": [
+    {
+      "id": "hydrangea-blue-full",
+      "size": [
+        1024,
+        1536
+      ],
+      "alphaExact": true,
+      "bytes": 181702,
+      "headCm": [
+        22.91,
+        17.5
+      ]
+    },
+    {
+      "id": "hydrangea-pink-full",
+      "size": [
+        1024,
+        1536
+      ],
+      "alphaExact": true,
+      "bytes": 228996,
+      "headCm": [
+        23.84,
+        17.23
+      ]
+    },
+    {
+      "id": "hydrangea-violet-full",
+      "size": [
+        1024,
+        1536
+      ],
+      "alphaExact": true,
+      "bytes": 197792,
+      "headCm": [
+        21.82,
+        17.06
+      ]
+    },
+    {
+      "id": "hydrangea-white-green-full",
+      "size": [
+        1024,
+        1536
+      ],
+      "alphaExact": true,
+      "bytes": 178612,
+      "headCm": [
+        22.53,
+        17.72
+      ]
+    },
+    {
+      "id": "lily-white-open",
+      "size": [
+        1024,
+        1536
+      ],
+      "alphaExact": true,
+      "bytes": 156628,
+      "headCm": [
+        29.49,
+        23.83
+      ]
+    },
+    {
+      "id": "lily-white-pink-open",
+      "size": [
+        1024,
+        1536
+      ],
+      "alphaExact": true,
+      "bytes": 191226,
+      "headCm": [
+        29.56,
+        23.5
+      ]
+    }
+  ]
+}

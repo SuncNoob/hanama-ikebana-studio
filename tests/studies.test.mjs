@@ -12,7 +12,7 @@ import {legacyFlowers,legacyVessels,scenes,saturationTune} from '../dist/legacy-
 import {createItem,buildStudyItems,buildDemoItems,placeSpecs,demoSpecs,demoVessel} from '../dist/study-state.js?v=modern1';
 import {sizeBounds,mouthBase,tipPoint,crownPoint,drawsStem,stemCm,isKenzan,autoFront,seatState,baseOffset,angleCap,slotState,PHOTO_LENGTH} from '../dist/scale.js?v=scale4';
 import {vesselGeometry,sourceToStage} from '../dist/geometry.js?v=soft2';
-import {specimenMetrics} from '../dist/asset-metrics.js?v=scale4';
+import {specimenMetrics} from '../dist/asset-metrics.js?v=blooms1';
 import {stemMaxCm} from '../dist/botany.js';
 
 const appSource=readFileSync(`${dist}app.js`,'utf8');

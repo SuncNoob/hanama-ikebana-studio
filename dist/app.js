@@ -1,3 +1,4 @@
+import {fullBloomSpecimens} from './full-bloom-catalog.js';
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,paintSceneBackground,paintBotanicalLayer,paintVesselLayer,paintSceneFinish,paintGroundPass,paintInteriorPass,paintRimPass,paintInsertedPass,paintKenzanPass,kenzanSeats,seatedClips,lightShadow,paintLightPass,paintLightSilhouette} from './compositor.js?v=quiet2';
@@ -94,7 +95,7 @@ function applyLanguage(){
 }
 const paths={plus:'M12 5v14 M5 12h14',scissors:'M6 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M6 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M5 8l16 13 M5 16 21 3',eraser:'m4 14 9-10a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-9 10H8l-4-4a3 3 0 0 1 0-4 M9 9l9 9 M12 22h10',help:'M12 17h.01 M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',bookmark:'M5 3h14v18l-7-4-7 4V3',pencil:'m16 3 5 5-12 12-6 1 1-6L16 3 M14 5l5 5',undo:'M3 10h11a7 7 0 0 1 0 14 M3 10l5-5 M3 10l5 5',redo:'M21 10H10a7 7 0 0 0 0 14 M21 10l-5-5 M21 10l-5 5',grid:'M4 4h16v16H4V4 M4 9h16 M4 15h16 M9 4v16 M15 4v16',refresh:'M20 8a9 9 0 1 0 1 8 M20 3v5h-5',download:'M12 3v12 M7 10l5 5 5-5 M4 16v5h16v-5',move:'M12 2v20 M2 12h20 M8 6l4-4 4 4 M8 18l4 4 4-4 M6 8l-4 4 4 4 M18 8l4 4-4 4',sliders:'M5 3v8 M5 15v6 M12 3v2 M12 9v12 M19 3v11 M19 18v3 M2 11h6v4H2v-4 M9 5h6v4H9V5 M16 14h6v4h-6v-4',trash:'M3 6h18 M9 6V3h6v3 M5 6l1 15h12l1-15 M10 10v7 M14 10v7',flip:'M12 3v18 M9 5 3 18h6V5 M15 5l6 13h-6V5',layers:'m3 8 9-5 9 5-9 5-9-5 M3 12l9 5 9-5 M3 16l9 5 9-5',sparkles:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3 M20 2v4 M18 4h4',close:'m6 6 12 12 M6 18 18 6',hand:'M8 13V5a2 2 0 0 1 4 0v7 M12 10a2 2 0 0 1 4 0v3 M16 11a2 2 0 0 1 4 0v5c0 4-2 6-6 6h-2c-2 0-3-1-4-3l-4-6a2 2 0 0 1 3-2l3 3',copy:'M8 8h13v13H8V8 M16 5V2H2v14h3',upload:'M12 16V3 M7 8l5-5 5 5 M3 16v5h18v-5',list:'M9 6h11 M9 12h11 M9 18h11 M4 6h.01 M4 12h.01 M4 18h.01',share:'M12 16V2 M7 7l5-5 5 5 M5 11H3v10h18V11h-2'};
 function icons(root=document){$$('[data-icon]',root).forEach(el=>el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[el.dataset.icon]||paths.sparkles}"/></svg>`)}
-const specimens=[...atelierSpecimens,...legacyAtelierSpecimens,...photoSpecimens,...bookSpecimens,...legacyFlowers,...newSpecimens,...foliageSpecimens,...studySpecimens,...poseSpecimens,...additionalPoseSpecimens];
+const specimens=[...atelierSpecimens,...legacyAtelierSpecimens,...fullBloomSpecimens,...photoSpecimens,...bookSpecimens,...legacyFlowers,...newSpecimens,...foliageSpecimens,...studySpecimens,...poseSpecimens,...additionalPoseSpecimens];
 applyRealScale(specimens);
 // Modest color correction is shared by the canvas and exported artwork; original files remain intact.
 applyTone(specimens);
@@ -104,7 +105,7 @@ const flowers=familyOrder.map(family=>{const list=browseSpecimens.filter(a=>a.fa
 const vessels=[...atelierVessels,...legacyAtelierVessels,...bookVessels,...newVessels,...legacyVessels];
 const allAssets=[...specimens,...vessels];
 const assetById=Object.fromEntries(allAssets.map(a=>[a.id,a]));
-const specimenFor=family=>atelierSpecimens.find(a=>a.family===family)||photoSpecimens.find(a=>a.family===family)||bookSpecimens.find(a=>a.family===family)||newSpecimens.find(a=>a.family===family)||foliageSpecimens.find(a=>a.family===family)||legacyFlowers.find(a=>a.family===family);
+const specimenFor=family=>fullBloomSpecimens.find(a=>a.family===family)||atelierSpecimens.find(a=>a.family===family)||photoSpecimens.find(a=>a.family===family)||bookSpecimens.find(a=>a.family===family)||newSpecimens.find(a=>a.family===family)||foliageSpecimens.find(a=>a.family===family)||legacyFlowers.find(a=>a.family===family);
 const familyHasColor=(family,color)=>color==='all'||browseSpecimens.some(a=>a.family===family&&matchesMaterialColor(a,color));
 const assetPath=id=>assetById[id]?.path||`/assets/${id}.${assetById[id]?.format||(assetById[id]?.source==='flower-book'?'webp':'png')}`;
 /** Card image for a specimen: its library thumbnail when it has one (see qa/make-thumbs.mjs), else the full asset. */
