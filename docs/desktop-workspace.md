@@ -14,3 +14,9 @@ The canvas zoom controls are always on the workbench. View scale spans 50–300%
 - Full existing test suite: 247 passed, one pre-existing skip.
 
 Only host layout/view navigation changed; this release does not rebuild the native Unity binary. Desktop and mobile canvas buffers keep their existing pixel budgets.
+
+## Alignment correction
+
+The left rail now overrides the old cut/erase button sizing and uses equal-width 44px rows, centered 20px icon holders and consistent label typography. The property and layer panels are actual flex children below the right-side controls rather than overlapping sibling grid cells with a fixed 240px offset. Their separator follows the controls' real height, including Japanese labels and font changes. Original mobile positions are restored when leaving desktop or entering immersive mode; the layer dock follows the property panel's current parent.
+
+Browser checks covered 2559×1179, 2048×944, 1440×1000, 1366×768 and 1024×600 in three languages, plus phone layouts. Every visible tool's width, icon center and label center matched; properties and layers start at least 10px below the entrance buttons. Actual Unity WebGL checks also passed in Japanese, including layers and the immersive-mode round trip.

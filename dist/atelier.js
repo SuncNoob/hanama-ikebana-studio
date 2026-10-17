@@ -73,14 +73,16 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
  const desktopRail=document.createElement('aside');desktopRail.id='atelier-desktop-tools';
  const desktopProperties=document.createElement('aside');desktopProperties.id='atelier-desktop-properties';
  $('.stage-frame').append(desktopRail,desktopProperties);
+ const inspector=$('.design-panel'),layers=$('#layer-menu');
+ const inspectorAnchor=document.createComment('property panel mobile position'),layersAnchor=document.createComment('layer panel mobile position');
+ inspector.before(inspectorAnchor);layers.before(layersAnchor);
  const desktopLayout=matchMedia('(min-width:1024px) and (min-height:600px)');
  function placeWorkspace(){
   const desktop=desktopLayout.matches&&!settings.photo;document.body.classList.toggle('atelier-desktop',desktop);
-  if(desktop){desktopRail.append($('.stage-tools'));desktopProperties.append(touchTools,$('.atelier-bench'));}
-  else{$('.atelier-tool-slot').append($('.stage-tools'));panel.prepend(touchTools);panel.insertBefore($('.atelier-bench'),$('.game-loading',panel));}
+  if(desktop){desktopRail.append($('.stage-tools'));desktopProperties.append(touchTools,$('.atelier-bench'),layers,inspector);}
+  else{$('.atelier-tool-slot').append($('.stage-tools'));panel.prepend(touchTools);panel.insertBefore($('.atelier-bench'),$('.game-loading',panel));layersAnchor.after(layers);inspectorAnchor.after(inspector);}
  }
  desktopLayout.addEventListener('change',placeWorkspace);placeWorkspace();
- const inspector=$('.design-panel');
  const closeInspector=document.createElement('button');closeInspector.className='atelier-inspector-close';closeInspector.type='button';closeInspector.innerHTML=closeIcon;inspector.prepend(closeInspector);
  for(const id of ['quick-material-close','close-layers','close-modal'])$('#'+id).innerHTML=closeIcon;
  const hud=document.createElement('div');hud.className='atelier-hud';hud.setAttribute('aria-live','off');

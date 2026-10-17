@@ -33,7 +33,7 @@ import {stemHits,choosePick,cycleOrder,nextInCycle,strokeTouches} from './stem-p
 import {keyAction,needsCheckpoint,wheelAction,zoomAbout,isDoubleTap,tolerant,repairDraftShell,canvasSignature,readStash,addToStash,cleanLineage,extendLineage} from './editor-state.js?v=hn3';
 import {arrangementRecipe,recipeLines,recipeText,recipeLabel,groupText,vesselText} from './recipe.js?v=hn3';
 import {paintRecipeCard,recipeFrame,cardFonts} from './share-cards.js?v=hn3';
-import {mountUnityGame} from './atelier.js?v=13';
+import {mountUnityGame} from './atelier.js?v=14';
 import {normalizeFlex} from './flex.js?v=2';
 import {stemLengthRatio,setStemLength,normalizeStemSplit,supportsStemStretch,stemStretchSplit} from './stem-length.js';
 import {paintOrganicRoom,paintOrganicGround,botanicalFlexibility,preloadOrganicRooms,isNightScene,isPhotographicScene} from './organic-room.js?v=quiet2';
@@ -1035,7 +1035,7 @@ function renderLayerQuickActions(){
 }
 function closeLayerMenu(){const menu=$('#layer-menu');if(menu.hidden)return;menu.hidden=true;document.body.classList.remove('layer-list-open');$('.design-panel').hidden=false;$('#layers-tool').setAttribute('aria-expanded','false');layerDragId=null;focusOtherLayers=false;renderLayerQuickActions()}
 function mountLayerDock(){
- const menu=$('#layer-menu'),host=$('.workspace'),after=$('.design-panel');
+ const menu=$('#layer-menu'),after=$('.design-panel'),host=after.parentElement;
  if(menu.parentElement!==host||menu.nextElementSibling!==after)host.insertBefore(menu,after);
 }
 function openLayerMenu(){
