@@ -73,7 +73,7 @@ const round5=cm=>Math.max(5,Math.round(cm/5)*5);
 
 /** The 2026-09-27 refinement phrases (state.generation). */
 const MODES={
- faithful:'Make only the small corrections needed for physical realism.',
+ faithful:'Preserve the design decisions while fully rebuilding physical volume, lighting and connections.',
  creative:'Gently refine the stem rhythm and depth within the same design.',
  natural:'Make a gentle florist refinement.'
 };
@@ -152,22 +152,22 @@ export function buildPrompt(s,assetById,scenes,extras={}){
  const scene=scenes[s.scene]||scenes.paper||[];
  const ownNote=note&&!preset;
  const shape=extras?.format==='phone'?'portrait':extras?.format==='macbook'?'landscape':'square';
- return `Create an image from the attached draft image: a ${shape} professional photograph of a real floral arrangement. Keep the draft's recognizable composition, selected flowers and count, vessel and main negative spaces. ${mode}
+ return `Create an image from the attached draft image: a ${shape} professional photograph of a real floral arrangement. Preserve the selected botanical materials and stem counts, vessel identity, focal hierarchy and main negative spaces. Rebuild their spatial arrangement rather than matching pixel positions, silhouettes or individual bloom sizes. ${mode}
 
 ${construction}
 
-Reconstruct the whole scene as real three-dimensional plants and a vessel photographed together. Use the draft for design intent, not its cutout surfaces or baked-in highlights. Allow fore-and-aft overlap, varied flower facing and species-appropriate bending under weight; woody branches remain firm. Do not force branches to touch the table. Let cascading growth sag under gravity from a rim pivot; shade actual tabletop contact.
+Reconstruct the whole scene as real three-dimensional plants and a vessel photographed together in one exposure, from one camera position. The draft specifies design intent only: replace its flat surfaces, repeated shapes, outlines and baked-in highlights. ${petals?'Build rounded flower heads with overlapping curved petals, visible side planes and shaded interiors; leaves twist and reveal varying faces.':'Build dimensional branches and foliage with visible side planes and shaded interiors; leaves twist and reveal varying faces.'} Place growth at believable distances in front of and behind the focal plane, with foreshortening and mutual occlusion. Vary facing and species-appropriate bending under weight; woody branches remain firm. Do not force branches to touch the table. Let cascading growth sag under gravity from a rim pivot; shade actual tabletop contact.
 
 ${[stems,supportSentence(vessel)].filter(Boolean).join(' ')}
 
-Keep the setting's tone, but relight everything with one broad side light and weaker room bounce. Give the vessel foot contact shadow, dense clusters natural ambient occlusion, and recesses depth without black outlines. Light filters through thin ${petals?'petals and leaves':'leaves'}. Focus on main subjects, softening distant edges while keeping the arrangement readable. Give each ${petals?'bloom':'branch and leaf'} ${detail}; retain natural texture without plastic gloss or exaggerated damage.
+Keep the setting's tone, but relight everything with one broad side light and weaker room bounce. The same light direction, softness and colour apply to plants, vessel, wall and table. Nearby forms cast soft shadows onto each other; shadow softness increases with separation. Give the vessel foot contact shadow, dense clusters natural ambient occlusion, and recesses depth without black outlines. Light filters through thin ${petals?'petals and leaves':'leaves'}. Use continuous optical depth: crisp focal detail and gradual distance-dependent softness, never identical sharp outlines around every object. Keep the arrangement readable without artificial blur halos. Give each ${petals?'bloom':'branch and leaf'} ${detail}; retain natural texture without plastic gloss or exaggerated damage.
 
 Materials: ${materials||'as shown in the draft'}.
 ${scale}
 Setting: ${scene[3]||scene[2]||'as in the draft'}. Mood: ${mood}.${theme?`\nPoetic theme (an atmosphere cue, not text to print): ${theme}.`:''}${preset?`\nMood cue: ${cue}`:ownNote?`\nCreative note: ${note}\nIf the creative note names a place, season or light, follow the note over the setting and the draft's lighting.`:''}
 
 ${formatDirection(extras?.format)}${extras?.guide?' An optional faded layout guide suggests overlap of upper growth only; correct every base to its real support. Do not copy guide colours or lines.':''}
-No added text or watermark.`;
+Finish as a natural still-life photograph with coherent volume and spatial depth. No pasted sprites, paper-flat flowers, isolated-object studio lighting, edge halos, repeated stamped ${petals?'petals':'leaves'}, CGI gloss, added text or watermark.`;
 }
 
 // ── The pack around the prompt (A17) ──

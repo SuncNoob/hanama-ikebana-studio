@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {buildPrompt,materialGroups,materialNoun,pluralName,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER} from '../dist/prompt.js?v=realism2';
+import {buildPrompt,materialGroups,materialNoun,pluralName,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER} from '../dist/prompt.js?v=volume3';
 import {isKenzan,arrangementMetrics,outOfScale} from '../dist/scale.js?v=scale4';
 import {assetById,studies,studyState,initial,scenes,specimenFor,vessels,dist} from './helpers/catalog.mjs';
 
@@ -23,14 +23,14 @@ function scissorsSplit(s,index=0){
  return {...s,items:[...s.items.slice(0,index),...pieces,...s.items.slice(index+1)]};
 }
 
-test('every study prompt in every mode starts the same way, stays in English and within 500 words',()=>{
+test('every study prompt in every mode starts the same way, stays in English and within 650 words',()=>{
  for(const study of studies){
   const s=studyState(study,'en');
   for(const generation of MODES)for(const guide of [false,true]){
    const text=prompt({...s,generation},{guide}),noted=prompt({...s,generation,intention:'For a quiet hallway table.'},{guide});
    assert.match(text,/^Create an image/,`${study.id} ${generation}`);
    for(const t of [text,noted])assert.doesNotMatch(t,CJK,`${study.id} ${generation}: CJK in an English prompt`);
-   assert.ok(words(text)<=500,`${study.id} ${generation}${guide?' +guide':''}: ${words(text)} words`);
+   assert.ok(words(text)<=650,`${study.id} ${generation}${guide?' +guide':''}: ${words(text)} words`);
    assert.doesNotMatch(text,/Nearer the camera|Further back/,'one materials list only');
   }
  }
@@ -121,7 +121,7 @@ test('three refinement modes preserve their scope while rebuilding a physical sc
   assert.ok(differ(natural,faithful)>1,`${study.id}: faithful differs from natural by one sentence or less`);
   assert.ok(differ(natural,creative)>0&&differ(creative,faithful)>0,study.id);
   assert.ok(natural.some(x=>/^Make a gentle florist refinement\./.test(x)));
-  assert.ok(faithful.some(x=>/^Make only the small corrections needed for physical realism\./.test(x)));
+  assert.ok(faithful.some(x=>/^Preserve the design decisions while fully rebuilding physical volume, lighting and connections\./.test(x)));
   assert.ok(creative.some(x=>/^Gently refine the stem rhythm and depth within the same design\./.test(x)));
   for(const sentences of [natural,creative,faithful])assert.ok(sentences.some(x=>/^Reconstruct the whole scene as real three-dimensional plants/.test(x)));
  }
@@ -150,8 +150,12 @@ test('approximate scale references preserve calibrated dimensions without lockin
 
 test('photographic reconstruction replaces baked-in highlights; guide and notes retain their roles',()=>{
  const s=studyState(studies.find(st=>st.id==='cherry'),'en'),plain=prompt(s);
- assert.ok(plain.startsWith("Create an image from the attached draft image: a square professional photograph of a real floral arrangement. Keep the draft's recognizable composition, selected flowers and count, vessel and main negative spaces."));
- assert.ok(plain.includes('Use the draft for design intent, not its cutout surfaces or baked-in highlights.'));
+ assert.ok(plain.startsWith("Create an image from the attached draft image: a square professional photograph of a real floral arrangement. Preserve the selected botanical materials and stem counts, vessel identity, focal hierarchy and main negative spaces. Rebuild their spatial arrangement rather than matching pixel positions, silhouettes or individual bloom sizes."));
+ assert.match(plain,/draft specifies design intent only/);
+ assert.match(plain,/one exposure, from one camera position/);
+ assert.match(plain,/foreshortening and mutual occlusion/);
+ assert.match(plain,/shadow softness increases with separation/);
+ assert.match(plain,/never identical sharp outlines/);
  assert.match(plain,/species-appropriate bending under weight; woody branches remain firm/);
  assert.match(plain,/relight everything with one broad side light and weaker room bounce/);
  assert.match(plain,/vessel foot contact shadow, dense clusters natural ambient occlusion, and recesses depth without black outlines/);
@@ -185,7 +189,7 @@ test('the detail phrase follows the materials: petals for flowers, leaves and ba
 
 test('app.js builds the prompt once, with the preset cue and the zip-only guide sentence',()=>{
  const source=readFileSync(`${dist}app.js`,'utf8');
- assert.match(source.match(/^import .* from '\.\/prompt\.js[^']*';$/m)?.[0]||'',/^import \{buildPrompt,[^}]*\} from '\.\/prompt\.js\?v=realism2';$/,'app.js imports prompt.js with the shared specifier');
+ assert.match(source.match(/^import .* from '\.\/prompt\.js[^']*';$/m)?.[0]||'',/^import \{buildPrompt,[^}]*\} from '\.\/prompt\.js\?v=volume3';$/,'app.js imports prompt.js with the shared specifier');
  assert.ok(source.includes('presetNote:intentionPresets.includes(s.intention)?intentionPresets[1]:false'),'an untouched preset note goes in as its English text');
  assert.ok(source.includes('{guide:true,format}'),'the shared zip builder uses the selected format and mentions the guide');
  assert.equal(source.match(/buildPrompt\(/g).length,1,'one call site (promptFor)');
@@ -220,7 +224,7 @@ test('wallpaper canvases expand the setting without changing the material count'
  for(const id of OUTPUT_FORMAT_ORDER){
   const f=OUTPUT_FORMATS[id],text=prompt(s,{format:id});
   assert.match(text,new RegExp(`${f.ratio.replace(':','\:')}, target ${f.width} × ${f.height} px`));
-  assert.match(text,/Keep the draft's recognizable composition, selected flowers and count, vessel and main negative spaces/);
+  assert.match(text,/Preserve the selected botanical materials and stem counts, vessel identity, focal hierarchy and main negative spaces/);
   assert.equal(materialsLine(text),materialsLine(prompt(s)));
   assert.match(packReadme('natural','en',id),new RegExp(`${f.width} × ${f.height} px`));
  }

@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import {LIGHTS,LIGHT_KEYS,lightOf,lightWorkSize,paintLightAmbient,lightPatch,screenLightPatch,paintLight} from '../dist/ambience.js?v=hn3';
 import {HORIZON,LIGHT} from '../dist/compositor.js?v=quiet2';
 import {compositorLayerPlan} from '../dist/compositor-project.js?v=hn3';
-import {buildPrompt} from '../dist/prompt.js?v=realism2';
+import {buildPrompt} from '../dist/prompt.js?v=volume3';
 import {assetById,studies,studyState,initial,scenes,dist} from './helpers/catalog.mjs';
 
 /** A 2D context stand-in that records what is drawn (tests never load a real canvas). */
