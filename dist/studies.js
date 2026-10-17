@@ -6,7 +6,8 @@
 // Photographed stems keep about their natural length (cut, never squashed or stretched far), so each `to` lies within reach (tests/studies.test.mjs).
 // Items are listed from back to front.
 export const studySeasons=['spring','summer','autumn','winter'];
-export const studies=[
+import {modernStudies} from './modern-studies.js';
+export const studies=[...modernStudies,
  // ── Spring ──────────────────────────────────────────────
  {id:'cherry',school:'ikenobo',season:'spring',title:['一枝成景','A Branch, a Landscape','一枝で景色をつくる'],caption:['樱枝 × 奶油陶壶','Cherry × creamware','桜の枝 × クリーム色の陶器'],note:['以一枝的弧线定方向。柔粉呼应奶油陶，空处也留在作品里。','Let one arch set the direction. Blush meets creamware, with room around the branch.','一枝の弧で方向をつくります。淡いピンクと陶器の色を合わせ、余白も残します。'],vessel:'english-cream-pitcher',scene:'paper',mood:'春意',items:[
   {type:'sakura-pink-arch',to:[16,34]},{type:'sakura-pink-upright',to:[-10,28],s:.85,flip:true},{type:'photo-sakura',to:[-10,9],s:.9,front:true,base:-3}]},

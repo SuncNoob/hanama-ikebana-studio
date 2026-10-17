@@ -63,3 +63,14 @@ body.atelier-simple.game-photo-mode #atelier-viewbar{display:none!important}
  body.atelier-simple.atelier-desktop .atelier-length-panel{position:fixed;top:260px;left:104px;right:auto;bottom:auto;width:300px;max-width:calc(100vw - 130px);transform:none;z-index:900}
  body.atelier-simple.atelier-desktop .workspace>.quick-material-drawer:not([hidden]){inset:64px 0 0 auto;width:450px;height:calc(100dvh - 64px);max-width:50vw;border-radius:12px 0 0 12px}
 }
+
+/* First-screen creation and top-layer dialogs, independent of inspector layout. */
+body.atelier-simple .header-actions #new-canvas-button{display:grid!important;place-items:center;flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:0;border:1px solid var(--control-border);border-radius:12px;background:var(--control-surface);color:var(--control-ink)}
+#new-canvas-button svg{width:21px;height:21px}
+body #modal[open]{position:fixed;inset:0;margin:auto;width:min(760px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:0;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 100px #1b281c50}
+#modal .modal-header{flex:0 0 auto;margin:0;padding:12px 20px;border-bottom:1px solid var(--control-border);background:var(--paper)}
+#modal #modal-content{min-height:0;overflow:auto;overscroll-behavior:contain;padding:20px 24px 24px;scrollbar-width:thin}
+#modal::backdrop{background:#1f2c2466;backdrop-filter:blur(5px)}
+#modal .pack-intro{background:#edf1e8;border-radius:10px;padding:12px 14px;color:var(--ink);line-height:1.7}
+@media(max-width:600px){#modal #modal-content{padding:16px}body.atelier-simple .header-actions{gap:6px}body.atelier-simple .header-actions #new-canvas-button{flex-basis:40px;min-width:40px;width:40px;height:40px}}
+@media(max-width:380px){body.atelier-simple .masthead{padding-inline:10px;gap:8px}body.atelier-simple.atelier-direct .masthead .brand-name{display:none!important}body.atelier-simple .brand{min-width:0;flex:0 0 auto}body.atelier-simple .header-actions{margin-left:auto}}

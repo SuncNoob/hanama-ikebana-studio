@@ -14,10 +14,10 @@ import {bookVessels} from '../../dist/book-vessels.js?v=hn3';
 import {newVessels} from '../../dist/vessels.js?v=hn3';
 import {atelierSpecimens,atelierVessels} from '../../dist/editorial-catalog.js?v=1';
 import {atelierSpecimens as legacyAtelierSpecimens,atelierVessels as legacyAtelierVessels} from '../../dist/atelier-catalog.js?v=1';
-import {studies} from '../../dist/studies.js?v=hn3';
+import {studies} from '../../dist/studies.js?v=modern1';
 import {applyRealScale} from '../../dist/scale.js?v=scale4';
 import {legacyFlowers,legacyVessels,scenes,applyTone} from '../../dist/legacy-catalog.js?v=quiet2';
-import {createItem,buildStudyState,buildDemoItems} from '../../dist/study-state.js?v=scale4';
+import {createItem,buildStudyState,buildDemoItems} from '../../dist/study-state.js?v=modern1';
 
 export const dist=fileURLToPath(new URL('../../dist/',import.meta.url));
 /** Names of the spreads, in app.js order. */

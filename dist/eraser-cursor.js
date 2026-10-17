@@ -17,21 +17,19 @@ export function mountEraserCursor({stage,brushInput,getDiameter=()=>Number(brush
   if(frame){cancelAnimationFrame(frame);frame=0;}
   if(stage.dataset.tool!=='brush'||blocked()){clear();return;}
   if(!point||(point.type!=='mouse'&&contact===null)){hide();return;}
-  const rect=stage.getBoundingClientRect(),x=point.x-rect.left,y=point.y-rect.top;
+  // Use the same content box as native input, excluding the stage border.
+  const target=stage.querySelector('#unity-canvas')||stage,rect=target.getBoundingClientRect(),x=point.x-rect.left,y=point.y-rect.top;
   if(!rect.width||!rect.height||x<0||y<0||x>rect.width||y>rect.height){hide();return;}
   // The native render target can have a smaller buffer or a different DPR. Both the
   // pointer and the brush are measured in client CSS pixels, independent of that buffer.
   const scaleX=rect.width/Math.max(1,stage.offsetWidth),scaleY=rect.height/Math.max(1,stage.offsetHeight);
-  const diameter=Math.max(.1,Number(getDiameter())||Number(brushInput?.value)||16),radius=diameter/2;
-  ring.style.left=`${x/rect.width*100}%`;ring.style.top=`${y/rect.height*100}%`;
+  const diameter=Math.max(.1,Number(getDiameter())||Number(brushInput?.value)||16);
+  const outer=overlay.getBoundingClientRect(),ox=(point.x-outer.left)/scaleX,oy=(point.y-outer.top)/scaleY;
+  ring.style.left=`${ox}px`;ring.style.top=`${oy}px`;
   ring.style.width=`${diameter/scaleX}px`;ring.style.height=`${diameter/scaleY}px`;
-  const iconSize=28,margin=iconSize/2+3;
-  // Leave the actual erased pixels uncovered. A finger gets more clearance than a mouse.
-  const right=x+radius+20,left=x-radius-20;
-  const iconX=Math.min(rect.width-margin,Math.max(margin,right>rect.width-margin?left:right));
-  const lift=point.type==='mouse'?radius+20:Math.max(54,radius+24);
-  const iconY=Math.min(rect.height-margin,Math.max(margin,y-lift<margin?y+lift:y-lift));
-  icon.style.left=`${iconX/rect.width*100}%`;icon.style.top=`${iconY/rect.height*100}%`;
+  const iconSize=Math.min(20,Math.max(12,diameter*.7));
+  // A centred, translucent glyph identifies the actual erase point on every device.
+  icon.style.left=`${ox}px`;icon.style.top=`${oy}px`;
   icon.style.width=`${iconSize/scaleX}px`;icon.style.height=`${iconSize/scaleY}px`;
   overlay.dataset.contact=String(contact!==null);overlay.dataset.pointer=point.type;
   overlay.hidden=false;stage.classList.add('eraser-pointer-active');

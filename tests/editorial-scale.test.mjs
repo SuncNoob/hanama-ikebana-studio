@@ -51,8 +51,8 @@ test('new default flowers reach their design positions with a separate lower ste
   // Two points inside the flower have the same separation at either stem-length extreme.
   const y0=a.tip[1],y1=Math.min(split,y0+.1);near((warpY(y1,split,.6)-warpY(y0,split,.6))*item.h,(warpY(y1,split,2.4)-warpY(y0,split,2.4))*item.h,a.id);
  }
- const calla=s.items.find(i=>i.type==='editorial-calla'),rose=s.items.find(i=>i.type==='editorial-rose');
- assert.equal(calla.h,36);assert.equal(rose.h,22);assert.ok(calla.length>1.5&&rose.length>2,'length comes from the stem, not an oversized flower');
+ const calla=s.items.find(i=>i.type==='editorial-calla'),second=s.items.filter(i=>i.type==='editorial-calla')[1];
+ assert.equal(calla.h,36);assert.equal(second.h,32.4);assert.ok(calla.length>1.5&&second.length>1.2,'length comes from the stem, not an oversized flower');
  const p=planSlot({id:'calibration',vessel:'ivory-tall-cylinder',items:[]},assetById['editorial-calla'],assetById);
  assert.equal(p.fit.miss,0);assert.ok(p.fit.length>1.5);assert.ok(p.headroom>=3);
 });

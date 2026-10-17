@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import {naturalStemRoutes,naturalStemRoutesV1,stemRoots,stemSpecs,stemPath,routeGap,swayShare,swayProfile,isWoody,expectedStemCm,MERGED_RATIO,BUNDLE_HALF_CM} from '../dist/natural-stems.js?v=hn2';
 import {stemFix} from '../dist/real-scale.js?v=scale4';
 import {specimenMetrics} from '../dist/asset-metrics.js?v=scale4';
-import {createItem,stemVersion} from '../dist/study-state.js?v=scale4';
+import {createItem,stemVersion} from '../dist/study-state.js?v=modern1';
 import {assetById,dist} from './helpers/catalog.mjs';
 
 const asset={anchor:.5,height:12,group:'bloom'};

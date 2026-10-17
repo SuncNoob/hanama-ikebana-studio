@@ -1,4 +1,4 @@
-import {mountEraserCursor} from './eraser-cursor.js?v=1';
+import {mountEraserCursor} from './eraser-cursor.js?v=2';
 // The canvas is the workbench. Existing document controls keep their handlers and IDs.
 const PREFS='hanama-atelier-preferences-v3';
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
@@ -65,7 +65,8 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
  while(fine.children.length>1)fineContent.append(fine.children[1]);fine.replaceWith(fineContent);
  $('.atelier-atmosphere-panel').insertBefore($('.atelier-scene-slot'),$('.atelier-presets'));
  const workClose=document.createElement('button');workClose.type='button';workClose.className='atelier-work-close';workClose.innerHTML=closeIcon;workClose.onclick=()=>{$('#atelier-work').open=false;$('#atelier-work>summary').focus({preventScroll:true});};$('.atelier-work-panel').prepend(workClose);
- $('.header-actions').append($('#atelier-image-pack'));
+ const newCanvas=$('#new-canvas-button');newCanvas.innerHTML=strokeIcon('M12 5v14M5 12h14');
+ $('.header-actions').prepend(newCanvas);$('.header-actions').append($('#atelier-image-pack'));
  const atmosphereClose=document.createElement('button');atmosphereClose.type='button';atmosphereClose.className='atelier-atmosphere-close';atmosphereClose.innerHTML=closeIcon;atmosphereClose.onclick=()=>{$('#atelier-atmosphere').open=false;$('#atelier-atmosphere>summary').focus()};$('.atelier-atmosphere-panel').prepend(atmosphereClose);
  const viewbar=document.createElement('div');viewbar.id='atelier-viewbar';
  const viewHint=document.createElement('span');viewHint.className='atelier-view-hint';
@@ -189,7 +190,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
   $('#game-capture').textContent=words('拍下这一刻','Take a photo','この瞬間を撮る');$('#game-retry').textContent=words('重试','Retry','再試行');
   canvas.setAttribute('aria-label',active?words('插花画布：先选移动、弯枝或旋转，再按住花材操作。双指缩放与旋转，方向键微调，Ctrl Z 撤销，Escape 取消。','Flower canvas: choose Move, Bend or Rotate, then drag the stem. Two fingers scale and rotate. Arrow keys adjust, Ctrl Z undoes, Escape cancels.','花材のキャンバス：移動・曲げる・回転を選び、花材を操作。2本指で拡大縮小と回転。矢印で微調整、Ctrl Zで戻す、Escで取消。'):words('插花画布：拖动花材，在调整面板中造型。','Flower canvas: drag stems and use Adjust to shape them.','花材のキャンバス：花材をドラッグし、調整で形を整えます。'));
   $('#delete-button').setAttribute('aria-label',words('删除选中花材','Delete selected stem','選択した花材を削除'));$('#delete-button').title=words('删除选中花材','Delete selected stem','選択した花材を削除');
-  lastLocale=locale();updateControls();
+  newCanvas.title=words('新建作品','New arrangement','新しい作品');newCanvas.setAttribute('aria-label',newCanvas.title);lastLocale=locale();updateControls();
  }
  function readout(event){const node=lastFrame?.nodes.find(n=>n.id===(event?.id||lastFrame.selected));$('.atelier-hud-name',hud).textContent=node?.name||'';}
  function schedule(){if(!active||busy||!visible())return;if(!frameHandle)frameHandle=requestAnimationFrame(()=>{frameHandle=0;sync();});}
@@ -253,7 +254,7 @@ export function mountUnityGame({getFrame,onEvent,onAction,getEraserDiameter,loca
  $('#atelier-adjust').onclick=()=>setInspector(!document.body.classList.contains('atelier-inspector-open'));
  fallbackAdjust.onclick=()=>setInspector(!document.body.classList.contains('atelier-inspector-open'));
  closeInspector.onclick=()=>{setInspector(false);$('#atelier-work>summary').focus({preventScroll:true});};
- $('#atelier-image-pack').onclick=()=>{cancel();photo(false);setInspector(true,'create');};
+ $('#atelier-image-pack').onclick=()=>{cancel();photo(false);closeMenus();setInspector(false);$('#generate-button').click();};
  quickPack.onclick=()=>{cancel();photo(false);closeMenus();onAction?.('download-pack',quickPack);};
  lengthButton.onclick=()=>setLength(lengthPanel.hidden);lengthClose.onclick=()=>{setLength(false);lengthButton.focus({preventScroll:true});};
  $('#atelier-gallery').onclick=()=>{closeMenus();$('.main-nav [data-view="gallery"]').click();};

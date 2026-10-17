@@ -45,9 +45,9 @@ export function buildStudyState(study,{assetById,lang='zh',makeItem,initial}){
  return {...initial(),title:study.title[localeIndex(lang)],intention:'',vessel:study.vessel,scene:study.scene,light:study.light||undefined,subtitle:'',mood:study.mood,items};
 }
 
-/** The first-run editorial garden: airy woody line, sculptural ivory, lush apricot and a dark accent. */
+/** First-run contemporary study: two ivory callas, low silver foliage, open space. */
 export const demoVessel='editorial-aubergine';
-export const demoSpecs=[{family:'sakura',to:[-18,44],s:1.1},{family:'calla',to:[17,39]},{family:'eucalyptus',to:[-24,22],s:.9},{family:'rose',to:[-6,23]},{family:'camellia',to:[17,16]}];
+export const demoSpecs=[{family:'calla',to:[-12,42]},{family:'eucalyptus',to:[-24,22],s:.9},{family:'calla',to:[14,28],s:.9,flip:true}];
 /** The welcome composition is built like an editable study. */
 export function buildDemoItems({assetById,makeItem,specimenFor}){
  const vessel=assetById[demoVessel],front=autoFront(vessel);

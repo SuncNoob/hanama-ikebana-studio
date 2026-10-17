@@ -1,3 +1,5 @@
+import {supportsStemStretch} from '../dist/stem-length.js';
+import {lengthBounds} from '../dist/scale.js';
 // SPDX-FileCopyrightText: 2026 Marko Sun
 // SPDX-License-Identifier: LicenseRef-Hanama-Proprietary
 import test from 'node:test';
@@ -7,7 +9,7 @@ import {assetById,studies,studyState,initial,specimenOrder,vesselOrder,specimenF
 import {atelierSpecimens,atelierVessels} from '../dist/editorial-catalog.js?v=1';
 import {atelierSpecimens as legacyAtelierSpecimens,atelierVessels as legacyAtelierVessels} from '../dist/atelier-catalog.js?v=1';
 import {legacyFlowers,legacyVessels,scenes,saturationTune} from '../dist/legacy-catalog.js?v=quiet2';
-import {createItem,buildStudyItems,buildDemoItems,placeSpecs,demoSpecs,demoVessel} from '../dist/study-state.js?v=scale4';
+import {createItem,buildStudyItems,buildDemoItems,placeSpecs,demoSpecs,demoVessel} from '../dist/study-state.js?v=modern1';
 import {sizeBounds,mouthBase,tipPoint,crownPoint,drawsStem,stemCm,isKenzan,autoFront,seatState,baseOffset,angleCap,slotState,PHOTO_LENGTH} from '../dist/scale.js?v=scale4';
 import {vesselGeometry,sourceToStage} from '../dist/geometry.js?v=soft2';
 import {specimenMetrics} from '../dist/asset-metrics.js?v=scale4';
@@ -20,7 +22,7 @@ test('app.js builds its asset map from the moved modules in the same order the d
  assert.deepEqual(spread('specimens'),specimenOrder);
  assert.deepEqual(spread('vessels'),vesselOrder);
  assert.match(appSource,/from '\.\/legacy-catalog\.js\?v=quiet2'/);
- assert.match(appSource,/from '\.\/study-state\.js\?v=scale4'/);
+ assert.match(appSource,/from '\.\/study-state\.js\?v=modern1'/);
  assert.doesNotMatch(appSource,/const (legacyFlowers|scenes|saturation)=/,'legacy literals must live only in legacy-catalog.js');
 });
 
@@ -62,8 +64,8 @@ test('the photographic editorial assets have complete source files and botanical
 const MISS_ALLOWED=new Set([]);
 const insideFixture=(vessel,[x,y])=>{const f=vesselGeometry(vessel).fixture;return f.centers.some(c=>((x-c[0])/f.radius[0])**2+((y-c[1])/f.radius[1])**2<=1)};
 
-test('all 50 studies build from the pure core: known materials, natural size, seated bases, honest stems, on stage',t=>{
- assert.equal(studies.length,50);assert.ok(MISS_ALLOWED.size<=5);
+test('all 56 studies build from the pure core: known materials, natural size, seated bases, honest stems, on stage',t=>{
+ assert.equal(studies.length,56);assert.ok(MISS_ALLOWED.size<=5);
  let count=0,kenzanStems=0;const tips=[],crowns=[],misses=[];
  for(const study of studies){
   const vessel=assetById[study.vessel];assert.ok(vessel,`${study.id}: unknown vessel ${study.vessel}`);
@@ -87,6 +89,8 @@ test('all 50 studies build from the pure core: known materials, natural size, se
     assert.ok(Math.abs(item.angle)<=60&&Math.abs(item.angle)<=angleCap(a),`${label}: drawn stem tipped ${item.angle}°`);
     assert.ok(item.length>=1&&item.trim===0,`${label}: drawn-stem head squashed or trimmed`);
     assert.ok(stemCm(item,a)<=stemMaxCm(a)+.05,`${label}: drawn stem over its cap`);
+   }else if(supportsStemStretch(a)){
+    const [lo,hi]=lengthBounds(a,item.h,item.trim);assert.ok(item.length>=lo&&item.length<=hi,`${label}: stem outside botanical range`);
    }else{
     assert.ok(item.length>=.85&&item.length<=1.2&&item.length>=PHOTO_LENGTH[0]&&item.length<=PHOTO_LENGTH[1],`${label}: photo stem length ${item.length}`);
     assert.ok(item.trim>=0&&item.trim<=60,`${label}: trim ${item.trim}`);
@@ -98,7 +102,7 @@ test('all 50 studies build from the pure core: known materials, natural size, se
    assert.ok(crown.every(v=>v>=0&&v<=100),`${label}: crown ${crown.map(v=>v.toFixed(1))} outside the stage`);
   });
  }
- assert.equal(count,241);assert.ok(kenzanStems>60);
+ assert.equal(count,256);assert.ok(kenzanStems>60);
  const bounds=points=>[0,1].map(k=>`${Math.min(...points.map(p=>p[k])).toFixed(1)}…${Math.max(...points.map(p=>p[k])).toFixed(1)}`).join(' / ');
  t.diagnostic(`${count} stems; tips x/y ${bounds(tips)}; crowns x/y ${bounds(crowns)}; worst focus miss ${Math.max(...misses).toFixed(1)} cm`);
 });
@@ -110,10 +114,10 @@ test('kenzan studies stand their stems on the pins in front of the basin unless 
  for(const study of kenzan)for(const item of studyState(study).items)assert.equal(item.aboveVessel,true,study.id);
 });
 
-test('the first-run editorial garden has five naturally sized, seated materials and three structural slots',()=>{
+test('the first-run editorial garden has three naturally sized, seated materials with open space',()=>{
  const s=initial(),vessel=assetById[s.vessel];
  assert.equal(s.vessel,'editorial-aubergine');assert.equal(s.scene,'paper');assert.equal(demoVessel,'editorial-aubergine');
- const expectedFamilies=['sakura','calla','eucalyptus','rose','camellia'],expectedIds=expectedFamilies.map(f=>`editorial-${f}`);
+ const expectedFamilies=['calla','eucalyptus','calla'],expectedIds=expectedFamilies.map(f=>`editorial-${f}`);
  assert.deepEqual(s.items.map(i=>i.type),expectedIds);
  assert.deepEqual(demoSpecs.map(d=>d.family),expectedFamilies);
  const insertion=vesselGeometry(vessel).insertion;
@@ -125,11 +129,6 @@ test('the first-run editorial garden has five naturally sized, seated materials 
   assert.ok(Math.hypot(tip[0]-insertion[0]-to[0],tip[1]-insertion[1]+to[1])<=3,`${item.type}: focus off its place`);
   assert.ok(crownPoint(item,a).every(v=>v>=3&&v<=97));
  });
- const camellia=s.items.find(i=>i.type==='editorial-camellia');
- assert.equal(camellia.h,Math.round(assetById['editorial-camellia'].height*1*10)/10);
- assert.ok(seatState(camellia,assetById['editorial-camellia'],vessel).seated,'the low camellia is seated in the vase');
- const {taken}=slotState(s,assetById);
- for(const slot of ['shin','soe','hikae'])assert.equal(taken[slot],true,`${slot} not filled`);
  assert.deepEqual(buildDemoItems({assetById,makeItem:(type,options)=>({type,...createItem(assetById[type],type,'x',options)}),specimenFor}).map(i=>i.type),expectedIds);
 });
 
