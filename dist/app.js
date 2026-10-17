@@ -4,7 +4,7 @@ import {composeSpecimen,paintArrangement,paintCompositionGuide,paintFixture,pain
 import {LIGHTS,lightOf,lightPatch,lightWorkSize,paintLightAmbient} from './ambience.js?v=hn3';
 import {zipFiles,backupFiles,backupName,readBackup,keepIncoming,withTimeout,failedIds,BackupError,MAX_BACKUP_FILE} from './my-works.js?v=hn3';
 import {compositorLayerPlan,compositorManifest} from './compositor-project.js?v=hn3';
-import {buildPrompt,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER,GENERATOR_PROVIDERS} from './prompt.js?v=realism1';
+import {buildPrompt,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER,GENERATOR_PROVIDERS} from './prompt.js?v=realism2';
 import {newSpecimens} from './catalog.js?v=hn2';
 import {atelierSpecimens,atelierVessels} from './editorial-catalog.js?v=1';
 import {atelierSpecimens as legacyAtelierSpecimens,atelierVessels as legacyAtelierVessels} from './atelier-catalog.js?v=1';

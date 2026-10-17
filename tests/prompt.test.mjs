@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {buildPrompt,materialGroups,materialNoun,pluralName,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER} from '../dist/prompt.js?v=realism1';
+import {buildPrompt,materialGroups,materialNoun,pluralName,PACK_MODES,MODE_NAMES,PACK_NAMES,packReadme,OUTPUT_FORMATS,OUTPUT_FORMAT_ORDER} from '../dist/prompt.js?v=realism2';
 import {isKenzan,arrangementMetrics,outOfScale} from '../dist/scale.js?v=scale4';
 import {assetById,studies,studyState,initial,scenes,specimenFor,vessels,dist} from './helpers/catalog.mjs';
 
@@ -97,11 +97,15 @@ test('physical insertion overrides inaccurate collage joins without flattening d
   assert.match(text,/Construction priority:/,vessel.id);
   assert.doesNotMatch(text,/crossing in front of the rim|Every stem rises continuously|Keep flower sizes as drawn|Hidden floral wire/);
   assert.match(text,/Do not force branches to touch the table/);
+  assert.match(text,/cascading growth sag under gravity from a rim pivot; shade actual tabletop contact/);
+  assert.match(text,/dense clusters natural ambient occlusion/);
   if(isKenzan(vessel)){
+   assert.doesNotMatch(text,/deeper occlusion behind the front lip/);
    assert.match(text,/actual pin holders/);assert.doesNotMatch(text,/narrow bundle centered|front lip overlaps and hides/);
   }else if((vessel.openings?.length||0)>1){
    assert.match(text,/Do not merge separate openings/);assert.doesNotMatch(text,/narrow bundle centered/);
   }else if(/glass/i.test(`${vessel.id} ${vessel.en||''}`)){
+   assert.doesNotMatch(text,/deeper occlusion behind the front lip/);
    assert.match(text,/continuous submerged portions visible/);assert.doesNotMatch(text,/narrow bundle centered|front lip overlaps and hides/);
   }else if(vessel.fixture?.kind==='neck'||vessel.group==='tall'){
    assert.match(text,/clearance from both left and right inner rim edges/);
@@ -150,7 +154,7 @@ test('photographic reconstruction replaces baked-in highlights; guide and notes 
  assert.ok(plain.includes('Use the draft for design intent, not its cutout surfaces or baked-in highlights.'));
  assert.match(plain,/species-appropriate bending under weight; woody branches remain firm/);
  assert.match(plain,/relight everything with one broad side light and weaker room bounce/);
- assert.match(plain,/vessel foot contact shadow, overlaps local shade, and recesses depth without black outlines/);
+ assert.match(plain,/vessel foot contact shadow, dense clusters natural ambient occlusion, and recesses depth without black outlines/);
  assert.doesNotMatch(plain,/wallpaper-worthy|editorial photograph|The draft is a collage|Capture natural colour|^Light:/m);
  assert.doesNotMatch(plain,/layout guide/,'the guide sentence belongs to the zip only');
  assert.match(prompt(s,{guide:true}),/layout guide suggests overlap of upper growth only; correct every base to its real support/);
@@ -181,7 +185,7 @@ test('the detail phrase follows the materials: petals for flowers, leaves and ba
 
 test('app.js builds the prompt once, with the preset cue and the zip-only guide sentence',()=>{
  const source=readFileSync(`${dist}app.js`,'utf8');
- assert.match(source.match(/^import .* from '\.\/prompt\.js[^']*';$/m)?.[0]||'',/^import \{buildPrompt,[^}]*\} from '\.\/prompt\.js\?v=realism1';$/,'app.js imports prompt.js with the shared specifier');
+ assert.match(source.match(/^import .* from '\.\/prompt\.js[^']*';$/m)?.[0]||'',/^import \{buildPrompt,[^}]*\} from '\.\/prompt\.js\?v=realism2';$/,'app.js imports prompt.js with the shared specifier');
  assert.ok(source.includes('presetNote:intentionPresets.includes(s.intention)?intentionPresets[1]:false'),'an untouched preset note goes in as its English text');
  assert.ok(source.includes('{guide:true,format}'),'the shared zip builder uses the selected format and mentions the guide');
  assert.equal(source.match(/buildPrompt\(/g).length,1,'one call site (promptFor)');

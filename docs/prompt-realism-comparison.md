@@ -38,3 +38,9 @@ The editor's artwork and source material sizes are unchanged. This changes the i
 - The selected D prompt is byte-for-byte equal to `buildPrompt()` for the comparison snapshot and options.
 
 Original images, raw draft, exact A/B/C/D prompts and a side-by-side HTML viewer are saved under `outputs/prompt-comparison` in the task workspace. They are evaluation artifacts, not new website library assets.
+
+## Gemini advice follow-up — 2026-10-17
+
+At the user's request, the remaining Gemini suggestions were incorporated into the shared prompt for both manual providers. Cascading growth may use the rim as a pivot and sag under gravity; tabletop contact shade is conditional on real contact. Dense clusters receive natural ambient occlusion, and opaque openings receive deeper shade behind the front lip. Thin petals/leaves transmit light, and approximate dimensions permit natural depth and perspective. Glass, kenzan and multiple openings retain their separate physical rules.
+
+The earlier D images remain an evaluation of version 43, not new image evidence for these additions. The current prompt adds the above rules to that tested direction. No new image-generation comparison was run for this follow-up.
